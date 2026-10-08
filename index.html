@@ -1,73 +1,280 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BlockVerse — عالم البرمجة التفاعلي</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07131f">
+<title>BlockVerse — مختبر البرمجة والمغامرة</title>
 <style>
-:root{--bg:#071022;--panel:#0d1933;--panel2:#122345;--line:#243c69;--muted:#a9b8d8;--white:#f4f7ff;--cyan:#38e4db;--blue:#428dff;--purple:#875cff;--green:#24d6a0;--gold:#ffc857}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#1c3c76,#09132b 50%,#050a17);color:var(--white);font-family:Tahoma,Arial,sans-serif}button,input{font:inherit}button{cursor:pointer;color:inherit;border:0}.topbar{height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid #263b65;background:#081329ed;position:sticky;top:0;z-index:10}.brand{display:flex;gap:10px;align-items:center;font-size:23px;font-weight:900;direction:ltr}.logo{display:grid;place-items:center;width:39px;height:39px;border-radius:12px;background:linear-gradient(135deg,#36e4dc,#5478ff 65%,#a05aff);box-shadow:0 0 22px #4b88ff55;font-size:23px}.brand span span{color:var(--cyan)}.topmeta{display:flex;gap:14px;align-items:center;color:var(--muted);font-size:12px}.pill{background:#132448;border:1px solid var(--line);border-radius:12px;padding:9px 12px}.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ffd166,#ff8da8);font-size:20px}.app{max-width:1800px;margin:auto;display:grid;grid-template-columns:205px minmax(0,1fr);gap:14px;padding:14px}.sidebar,.panel{background:linear-gradient(145deg,#0e1a36f5,#0a142bf5);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 35px #0002}.sidebar{padding:12px;height:calc(100vh - 96px);position:sticky;top:82px;display:flex;flex-direction:column;gap:5px}.nav{display:flex;gap:11px;align-items:center;text-align:right;background:transparent;color:var(--muted);padding:12px;border-radius:11px}.nav.active,.nav:hover{background:linear-gradient(100deg,#416bfa,#8154ee);color:white}.nav i{font-style:normal;width:22px;font-size:17px;text-align:center}.helper{margin-top:auto;text-align:center;border:1px solid #243b69;border-radius:15px;background:#0a142b;padding:12px;color:var(--muted);font-size:12px;line-height:1.8}.helper .bot{font-size:40px}.content{min-width:0}.hero{height:285px;position:relative;overflow:hidden;border:1px solid #315b99;border-radius:19px;background:linear-gradient(110deg,#102249,#12547a 60%,#18316c);margin-bottom:14px;display:grid;grid-template-columns:.8fr 1.2fr}.heroText{padding:25px 28px;z-index:2;align-self:center}.eyebrow{color:var(--cyan);font-size:12px;font-weight:bold}.hero h1{font-size:clamp(25px,2.5vw,39px);line-height:1.35;margin:10px 0}.hero h1 span{color:#52e2df}.hero p{font-size:13px;line-height:1.8;color:#c7d7f6;max-width:440px}.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.primary{background:linear-gradient(100deg,#16c99b,#398eff);color:white;font-weight:bold;padding:11px 17px;border-radius:11px}.subbtn{background:#192b52;border:1px solid #365183;padding:10px 13px;border-radius:11px}.heroCanvas{position:relative;min-width:0}.heroCanvas canvas{width:100%;height:100%;display:block}.heroBadge{position:absolute;right:14px;top:14px;background:#07152bdc;border:1px solid #ffffff30;border-radius:10px;padding:8px 11px;font-size:11px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.stat{display:flex;align-items:center;gap:11px;padding:13px}.statIcon{width:40px;height:40px;border-radius:12px;background:#1b3261;display:grid;place-items:center;font-size:21px}.stat small{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}.stat b{font-size:18px}.workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);gap:14px;margin-bottom:14px}.panelhead{display:flex;align-items:center;justify-content:space-between;padding:15px 16px 11px}.panelhead h2{font-size:16px;margin:0}.tag{font-size:10px;color:var(--cyan);background:#0e3745;padding:6px 8px;border-radius:20px}.editorTools{display:flex;align-items:center;gap:6px;padding:9px;background:#09142b;border-top:1px solid #21375f;border-bottom:1px solid #21375f;flex-wrap:wrap}.tool{background:#192b50;border:1px solid #304773;padding:8px 10px;border-radius:8px;font-size:11px}.tool.run{background:#17c895;color:#06271f;font-weight:bold}.editorGrid{display:grid;grid-template-columns:115px minmax(0,1fr);min-height:300px}.palette{padding:9px;background:#0b1630;border-left:1px solid #21375f}.mutedLabel{font-size:10px;color:#90a5d3;margin:3px 0 10px}.block{display:block;width:100%;text-align:right;border-radius:7px;padding:9px 7px;margin-bottom:7px;font-size:10px;font-weight:bold;box-shadow:inset 0 -3px #0002;cursor:grab;user-select:none}.block:active{cursor:grabbing}.blue{background:#347bee}.purple{background:#8a5be8}.yellow{background:#f4b52b;color:#211900}.green{background:#14ba87;color:#052b20}.cyan{background:#17b7c9;color:#05242a}.orange{background:#f18c22;color:#311900}.droparea{padding:12px;background-color:#101e3d;background-image:radial-gradient(#2c426c 1px,transparent 1px);background-size:16px 16px;min-width:0}.drophead{display:flex;justify-content:space-between;color:#9dafd8;font-size:10px;margin-bottom:9px}.dropzone{min-height:240px;border:1px dashed #415d92;border-radius:11px;padding:10px;background:#08132b9c}.hint{text-align:center;color:#7489b9;font-size:11px;line-height:1.8;padding:35px 4px}.placed{width:max-content;max-width:100%;border-radius:7px;padding:9px 10px;margin-bottom:7px;font-size:11px;box-shadow:inset 0 -3px #0002;overflow-wrap:anywhere}.placed button{margin-right:8px;background:#0002;border-radius:5px;font-size:10px}.output{font-size:11px;color:#9db0d8;margin-top:9px;min-height:20px;line-height:1.6}.worldpanel{overflow:hidden}.worldCanvasWrap{margin:0 12px 12px;position:relative;height:355px;border:1px solid #31598b;border-radius:14px;overflow:hidden;background:#69bfe6}.worldCanvasWrap canvas{width:100%;height:100%;display:block}.worldHUD{position:absolute;top:10px;right:10px;left:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}.hudchip{background:#07162cdd;border:1px solid #ffffff30;border-radius:9px;padding:7px 9px;font-size:10px}.worldBottom{position:absolute;bottom:10px;right:10px;left:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}.resources{display:flex;gap:5px}.resource{background:#07162ddd;border:1px solid #ffffff30;border-radius:8px;padding:7px 8px;font-size:11px}.worldBottom .tool{background:#08162ddd}.lower{display:grid;grid-template-columns:1fr 1fr;gap:14px}.lessonlist{padding:0 15px 13px}.lesson{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #21345a}.lesson:last-child{border:0}.lessonIcon{width:34px;height:34px;border-radius:10px;background:#1b3262;display:grid;place-items:center}.lessonTxt{flex:1}.lessonTxt b{font-size:12px;display:block;margin-bottom:4px}.lessonTxt small{font-size:10px;color:var(--muted)}.progress{height:5px;background:#26395f;border-radius:8px;margin-top:7px;overflow:hidden}.progress span{height:100%;display:block;background:linear-gradient(90deg,#20d8a0,#4b9dff)}.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:5px 14px 15px}.badge{background:#0b1630;border:1px solid #263960;border-radius:12px;text-align:center;padding:13px 4px}.badge span{font-size:25px;display:block;margin-bottom:7px}.badge b{font-size:10px;display:block}.badge small{font-size:9px;color:var(--muted)}footer{text-align:center;color:#7083b1;font-size:10px;padding:20px}.toast{position:fixed;bottom:18px;left:18px;z-index:20;background:#13264b;border:1px solid #3c6097;border-radius:11px;padding:12px 16px;box-shadow:0 8px 28px #0005;opacity:0;transform:translateY(12px);transition:.2s;pointer-events:none;font-size:12px}.toast.show{opacity:1;transform:none}.modalback{display:none;position:fixed;inset:0;background:#020715bb;z-index:30;place-items:center;padding:20px}.modalback.show{display:grid}.modal{max-width:450px;width:100%;background:#101d3d;border:1px solid #3b578a;border-radius:18px;padding:22px}.modal p{color:var(--muted);font-size:13px;line-height:1.9}.modal h2{margin-top:0}.modalActions{display:flex;gap:8px}.mobileLabel{display:none}
-@media(max-width:1100px){.app{grid-template-columns:165px minmax(0,1fr);padding:10px;gap:10px}.workspace{grid-template-columns:1fr}.worldCanvasWrap{height:320px}.hero{height:250px}.stats{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:720px){.topbar{height:60px;padding:0 10px}.brand{font-size:19px}.logo{width:33px;height:33px}.topmeta .pill{display:none}.app{display:block;padding:9px}.sidebar{height:auto;position:static;display:flex;flex-direction:row;overflow-x:auto;margin-bottom:10px;padding:7px}.nav{flex:0 0 auto;padding:9px;font-size:11px}.nav i{width:auto}.helper{display:none}.hero{height:auto;min-height:400px;grid-template-columns:1fr}.heroText{padding:20px 20px 8px}.heroCanvas{height:190px;grid-row:1}.hero h1{font-size:29px}.hero p{margin-bottom:8px}.stats{gap:7px}.stat{padding:10px}.statIcon{width:34px;height:34px}.stat b{font-size:16px}.editorGrid{grid-template-columns:95px minmax(0,1fr)}.palette{padding:7px}.block{font-size:9px;padding:8px 5px}.droparea{padding:8px}.dropzone{min-height:220px}.worldCanvasWrap{height:290px}.lower{grid-template-columns:1fr}.topmeta{gap:7px}.workspace{gap:10px}}
-</style></head>
+:root{--bg:#07131f;--panel:#0c1d2b;--panel2:#10283a;--line:#214158;--text:#f3f8fb;--muted:#91a8b8;--cyan:#52e2d2;--blue:#5c8dff;--green:#39d98a;--gold:#f7c95d;--danger:#ff6f7d;--purple:#9d7bff;--shadow:0 18px 50px #0005}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 75% -10%,#17435a 0,#0a1b2a 35%,#06101a 75%);color:var(--text);font-family:Tahoma,Arial,sans-serif}button{font:inherit;color:inherit;border:0;cursor:pointer}button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.top{height:68px;position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:0 22px;background:#071521ee;border-bottom:1px solid #25455b;backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:21px}.mark{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#4de3d1,#4c86ff);box-shadow:0 8px 25px #49dcd555;font-size:22px}.brand b{color:var(--cyan)}
+.topRight{display:flex;align-items:center;gap:9px}.level{background:#10283b;border:1px solid #294b62;border-radius:12px;padding:8px 11px;font-size:11px;color:var(--muted)}.level strong{color:#fff}.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ffd37c,#ff8ba8)}
+.layout{max-width:1600px;margin:auto;padding:14px;display:grid;grid-template-columns:210px minmax(0,1fr);gap:14px}.side{position:sticky;top:82px;height:calc(100vh - 96px);background:#0a1927e8;border:1px solid var(--line);border-radius:18px;padding:10px;display:flex;flex-direction:column;gap:5px;box-shadow:var(--shadow)}
+.nav{display:flex;align-items:center;gap:10px;padding:12px;border-radius:11px;background:transparent;color:var(--muted);text-align:right}.nav:hover,.nav.active{background:linear-gradient(100deg,#315f9c,#6c5fe5);color:#fff}.nav i{font-style:normal;width:22px;text-align:center}.sideTip{margin-top:auto;border:1px solid #244358;background:#091722;border-radius:14px;padding:13px;text-align:center;color:var(--muted);font-size:11px;line-height:1.8}.sideTip .robot{font-size:34px}
+main{min-width:0}.hero{min-height:280px;border:1px solid #28516a;border-radius:22px;overflow:hidden;position:relative;background:linear-gradient(120deg,#0b2434,#12465a 52%,#183b5e);box-shadow:var(--shadow);display:flex;align-items:center}.hero:before,.hero:after{content:"";position:absolute;border-radius:50%;filter:blur(2px)}.hero:before{width:300px;height:300px;background:#44d7c722;left:6%;top:-160px}.hero:after{width:260px;height:260px;background:#6680ff25;right:-70px;bottom:-150px}.heroText{position:relative;z-index:2;padding:28px;max-width:610px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:bold}.hero h1{font-size:clamp(28px,3vw,45px);line-height:1.25;margin:10px 0}.hero h1 span{color:#68e8dc}.hero p{color:#c1d4df;line-height:1.9;font-size:13px;max-width:540px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.primary,.secondary,.danger{border-radius:11px;padding:11px 16px;font-weight:bold}.primary{background:linear-gradient(100deg,#1dcc9c,#478cff)}.secondary{background:#132c40;border:1px solid #33566d}.danger{background:#3a1822;border:1px solid #743340;color:#ffb7be}
+.heroArt{position:absolute;left:0;bottom:0;width:52%;height:100%;opacity:.9}.heroArt svg{width:100%;height:100%}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.stat,.panel{background:linear-gradient(145deg,#0d2030f5,#0a1927f5);border:1px solid var(--line);border-radius:17px;box-shadow:0 12px 35px #0003}.stat{padding:14px;display:flex;align-items:center;gap:11px}.statIcon{width:40px;height:40px;border-radius:12px;background:#15334a;display:grid;place-items:center;font-size:20px}.stat small{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}.stat b{font-size:17px}
+.section{display:none}.section.active{display:block}.sectionHead{display:flex;align-items:center;justify-content:space-between;margin:8px 2px 10px}.sectionHead h2{font-size:18px;margin:0}.sectionHead p{font-size:11px;color:var(--muted);margin:4px 0 0}
+.workspace{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:14px}.panelHead{display:flex;justify-content:space-between;align-items:center;padding:15px 16px 11px}.panelHead h3{font-size:15px;margin:0}.tag{font-size:10px;color:var(--cyan);background:#0e3440;border-radius:20px;padding:6px 9px}
+.editorBar{display:flex;gap:6px;flex-wrap:wrap;padding:9px;border-top:1px solid #1f3a4e;border-bottom:1px solid #1f3a4e;background:#091824}.tool{background:#142c40;border:1px solid #2d4e63;border-radius:8px;padding:8px 10px;font-size:11px}.tool.run{background:#20cb98;color:#06271e;font-weight:bold}.tool.small{padding:7px 9px}
+.editor{display:grid;grid-template-columns:126px minmax(0,1fr);min-height:340px}.palette{padding:10px;background:#091722;border-left:1px solid #1f3a4e}.label{font-size:10px;color:#829bad;margin:3px 0 9px}.block{width:100%;display:block;text-align:right;border-radius:8px;padding:9px 7px;margin-bottom:7px;font-size:10px;font-weight:bold;box-shadow:inset 0 -3px #0002}.block.blue{background:#3d80e9}.block.purple{background:#8865e7}.block.yellow{background:#eab73f;color:#201900}.block.green{background:#19b982;color:#04291f}.block.cyan{background:#19afc4;color:#06252a}.block.orange{background:#e9852d;color:#2e1600}
+.drop{padding:11px;background:#0d1d30;background-image:radial-gradient(#29455d 1px,transparent 1px);background-size:16px 16px}.dropTop{display:flex;justify-content:space-between;font-size:10px;color:#8fa5b7;margin-bottom:8px}.zone{min-height:270px;border:1px dashed #3b6179;border-radius:12px;padding:10px;background:#071522aa}.hint{text-align:center;color:#6f8799;font-size:11px;line-height:1.8;padding:60px 5px}.placed{display:flex;align-items:center;justify-content:space-between;gap:6px;border-radius:8px;padding:8px 9px;margin-bottom:7px;font-size:11px}.placed button{background:#0003;border-radius:5px;padding:2px 6px}.output{min-height:22px;color:#a7bac8;font-size:11px;line-height:1.6;margin-top:8px}
+.world{overflow:hidden}.worldFrame{margin:0 12px 12px;border:1px solid #31566b;border-radius:15px;overflow:hidden;position:relative;background:#9ad7ce}.worldFrame canvas{width:100%;height:410px;display:block}.worldHUD{position:absolute;top:10px;right:10px;left:10px;display:flex;justify-content:space-between;pointer-events:none}.chip{background:#071522d9;border:1px solid #ffffff28;border-radius:9px;padding:7px 9px;font-size:10px}.worldControls{position:absolute;bottom:10px;right:10px;left:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}.resources{display:flex;gap:5px;flex-wrap:wrap}.res{background:#071522df;border:1px solid #ffffff25;border-radius:8px;padding:7px 8px;font-size:11px}.canvasHint{position:absolute;bottom:55px;left:50%;transform:translateX(-50%);background:#071522c9;padding:7px 10px;border-radius:8px;color:#d5e4eb;font-size:10px;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.list{padding:0 15px 14px}.row{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #1d3548}.row:last-child{border-bottom:0}.ico{width:34px;height:34px;border-radius:10px;background:#15334a;display:grid;place-items:center}.grow{flex:1}.row b{font-size:12px}.row small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.bar{height:5px;border-radius:9px;background:#1e3649;overflow:hidden;margin-top:7px}.bar span{display:block;height:100%;background:linear-gradient(90deg,#25d59d,#5e90ff);width:0}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 14px 15px}.card{border:1px solid #264257;background:#091824;border-radius:12px;padding:13px 7px;text-align:center}.card .big{font-size:25px}.card b{display:block;font-size:10px;margin-top:6px}.card small{font-size:9px;color:var(--muted)}
+.pageGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.feature{padding:18px}.feature h3{margin:0 0 7px;font-size:14px}.feature p{color:var(--muted);font-size:11px;line-height:1.8;margin:0}.locked{opacity:.6}
+.setting{display:flex;justify-content:space-between;align-items:center;padding:15px;border-bottom:1px solid #1d3548}.setting:last-child{border-bottom:0}.setting b{font-size:12px}.setting small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.switch{width:42px;height:24px;border-radius:20px;background:#263e50;padding:3px}.switch span{display:block;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}.switch.on{background:#19bc8b}.switch.on span{transform:translateX(-18px)}
+footer{text-align:center;color:#657d8d;font-size:10px;padding:20px}.toast{position:fixed;left:18px;bottom:18px;z-index:80;background:#102a3d;border:1px solid #3a6178;border-radius:11px;padding:11px 15px;font-size:12px;opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:none}.modalBack{display:none;position:fixed;inset:0;background:#02080dcc;z-index:70;place-items:center;padding:18px}.modalBack.show{display:grid}.modal{width:min(520px,100%);background:#0d2030;border:1px solid #31556c;border-radius:18px;padding:21px;box-shadow:var(--shadow)}.modal h2{margin:0 0 9px;font-size:18px}.modal p{color:#a9bdc9;font-size:12px;line-height:1.9}.modalActions{display:flex;gap:7px;justify-content:flex-start}
+@media(max-width:1050px){.layout{grid-template-columns:165px 1fr}.workspace{grid-template-columns:1fr}.heroArt{width:58%;opacity:.55}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.top{height:60px;padding:0 10px}.topRight .level{display:none}.layout{display:block;padding:8px}.side{height:auto;position:static;flex-direction:row;overflow-x:auto;margin-bottom:9px;padding:6px}.nav{flex:0 0 auto;padding:9px;font-size:10px}.sideTip{display:none}.hero{min-height:420px;align-items:flex-start}.heroText{padding:21px 18px;max-width:100%}.heroArt{width:100%;height:205px;bottom:0;opacity:.6}.hero h1{font-size:29px}.hero p{font-size:12px}.stats{gap:7px}.stat{padding:10px}.statIcon{width:34px;height:34px}.stat b{font-size:15px}.editor{grid-template-columns:1fr}.palette{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;border-left:0;border-bottom:1px solid #1f3a4e;padding:7px}.label{grid-column:1/-1;margin:1px}.block{margin:0;font-size:9px;padding:8px 4px;text-align:center}.worldFrame canvas{height:310px}.canvasHint{bottom:54px}.grid2{grid-template-columns:1fr}.pageGrid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:430px){.stats{grid-template-columns:1fr 1fr}.cards{grid-template-columns:1fr}.hero{min-height:430px}.heroArt{height:185px}.worldFrame canvas{height:285px}}
+</style>
+</head>
 <body>
-<header class="topbar"><div class="brand"><div class="logo">⬡</div><span>Block<span>Verse</span></span></div><div class="topmeta"><div class="pill">⭐ المستوى <b id="level">1</b> · <b id="xpTop">0 XP</b></div><span>🔔</span><div class="avatar">🧑🏻‍🚀</div><span>المستكشف</span></div></header>
-<div class="app">
-<aside class="sidebar">
-<button class="nav active" data-page="الرئيسية"><i>⌂</i>الرئيسية</button><button class="nav" data-page="العالم"><i>🌐</i>العالم</button><button class="nav" data-page="المهام"><i>⚑</i>المهام</button><button class="nav" data-page="المكتبة"><i>📚</i>المكتبة</button><button class="nav" data-page="المشاريع"><i>🗂</i>المشاريع</button><button class="nav" data-page="الإنجازات"><i>🏆</i>الإنجازات</button><button class="nav" data-page="الإعدادات"><i>⚙</i>الإعدادات</button>
-<div class="helper"><div class="bot">🤖</div><b style="color:#eaf1ff">مساعدك البرمجي</b><br>كل فكرة تبدأ ببلوك صغير.<br><span style="color:var(--cyan)">جرّب، تعلّم، وابتكر!</span></div>
+<header class="top">
+  <div class="brand"><div class="mark">⬡</div><span>Block<b>Verse</b></span></div>
+  <div class="topRight"><div class="level">⭐ المستوى <strong id="level">1</strong> · <strong id="xpTop">0 XP</strong></div><div>🔔</div><div class="avatar">🧑🏻‍🚀</div></div>
+</header>
+<div class="layout">
+<aside class="side" aria-label="التنقل">
+  <button class="nav active" data-page="home"><i>⌂</i>الرئيسية</button>
+  <button class="nav" data-page="world"><i>🗺</i>العالم</button>
+  <button class="nav" data-page="tasks"><i>⚑</i>المهام</button>
+  <button class="nav" data-page="library"><i>📚</i>المكتبة</button>
+  <button class="nav" data-page="projects"><i>🗂</i>المشاريع</button>
+  <button class="nav" data-page="achievements"><i>🏆</i>الإنجازات</button>
+  <button class="nav" data-page="settings"><i>⚙</i>الإعدادات</button>
+  <div class="sideTip"><div class="robot">🤖</div><b>مساعد البناء</b><br>جرّب فكرة صغيرة، ثم طوّرها إلى عالم كامل.</div>
 </aside>
-<main class="content">
-<section class="hero"><div class="heroText"><div class="eyebrow">✦ تعلّم باللعب واصنع عالمك</div><h1>حوّل أفكارك إلى<br><span>عالم ثلاثي الأبعاد</span></h1><p>ابنِ برنامجك باستخدام البلوكات، ثم شاهد شخصيتك تنفّذ الأوامر داخل عالم قابل للاستكشاف. تعلّم البرمجة بالتجربة، خطوة بعد خطوة.</p><div class="btnrow"><button class="primary" id="begin">▶ ابدأ البناء</button><button class="subbtn" id="how">كيف تعمل المنصة؟</button></div></div><div class="heroCanvas"><canvas id="heroCanvas"></canvas><div class="heroBadge">🌍 عالم تجريبي ثلاثي الأبعاد</div></div></section>
-<section class="stats"><div class="panel stat"><div class="statIcon">⚡</div><div><small>نقاط الخبرة</small><b id="xpStat">0 XP</b></div></div><div class="panel stat"><div class="statIcon">🧩</div><div><small>البلوكات المستخدمة</small><b id="usedStat">0</b></div></div><div class="panel stat"><div class="statIcon">🪵</div><div><small>الموارد المجموعة</small><b id="woodStat">0</b></div></div><div class="panel stat"><div class="statIcon">🏆</div><div><small>الإنجازات</small><b id="achStat">0 / 6</b></div></div></section>
-<section class="workspace">
-<div class="panel"><div class="panelhead"><h2>🧩 مختبر البلوكات</h2><span class="tag">اسحب أو اضغط</span></div><div class="editorTools"><button class="tool run" id="run">▶ تشغيل البرنامج</button><button class="tool" id="reset">↻ إعادة العالم</button><button class="tool" id="clear">مسح البلوكات</button></div><div class="editorGrid"><div class="palette"><div class="mutedLabel">البلوكات</div><div class="block blue" draggable="true" data-type="move">⬆ تحرّك للأمام</div><div class="block blue" draggable="true" data-type="turn">↪ استدر يمينًا</div><div class="block purple" draggable="true" data-type="jump">↟ اقفز</div><div class="block yellow" draggable="true" data-type="repeat">⟳ كرّر 3 مرات</div><div class="block green" draggable="true" data-type="collect">✦ اجمع خشبًا</div><div class="block cyan" draggable="true" data-type="plant">🌱 ازرع بذرة</div><div class="block orange" draggable="true" data-type="build">⌂ ابنِ منزلًا</div></div><div class="droparea"><div class="drophead"><span>منطقة تركيب البرنامج</span><span id="count">0 بلوك</span></div><div class="dropzone" id="zone"><div class="hint">أضف البلوكات إلى هذه المساحة<br>ثم اضغط «تشغيل البرنامج» لترى النتيجة في العالم.</div></div><div class="output" id="output">● جاهز — أضف أمرًا إلى برنامجك.</div></div></div></div>
-<div class="panel worldpanel"><div class="panelhead"><h2>🌐 عالمك المباشر</h2><span class="tag" id="worldState">جاهز للاستكشاف</span></div><div class="worldCanvasWrap"><canvas id="worldCanvas" aria-label="عالم ثلاثي الأبعاد بأسلوب مكعبات"></canvas><div class="worldHUD"><span class="hudchip">🧭 المنطقة الخضراء</span><span class="hudchip">☀️ اليوم 1</span></div><div class="worldBottom"><div class="resources"><span class="resource">🪵 <b id="wood">0</b></span><span class="resource">💎 <b id="gem">0</b></span><span class="resource">🌱 <b id="seed">3</b></span></div><button class="tool" id="explore">↔ استكشف العالم</button></div></div></div>
+<main>
+<section class="section active" id="home">
+  <div class="hero">
+    <div class="heroText">
+      <div class="eyebrow">✦ تعلّم البرمجة من خلال التجربة</div>
+      <h1>ابنِ. جرّب. <span>اكتشف.</span></h1>
+      <p>BlockVerse ليس مجرد لوحة بلوكات. اكتب برنامجك، راقب نتيجته في عالم مرئي، واجمع الموارد وأنجز التحديات. كل تقدمك محفوظ محليًا في جهازك.</p>
+      <div class="actions"><button class="primary" id="begin">▶ ابدأ البناء</button><button class="secondary" id="how">كيف تعمل؟</button></div>
+    </div>
+    <div class="heroArt" aria-hidden="true">
+      <svg viewBox="0 0 800 430" preserveAspectRatio="xMidYMid slice">
+        <defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#5be0cf" stop-opacity=".25"/><stop offset="1" stop-color="#6c7cff" stop-opacity=".18"/></linearGradient></defs>
+        <circle cx="590" cy="105" r="75" fill="#ffe9a1" opacity=".65"/>
+        <path d="M0 360 Q180 270 355 335 T800 300 V430 H0Z" fill="#1b8d79" opacity=".9"/>
+        <path d="M0 390 Q190 310 370 370 T800 330 V430 H0Z" fill="#12665f"/>
+        <path d="M110 300 l95-55 95 55-95 55z" fill="#6ed7a4"/><path d="M110 300v55l95 55v-55z" fill="#438f78"/><path d="M300 300v55l-95 55v-55z" fill="#347563"/>
+        <path d="M155 276 l50-29 50 29-50 29z" fill="#e8b66a"/><path d="M155 276v26l50 28v-29z" fill="#a97648"/><path d="M255 276v26l-50 28v-29z" fill="#88573d"/>
+        <path d="M500 320 q40-70 80 0" stroke="#49d98d" stroke-width="18" fill="none"/><path d="M575 320 q40-90 80 0" stroke="#2ebc76" stroke-width="18" fill="none"/>
+        <circle cx="535" cy="220" r="15" fill="#52e2d2"/><circle cx="535" cy="220" r="6" fill="#092333"/>
+        <path d="M535 235v45m0-25-18 15m18-15 18 15m-18 10-12 25m12-25 12 25" stroke="#eaf8f5" stroke-width="7" stroke-linecap="round"/>
+        <path d="M0 0H800V430H0Z" fill="url(#g)"/>
+      </svg>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="statIcon">⚡</div><div><small>نقاط الخبرة</small><b id="xpStat">0 XP</b></div></div>
+    <div class="stat"><div class="statIcon">🧩</div><div><small>الأوامر المنفذة</small><b id="usedStat">0</b></div></div>
+    <div class="stat"><div class="statIcon">🪵</div><div><small>الخشب</small><b id="woodStat">0</b></div></div>
+    <div class="stat"><div class="statIcon">🏆</div><div><small>الإنجازات</small><b id="achStat">0 / 6</b></div></div>
+  </div>
+  <div class="workspace" id="workspace">
+    <div class="panel">
+      <div class="panelHead"><h3>🧩 مختبر الأوامر</h3><span class="tag">اضغط أو اسحب</span></div>
+      <div class="editorBar"><button class="tool run" id="run">▶ تشغيل</button><button class="tool" id="undo">↶ تراجع</button><button class="tool" id="clear">مسح البرنامج</button><button class="tool" id="reset">↻ إعادة العالم</button></div>
+      <div class="editor">
+        <div class="palette">
+          <div class="label">البلوكات</div>
+          <button class="block blue" data-type="move">⬆ تحرّك</button>
+          <button class="block blue" data-type="turn">↪ استدر</button>
+          <button class="block purple" data-type="jump">↟ اقفز</button>
+          <button class="block yellow" data-type="repeat">⟳ كرر 3×</button>
+          <button class="block green" data-type="collect">✦ اجمع</button>
+          <button class="block cyan" data-type="plant">🌱 ازرع</button>
+          <button class="block orange" data-type="build">⌂ ابنِ</button>
+        </div>
+        <div class="drop">
+          <div class="dropTop"><span>تسلسل البرنامج</span><span id="count">0 / 15</span></div>
+          <div class="zone" id="zone"><div class="hint">أضف الأوامر هنا.<br>يمكنك حذف أي أمر أو التراجع عن آخر إضافة.</div></div>
+          <div class="output" id="output">● جاهز — ابنِ أول برنامج لك.</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel world">
+      <div class="panelHead"><h3>🌿 وادي النور</h3><span class="tag" id="worldState">جاهز</span></div>
+      <div class="worldFrame">
+        <canvas id="worldCanvas" aria-label="وادي مرسوم بأسلوب ثنائي الأبعاد"></canvas>
+        <div class="worldHUD"><span class="chip">☀️ نهار · المنطقة 01</span><span class="chip">🧭 وضع الاستكشاف</span></div>
+        <div class="canvasHint">اسحب داخل العالم لتحريك الكاميرا · استخدم الأسهم للتنقل</div>
+        <div class="worldControls"><div class="resources"><span class="res">🪵 <b id="wood">0</b></span><span class="res">💎 <b id="gem">0</b></span><span class="res">🌱 <b id="seed">3</b></span></div><button class="tool" id="explore">↔ استكشف</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="panel"><div class="panelHead"><h3>🧭 مسار التعلّم</h3><span class="tag">تقدمك</span></div><div class="list">
+      <div class="row"><div class="ico">🟦</div><div class="grow"><b>الحركة</b><small>حرّك الشخصية مرة واحدة</small><div class="bar"><span id="p1"></span></div></div><span id="c1">○</span></div>
+      <div class="row"><div class="ico">🟨</div><div class="grow"><b>التكرار والموارد</b><small>نفّذ تكرارًا واجمع موردًا</small><div class="bar"><span id="p2"></span></div></div><span id="c2">🔒</span></div>
+      <div class="row"><div class="ico">🟩</div><div class="grow"><b>الزراعة والبناء</b><small>ازرع أو ابنِ منزلاً حقيقيًا</small><div class="bar"><span id="p3"></span></div></div><span id="c3">🔒</span></div>
+    </div></div>
+    <div class="panel"><div class="panelHead"><h3>🏅 آخر الإنجازات</h3><span class="tag">6 أهداف</span></div><div class="cards" id="achievementCards"></div></div>
+  </div>
 </section>
-<section class="lower"><div class="panel"><div class="panelhead"><h2>🧭 مسار التعلّم</h2><span class="tag">تقدّمك</span></div><div class="lessonlist"><div class="lesson"><div class="lessonIcon">🟦</div><div class="lessonTxt"><b>1. الحركة والتحكم</b><small>حرّك شخصيتك داخل العالم</small><div class="progress"><span id="p1" style="width:0%"></span></div></div><span id="check1">○</span></div><div class="lesson"><div class="lessonIcon">🟨</div><div class="lessonTxt"><b>2. التكرار وجمع الموارد</b><small>نفّذ الأوامر عدة مرات</small><div class="progress"><span id="p2" style="width:0%"></span></div></div><span id="check2">🔒</span></div><div class="lesson"><div class="lessonIcon">🟩</div><div class="lessonTxt"><b>3. البناء والزراعة</b><small>حوّل الموارد إلى أشياء جديدة</small><div class="progress"><span id="p3" style="width:0%"></span></div></div><span id="check3">🔒</span></div></div></div><div class="panel"><div class="panelhead"><h2>🏅 إنجازاتك</h2><span class="tag">تُفتح أثناء اللعب</span></div><div class="badges"><div class="badge"><span>🚀</span><b>أول انطلاقة</b><small>شغّل برنامجك</small></div><div class="badge"><span>🪵</span><b>جامع الموارد</b><small>اجمع الخشب</small></div><div class="badge"><span>🏡</span><b>المهندس الصغير</b><small>ابنِ منزلاً</small></div></div></div></section>
-<footer>BlockVerse · نموذج تفاعلي محلي — يعمل دون اتصال بالإنترنت</footer>
+
+<section class="section" id="world"><div class="sectionHead"><div><h2>🗺 العالم</h2><p>استكشف وراقب أثر برامجك.</p></div><button class="secondary" data-home>العودة للمختبر</button></div><div class="panel"><div class="worldFrame" style="margin:12px"><canvas id="worldCanvas2" aria-label="العالم"></canvas><div class="worldHUD"><span class="chip">🌿 وادي النور</span><span class="chip">المستوى <b id="worldLevel">1</b></span></div><div class="worldControls"><div class="resources"><span class="res">🪵 <b id="wood2">0</b></span><span class="res">💎 <b id="gem2">0</b></span></div><button class="tool" data-explore>استكشف</button></div></div></div></section>
+
+<section class="section" id="tasks"><div class="sectionHead"><div><h2>⚑ المهام</h2><p>تحديات قصيرة تبني مهاراتك خطوة بخطوة.</p></div></div><div class="pageGrid" id="taskCards"></div></section>
+<section class="section" id="library"><div class="sectionHead"><div><h2>📚 مكتبة الأوامر</h2><p>مرجع سريع لما يفعله كل بلوك.</p></div></div><div class="pageGrid" id="libraryCards"></div></section>
+<section class="section" id="projects"><div class="sectionHead"><div><h2>🗂 مشروعي</h2><p>برنامجك الحالي محفوظ تلقائيًا على هذا الجهاز.</p></div><button class="primary" id="newProject">مشروع جديد</button></div><div class="panel"><div class="list" id="projectInfo"></div></div></section>
+<section class="section" id="achievements"><div class="sectionHead"><div><h2>🏆 الإنجازات</h2><p>كلها قابلة للتحقق داخل اللعبة.</p></div></div><div class="pageGrid" id="allAchievements"></div></section>
+<section class="section" id="settings"><div class="sectionHead"><div><h2>⚙ الإعدادات</h2><p>خيارات بسيطة دون حساب أو خادم.</p></div></div><div class="panel">
+  <div class="setting"><div><b>الحركة بالأسهم</b><small>استخدم الأسهم لتحريك الشخصية أثناء اللعب.</small></div><button class="switch on" id="keyboardToggle"><span></span></button></div>
+  <div class="setting"><div><b>تلميحات العالم</b><small>إظهار التلميح أسفل المشهد.</small></div><button class="switch on" id="hintToggle"><span></span></button></div>
+  <div class="setting"><div><b>إعادة كل التقدم</b><small>يحذف البرنامج والموارد والإنجازات المحفوظة من هذا الجهاز.</small></div><button class="danger" id="factoryReset">مسح التقدم</button></div>
+</div></section>
+<footer>BlockVerse · تجربة تعليمية محلية تعمل دون خدمات خارجية</footer>
 </main></div>
-<div class="toast" id="toast"></div><div class="modalback" id="modal"><div class="modal"><h2 id="modalTitle">مرحبًا بك في BlockVerse</h2><p id="modalText">اسحب بلوكات البرمجة إلى المختبر ثم شغّل البرنامج. ستتحرك الشخصية وتجمع الموارد وتبني داخل عالم ثلاثي الأبعاد مرسوم محليًا في المتصفح.</p><div class="modalActions"><button class="primary" id="closeModal">حسنًا، لنبدأ</button></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="modalBack" id="modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h2 id="modalTitle"></h2><p id="modalText"></p><div class="modalActions"><button class="primary" id="closeModal">حسنًا</button></div></div></div>
+
 <script>
-/* A small offline isometric voxel renderer: no external libraries or network requests. */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const types={move:{label:"⬆ تحرّك للأمام",cls:"blue"},turn:{label:"↪ استدر يمينًا",cls:"blue"},jump:{label:"↟ اقفز",cls:"purple"},repeat:{label:"⟳ كرّر 3 مرات",cls:"yellow"},collect:{label:"✦ اجمع خشبًا",cls:"green"},plant:{label:"🌱 ازرع بذرة",cls:"cyan"},build:{label:"⌂ ابنِ منزلًا",cls:"orange"}};
-let program=[],xp=0,used=0,wood=0,gem=0,seeds=3,steps=0,rotation=0,player={x:0,z:0,jump:0},plants=[],house=false,ran=false;
-function toast(t){let el=$("#toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove("show"),2200)}
-function renderProgram(){let z=$("#zone");z.innerHTML="";if(!program.length)z.innerHTML='<div class="hint">أضف البلوكات إلى هذه المساحة<br>ثم اضغط «تشغيل البرنامج» لترى النتيجة في العالم.</div>';program.forEach((t,i)=>{let d=document.createElement("div");d.className="placed "+types[t].cls;d.innerHTML=types[t].label+' <button aria-label="حذف البلوك">×</button>';d.querySelector("button").onclick=()=>{program.splice(i,1);renderProgram()};z.appendChild(d)});$("#count").textContent=program.length+" بلوك"}
-function add(t){if(program.length>=15){toast("وصلت إلى حد 15 بلوكًا في هذه النسخة");return}program.push(t);renderProgram();$("#output").textContent="● أُضيف: "+types[t].label}
-$$(".block").forEach(el=>{el.addEventListener("click",()=>add(el.dataset.type));el.addEventListener("dragstart",e=>e.dataTransfer.setData("text/plain",el.dataset.type))});
-$("#zone").addEventListener("dragover",e=>e.preventDefault());$("#zone").addEventListener("drop",e=>{e.preventDefault();let t=e.dataTransfer.getData("text/plain");if(types[t])add(t)});
-function updateStats(){ $("#xpStat").textContent=xp+" XP";$("#xpTop").textContent=xp+" XP";$("#level").textContent=Math.floor(xp/100)+1;$("#usedStat").textContent=used;$("#woodStat").textContent=wood;$("#wood").textContent=wood;$("#gem").textContent=gem;$("#seed").textContent=seeds;$("#achStat").textContent=(ran?1:0)+(wood>0?1:0)+(house?1:0)+" / 6";$("#p1").style.width=(ran?100:0)+"%";$("#p2").style.width=(wood?100:0)+"%";$("#p3").style.width=(house||plants.length?100:0)+"%";$("#check1").textContent=ran?"✓":"○";$("#check2").textContent=wood?"✓":"🔒";$("#check3").textContent=house||plants.length?"✓":"🔒"}
-$("#run").onclick=()=>{if(!program.length){toast("أضف بلوكًا واحدًا على الأقل أولًا");return}let log=[];for(const t of program){used++;xp+=10;if(t==="move"){player.x=Math.max(-4,Math.min(4,player.x+1));steps++;log.push("تحركت الشخصية للأمام")}if(t==="turn"){rotation=(rotation+1)%4;log.push("استدارت الشخصية")}if(t==="jump"){player.jump=1;setTimeout(()=>{player.jump=0;drawWorld()},420);log.push("قفزت الشخصية")}if(t==="repeat"){for(let i=0;i<3;i++){player.z=Math.max(-4,Math.min(4,player.z+1));steps++}log.push("تكررت الحركة 3 مرات")}if(t==="collect"){wood+=1;gem+=1;log.push("جمعت خشبًا وجوهرة")}if(t==="plant"){if(seeds>0){seeds--;plants.push({x:player.x,z:player.z});log.push("زرعت بذرة")}else log.push("نفدت البذور")}if(t==="build"){if(wood>=3){wood-=3;house=true;log.push("بنيت منزلًا")}else{house=true;log.push("أنشأت منزلًا تجريبيًا؛ اجمع الخشب لتطويره")}}}ran=true;updateStats();drawWorld();$("#worldState").textContent="نُفّذ البرنامج ✓";$("#output").textContent="✓ "+log.join(" · ");toast("أحسنت! حصلت على "+program.length*10+" نقطة خبرة")};
-$("#clear").onclick=()=>{program=[];renderProgram();$("#output").textContent="● مساحة البرمجة فارغة.";toast("تم مسح البلوكات")};
-$("#reset").onclick=()=>{player={x:0,z:0,jump:0};rotation=0;plants=[];house=false;drawWorld();$("#worldState").textContent="تمت إعادة الشخصية";$("#output").textContent="● عادت الشخصية إلى نقطة البداية.";toast("تمت إعادة الشخصية")};
-$("#explore").onclick=()=>{player.x=(player.x+1)%5-2;player.z=(player.z+1)%5-2;drawWorld();toast("استكشفت جزءًا جديدًا من العالم")};
-$("#begin").onclick=()=>{$(".workspace").scrollIntoView({behavior:"smooth",block:"start"});toast("اختر بلوكاتك وابدأ البرمجة")};
-function showModal(title,txt){$("#modalTitle").textContent=title;$("#modalText").textContent=txt;$("#modal").classList.add("show")}
-$("#how").onclick=()=>showModal("كيف تعمل المنصة؟","اختر بلوكًا من لوحة البلوكات أو اسحبه إلى منطقة البرمجة. رتّب الأوامر ثم اضغط تشغيل. ستتغير حركة الشخصية والموارد والمباني في المشهد ثلاثي الأبعاد المرسوم داخل المتصفح. كل شيء يعمل محليًا ولا يحتاج إلى إنترنت.");
+const TYPES={
+ move:{label:"⬆ تحرّك للأمام",cls:"blue"},turn:{label:"↪ استدر يمينًا",cls:"blue"},jump:{label:"↟ اقفز",cls:"purple"},
+ repeat:{label:"⟳ كرر 3 مرات",cls:"yellow"},collect:{label:"✦ اجمع موردًا",cls:"green"},plant:{label:"🌱 ازرع بذرة",cls:"cyan"},build:{label:"⌂ ابنِ منزلًا",cls:"orange"}
+};
+const ACH=[
+ ["first","🚀","أول انطلاقة","شغّل برنامجًا واحدًا"],["collector","🪵","جامع الموارد","اجمع الخشب"],["gardener","🌱","البستاني","ازرع بذرة"],["builder","🏡","البنّاء","ابنِ منزلاً بثلاثة أخشاب"],["loop","⟳","سيد التكرار","استخدم أمر التكرار"],["explorer","🧭","المستكشف","استكشف العالم"]
+];
+const defaultState={program:[],xp:0,used:0,wood:0,gem:0,seeds:3,steps:0,rotation:0,player:{x:0,z:0},plants:[],house:false,ach:{},ran:false,explores:0,settings:{keyboard:true,hints:true}};
+let S=load();let history=[];let camera={x:0,y:0,drag:false,lx:0,ly:0};
+
+function load(){try{return {...defaultState,...JSON.parse(localStorage.getItem("blockverse-v2")||"{}")}}catch(e){return structuredClone(defaultState)}}
+function save(){localStorage.setItem("blockverse-v2",JSON.stringify(S))}
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(window._toast);window._toast=setTimeout(()=>e.classList.remove("show"),2200)}
+function modal(title,text){$("#modalTitle").textContent=title;$("#modalText").textContent=text;$("#modal").classList.add("show");$("#closeModal").focus()}
 $("#closeModal").onclick=()=>$("#modal").classList.remove("show");
-$$(".nav").forEach(b=>b.onclick=()=>{$$(".nav").forEach(n=>n.classList.remove("active"));b.classList.add("active");if(b.dataset.page==="الرئيسية"){window.scrollTo({top:0,behavior:"smooth"});return}let t={"العالم":"هذا عالمك التجريبي. استخدم زر «استكشف العالم» أو برمج شخصيتك بالبلوكات.","المهام":"المهمة الأولى: حرّك الشخصية واجمع الخشب، ثم جرّب البناء والزراعة.","المكتبة":"اسحب بلوكات الحركة والمنطق والموارد إلى مختبر البرمجة.","المشاريع":"المشروع الحالي يعمل في هذه الصفحة. النسخة الأولية لا تحفظ التقدم بعد إغلاق الصفحة.","الإنجازات":"شغّل برنامجك واجمع الموارد وابنِ منزلًا لفتح الإنجازات.","الإعدادات":"هذه النسخة تعمل محليًا ولا تتصل بأي خادم."};showModal(b.dataset.page,t[b.dataset.page]||"")});
-/* Isometric voxel rendering using Canvas 2D. Every tile is drawn as top/left/right faces. */
-function setupCanvas(canvas){const rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.max(1,Math.floor(rect.width*dpr));canvas.height=Math.max(1,Math.floor(rect.height*dpr));const c=canvas.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);return {c,w:rect.width,h:rect.height}}
-function poly(c,pts,fill,stroke){c.beginPath();c.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)c.lineTo(pts[i][0],pts[i][1]);c.closePath();c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=.6;c.stroke()}}
-function iso(c,x,z,y,ox,oy,sx,sy){return [ox+(x-z)*sx,oy+(x+z)*sy-y]}
-function cube(c,x,z,y,ox,oy,sx,sy,colors,height=13){let p=iso(c,x,z,y,ox,oy,sx,sy),a=[p[0],p[1]],b=[p[0]+sx,p[1]+sy],d=[p[0]-sx,p[1]+sy],top=[a,[p[0]+sx,p[1]+sy],[p[0],p[1]+sy*2],[p[0]-sx,p[1]+sy]];poly(c,[[p[0]-sx,p[1]+sy],[p[0],p[1]+sy*2],[p[0],p[1]+sy*2+height],[p[0]-sx,p[1]+sy+height]],colors[1]);poly(c,[[p[0]+sx,p[1]+sy],[p[0],p[1]+sy*2],[p[0],p[1]+sy*2+height],[p[0]+sx,p[1]+sy+height]],colors[2]);poly(c,top,colors[0],"#ffffff12")}
-function drawTree(c,x,z,ox,oy,sx,sy){let p=iso(c,x,z,0,ox,oy,sx,sy);cube(c,x,z,3,ox,oy,sx,sy,["#8d633f","#754b31","#68412d"],13);c.fillStyle="#167a5b";c.beginPath();c.arc(p[0],p[1]-19,13,0,Math.PI*2);c.fill();c.fillStyle="#27b875";c.beginPath();c.arc(p[0]-5,p[1]-23,9,0,Math.PI*2);c.fill();c.fillStyle="#65db91";c.beginPath();c.arc(p[0]+4,p[1]-26,5,0,Math.PI*2);c.fill()}
-function drawHouse(c,x,z,ox,oy,sx,sy){let p=iso(c,x,z,0,ox,oy,sx,sy);cube(c,x,z,2,ox,oy,sx,sy,["#c6a16c","#987044","#805936"],24);poly(c,[[p[0]-sx-3,p[1]+sy-22],[p[0],p[1]-8],[p[0]+sx+3,p[1]+sy-22],[p[0],p[1]+sy*2-6]],"#9b6bff");poly(c,[[p[0]-sx-3,p[1]+sy-22],[p[0],p[1]-8],[p[0],p[1]+sy*2-6],[p[0]-sx-3,p[1]+sy+2]],"#7446cb");poly(c,[[p[0],p[1]-8],[p[0]+sx+3,p[1]+sy-22],[p[0]+sx+3,p[1]+sy+2],[p[0],p[1]+sy*2-6]],"#5434a7");c.fillStyle="#4a2e24";c.fillRect(p[0]-5,p[1]+sy+4,10,15)}
-function drawCharacter(c,x,z,ox,oy,sx,sy,jump=0){let p=iso(c,x,z,0,ox,oy,sx,sy);let yy=p[1]-jump*24;c.fillStyle="#10274c55";c.beginPath();c.ellipse(p[0],p[1]+9,12,5,0,0,Math.PI*2);c.fill();c.fillStyle="#293e73";c.fillRect(p[0]-7,yy-24,6,16);c.fillRect(p[0]+1,yy-24,6,16);c.fillStyle="#3d9cff";c.fillRect(p[0]-9,yy-40,18,19);c.fillStyle="#f3bc8a";c.fillRect(p[0]-7,yy-54,15,14);c.fillStyle="#3c2b36";c.fillRect(p[0]-8,yy-57,16,6);c.fillStyle="#1a2845";c.fillRect(p[0]-4,yy-48,3,3);c.fillRect(p[0]+3,yy-48,3,3);c.fillStyle="#d8f8ff";c.fillRect(p[0]-12,yy-38,4,12);c.fillRect(p[0]+8,yy-38,4,12)}
-function drawScene(canvas,main){const {c,w,h}=setupCanvas(canvas);let sky=c.createLinearGradient(0,0,0,h);sky.addColorStop(0,"#4a9fdf");sky.addColorStop(.52,"#b6e8f2");sky.addColorStop(1,"#e3f8d7");c.fillStyle=sky;c.fillRect(0,0,w,h);c.fillStyle="#fff2a8";c.beginPath();c.arc(w*.16,h*.16,Math.min(25,w*.06),0,Math.PI*2);c.fill();for(let i=0;i<5;i++){let x=(i*.23+.08)*w,y=(.12+(i%3)*.08)*h;c.fillStyle="#ffffff99";c.beginPath();c.ellipse(x,y,24,7,0,0,Math.PI*2);c.ellipse(x+17,y-5,17,9,0,0,Math.PI*2);c.fill()}
-let sx=Math.max(13,Math.min(25,w/22)),sy=sx*.48,ox=w*.5,oy=h*.26;
- // distant floating islands
- for(let i=0;i<3;i++){let x=w*(.18+i*.31),y=h*(.25+(i%2)*.1);poly(c,[[x-35,y],[x,y-15],[x+36,y],[x+17,y+13],[x-16,y+14]],"#6acb92");poly(c,[[x-16,y+14],[x+17,y+13],[x+9,y+30],[x-6,y+33]],"#4b8c82");c.fillStyle="#2b7b5c";c.fillRect(x-5,y-12,10,12);c.fillStyle="#4ad78c";c.beginPath();c.arc(x,y-18,13,0,Math.PI*2);c.fill()}
- // voxel ground grid
- for(let sum=0;sum<15;sum++){for(let x=0;x<9;x++){let z=sum-x;if(z<0||z>8)continue;let tx=x-4,tz=z-4;let top=iso(tx,tz,0,ox,oy,sx,sy);let shade=((x*13+z*7)%5);let col=["#70d879","#65cf73","#59c66d","#80df79","#4fbb6a"][shade];if(Math.abs(tx-player.x)<.01&&Math.abs(tz-player.z)<.01)col="#a6ec80";cube(c,tx,tz,0,ox,oy,sx,sy,[col,"#4b9b64","#3c815a"],Math.max(10,sx*.7));if((x*7+z*3)%11===0)drawTree(c,tx,tz,ox,oy,sx,sy);if(main&&(x*5+z*9)%23===0){let p=iso(tx,tz,0,ox,oy,sx,sy);c.fillStyle="#4fdce8";c.fillRect(p[0]-3,p[1]+sy,6,12)} }}
- if(house)drawHouse(c,2,-1,ox,oy,sx,sy);plants.forEach(p=>{let q=iso(c,p.x,p.z,0,ox,oy,sx,sy);c.strokeStyle="#188f59";c.lineWidth=2;c.beginPath();c.moveTo(q[0],q[1]+sy);c.lineTo(q[0],q[1]-10);c.stroke();c.fillStyle="#29c779";c.beginPath();c.ellipse(q[0]-5,q[1]-7,6,3,-.5,0,Math.PI*2);c.ellipse(q[0]+5,q[1]-10,6,3,.5,0,Math.PI*2);c.fill()});
- // water ribbons
- c.globalAlpha=.75;poly(c,[[w*.68,h*.55],[w*.75,h*.52],[w*.84,h*.68],[w*.77,h*.73]],"#35c9f3");c.globalAlpha=1;
- if(main)drawCharacter(c,player.x,player.z,ox,oy,sx,sy,player.jump);
- // foreground title-free atmospheric sparkles
- for(let i=0;i<18;i++){let x=(i*67%Math.max(1,w)),y=(i*43%Math.max(1,h));c.fillStyle="#ffffff77";c.fillRect(x,y,2,2)}
+$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").classList.remove("show")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#modal").classList.remove("show")});
+
+function renderProgram(){
+ const z=$("#zone");z.innerHTML="";
+ if(!S.program.length)z.innerHTML='<div class="hint">أضف الأوامر هنا.<br>يمكنك حذف أي أمر أو التراجع عن آخر إضافة.</div>';
+ S.program.forEach((t,i)=>{const d=document.createElement("div");d.className="placed "+TYPES[t].cls;d.innerHTML="<span>"+(i+1)+". "+TYPES[t].label+"</span><button aria-label="+""حذف الأمر "+(i+1)+"">×</button>";d.querySelector("button").onclick=()=>{history.push([...S.program]);S.program.splice(i,1);commit()};z.appendChild(d)});
+ $("#count").textContent=S.program.length+" / 15";
 }
-function drawWorld(){drawScene($("#worldCanvas"),true)}function drawHero(){drawScene($("#heroCanvas"),false)}
-function redraw(){drawWorld();drawHero()}window.addEventListener("resize",redraw);renderProgram();updateStats();redraw();
-</script></body></html>
+function add(type){if(S.program.length>=15){toast("الحد الأقصى 15 أمرًا");return}history.push([...S.program]);S.program.push(type);commit();$("#output").textContent="● أُضيف: "+TYPES[type].label}
+function commit(){save();renderProgram();updateUI()}
+$$(".block").forEach(b=>{b.onclick=()=>add(b.dataset.type);b.draggable=true;b.addEventListener("dragstart",e=>e.dataTransfer.setData("text/plain",b.dataset.type))});
+$("#zone").addEventListener("dragover",e=>e.preventDefault());
+$("#zone").addEventListener("drop",e=>{e.preventDefault();const t=e.dataTransfer.getData("text/plain");if(TYPES[t])add(t)});
+$("#undo").onclick=()=>{if(!history.length){toast("لا يوجد شيء للتراجع عنه");return}S.program=history.pop();commit();toast("تم التراجع")};
+$("#clear").onclick=()=>{if(!S.program.length)return;history.push([...S.program]);S.program=[];commit();$("#output").textContent="● مساحة البرنامج فارغة."};
+
+function unlock(id){if(!S.ach[id]){S.ach[id]=true;const a=ACH.find(x=>x[0]===id);if(a)toast("🏆 إنجاز جديد: "+a[2])}}
+function run(){
+ if(!S.program.length){toast("أضف أمرًا واحدًا على الأقل");return}
+ let log=[];
+ for(const t of S.program){
+  S.used++;S.xp+=10;
+  if(t==="move"){S.player.x=Math.max(-4,Math.min(4,S.player.x+1));S.steps++;log.push("تحرك")}
+  if(t==="turn"){S.rotation=(S.rotation+1)%4;log.push("استدارة")}
+  if(t==="jump"){log.push("قفز")}
+  if(t==="repeat"){for(let i=0;i<3;i++){S.player.z=Math.max(-4,Math.min(4,S.player.z+1));S.steps++}unlock("loop");log.push("تكرار ×3")}
+  if(t==="collect"){S.wood++;S.gem++;unlock("collector");log.push("جمع")}
+  if(t==="plant"){if(S.seeds>0){S.seeds--;S.plants.push({x:S.player.x,z:S.player.z});unlock("gardener");log.push("زراعة")}else log.push("لا توجد بذور")}
+  if(t==="build"){if(S.wood>=3&&!S.house){S.wood-=3;S.house=true;unlock("builder");log.push("بناء")}else if(S.house){log.push("المنزل موجود")}else log.push("تحتاج 3 أخشاب")}
+ }
+ S.ran=true;unlock("first");save();updateUI();drawAll();$("#worldState").textContent="تم التنفيذ ✓";$("#output").textContent="✓ "+log.join(" · ");toast("تم التنفيذ · +"+S.program.length*10+" XP")
+}
+$("#run").onclick=run;
+function resetWorld(){S.player={x:0,z:0};S.rotation=0;S.plants=[];S.house=false;save();updateUI();drawAll();toast("أعيد العالم فقط — تقدمك محفوظ")}
+$("#reset").onclick=resetWorld;
+function explore(){S.player.x=((S.player.x+1+5)%5)-2;S.player.z=((S.player.z+1+5)%5)-2;S.explores++;unlock("explorer");save();updateUI();drawAll();toast("اكتشفت مكانًا جديدًا")}
+$("#explore").onclick=explore;
+$$("[data-explore]").forEach(b=>b.onclick=explore);
+$("#begin").onclick=()=>{$("#workspace").scrollIntoView({behavior:"smooth",block:"start"});toast("ابدأ باختيار 2 أو 3 أوامر")};
+$("#how").onclick=()=>modal("كيف تلعب؟","اختر البلوكات أو اسحبها إلى البرنامج، ثم شغّلها. الموارد والإنجازات والبرنامج تُحفظ تلقائيًا على جهازك. أمر البناء يحتاج 3 أخشاب فعلية؛ وإعادة العالم لا تمسح تقدمك.");
+
+function level(){return Math.floor(S.xp/100)+1}
+function updateUI(){
+ const a=Object.keys(S.ach).length;
+ $("#xpStat").textContent=S.xp+" XP";$("#xpTop").textContent=S.xp+" XP";$("#level").textContent=level();$("#usedStat").textContent=S.used;$("#woodStat").textContent=S.wood;$("#wood").textContent=S.wood;$("#gem").textContent=S.gem;$("#seed").textContent=S.seeds;$("#achStat").textContent=a+" / "+ACH.length;
+ $("#p1").style.width=(S.steps>0?100:0)+"%";$("#p2").style.width=(S.ach.loop&&S.ach.collector?100:0)+"%";$("#p3").style.width=(S.ach.gardener||S.house?100:0)+"%";
+ $("#c1").textContent=S.steps?"✓":"○";$("#c2").textContent=S.ach.loop&&S.ach.collector?"✓":"🔒";$("#c3").textContent=S.ach.gardener||S.house?"✓":"🔒";
+ $("#worldLevel").textContent=level();$("#wood2").textContent=S.wood;$("#gem2").textContent=S.gem;
+ renderAchievements();renderTasks();renderLibrary();renderProject();renderSettings();
+}
+function renderAchievements(){
+ const html=ACH.map(a=>'<div class="card '+(S.ach[a[0]]?"":"locked")+'"><div class="big">'+a[1]+'</div><b>'+a[2]+'</b><small>'+(S.ach[a[0]]?"✓ مكتمل":a[3])+'</small></div>').join("");
+ $("#achievementCards").innerHTML=html;$("#allAchievements").innerHTML=ACH.map(a=>'<div class="panel feature '+(S.ach[a[0]]?"":"locked")+'"><div style="font-size:28px">'+a[1]+'</div><h3>'+a[2]+'</h3><p>'+a[3]+'<br><strong>'+(S.ach[a[0]]?"✓ تم فتحه":"غير مكتمل")+'</strong></p></div>').join("");
+}
+function renderTasks(){
+ const tasks=[["تحرك","نفّذ أمر تحرك",S.steps>0],["اجمع","اجمع خشبًا",S.ach.collector],["كرر","استخدم التكرار",S.ach.loop],["ازرع","ازرع بذرة",S.ach.gardener],["ابنِ","اجمع 3 أخشاب وابنِ",S.house],["استكشف","حرّك الكاميرا أو الشخصية",S.ach.explorer]];
+ $("#taskCards").innerHTML=tasks.map(x=>'<div class="panel feature"><div style="font-size:26px">'+(x[2]?"✅":"🎯")+'</div><h3>'+x[0]+'</h3><p>'+x[1]+'<br><strong>'+(x[2]?"مكتملة":"قيد التنفيذ")+'</strong></p></div>').join("");
+}
+function renderLibrary(){
+ const d={move:"تحريك الشخصية خطوة إلى الأمام.",turn:"تغيير اتجاه الشخصية.",jump:"تنفيذ قفزة مرئية.",repeat:"تنفيذ الحركة للأمام 3 مرات.",collect:"الحصول على خشب وجوهرة.",plant:"استهلاك بذرة وزراعة نبات.",build:"بناء منزل مقابل 3 أخشاب."};
+ $("#libraryCards").innerHTML=Object.keys(TYPES).map(k=>'<div class="panel feature"><div style="font-size:25px">'+TYPES[k].label.split(" ")[0]+'</div><h3>'+TYPES[k].label.slice(TYPES[k].label.indexOf(" ")+1)+'</h3><p>'+d[k]+'</p></div>').join("");
+}
+function renderProject(){
+ $("#projectInfo").innerHTML='<div class="row"><div class="ico">🗂</div><div class="grow"><b>مغامرتي الأولى</b><small>'+S.program.length+' أمر · '+S.xp+' XP · '+Object.keys(S.ach).length+' إنجازات</small></div><span>محفوظ ✓</span></div><div class="row"><div class="ico">💾</div><div class="grow"><b>حفظ محلي</b><small>لا توجد حسابات أو خوادم؛ بياناتك تبقى في هذا المتصفح.</small></div></div>';
+}
+function renderSettings(){
+ const set=(id,on)=>{const e=$("#"+id);if(!e)return;e.classList.toggle("on",on);e.querySelector("span").style.transform=on?"translateX(-18px)":"translateX(0)"};
+ set("keyboardToggle",S.settings.keyboard);set("hintToggle",S.settings.hints);
+ $(".canvasHint").style.display=S.settings.hints?"block":"none";
+}
+function factory(){
+ if(!confirm("سيتم حذف كل البرنامج والموارد والإنجازات. هل تريد المتابعة؟"))return;
+ S=structuredClone(defaultState);history=[];save();renderProgram();updateUI();drawAll();toast("تم مسح التقدم بالكامل");
+}
+$("#newProject").onclick=()=>{if(S.program.length&&!confirm("بدء مشروع جديد؟ سيتم حذف البرنامج فقط مع إبقاء الإنجازات والموارد."))return;S.program=[];history=[];save();renderProgram();updateUI();showPage("home");toast("بدأ مشروع جديد")};
+$("#keyboardToggle").onclick=()=>{S.settings.keyboard=!S.settings.keyboard;save();updateUI()};
+$("#hintToggle").onclick=()=>{S.settings.hints=!S.settings.hints;save();updateUI()};
+$("#factoryReset").onclick=factory;
+
+function showPage(id){
+ $$(".section").forEach(s=>s.classList.toggle("active",s.id===id));$$(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));window.scrollTo({top:0,behavior:"smooth"});drawAll();
+}
+$$(".nav").forEach(n=>n.onclick=()=>showPage(n.dataset.page));
+$$("[data-home]").forEach(b=>b.onclick=()=>showPage("home"));
+document.addEventListener("keydown",e=>{if(!S.settings.keyboard||e.target.matches("input,textarea,button"))return;const k=e.key;if(!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(k))return;e.preventDefault();if(k==="ArrowUp")S.player.z=Math.max(-4,S.player.z-1);if(k==="ArrowDown")S.player.z=Math.min(4,S.player.z+1);if(k==="ArrowLeft")S.player.x=Math.max(-4,S.player.x-1);if(k==="ArrowRight")S.player.x=Math.min(4,S.player.x+1);S.steps++;save();updateUI();drawAll()});
+
+function setupCanvas(c){const r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);c.width=Math.max(1,r.width*d);c.height=Math.max(1,r.height*d);const x=c.getContext("2d");x.setTransform(d,0,0,d,0,0);return[x,r.width,r.height]}
+function rounded(c,x,y,w,h,r,fill){c.fillStyle=fill;c.beginPath();c.roundRect(x,y,w,h,r);c.fill()}
+function drawWorldCanvas(canvas){
+ const [c,w,h]=setupCanvas(canvas);const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,"#b8e7e1");g.addColorStop(.55,"#8bd0c0");g.addColorStop(1,"#5b9f88");c.fillStyle=g;c.fillRect(0,0,w,h);
+ // stylized 2D world: no fake cubes/isometric geometry
+ c.save();c.translate(camera.x,camera.y);
+ // distant hills
+ c.fillStyle="#5a9e84";c.beginPath();c.moveTo(-100,h*.55);c.quadraticCurveTo(w*.2,h*.28,w*.42,h*.55);c.quadraticCurveTo(w*.66,h*.3,w+120,h*.54);c.lineTo(w+120,h);c.lineTo(-100,h);c.fill();
+ c.fillStyle="#427b70";c.beginPath();c.moveTo(-100,h*.67);c.quadraticCurveTo(w*.25,h*.42,w*.5,h*.67);c.quadraticCurveTo(w*.75,h*.45,w+120,h*.66);c.lineTo(w+120,h);c.lineTo(-100,h);c.fill();
+ // winding path
+ c.strokeStyle="#e6c88b";c.lineWidth=48;c.lineCap="round";c.beginPath();c.moveTo(w*.05,h*.86);c.bezierCurveTo(w*.28,h*.68,w*.28,h*.9,w*.5,h*.68);c.bezierCurveTo(w*.68,h*.5,w*.78,h*.65,w*.98,h*.42);c.stroke();
+ c.strokeStyle="#f2d9a4";c.lineWidth=40;c.stroke();
+ // lake
+ c.fillStyle="#4eb7cf";c.beginPath();c.ellipse(w*.78,h*.78,w*.19,h*.1,-.12,0,Math.PI*2);c.fill();c.strokeStyle="#78d7df";c.lineWidth=3;c.beginPath();c.ellipse(w*.78,h*.78,w*.14,h*.05,-.12,0,Math.PI*2);c.stroke();
+ // trees
+ for(let i=0;i<18;i++){let x=(i*83+35)%Math.max(100,w),y=h*.48+(i%5)*22;if(x>w*.68&&y>h*.68)continue;drawTree2(c,x,y,1+(i%3)*.12)}
+ // flowers
+ for(let i=0;i<18;i++){let x=(i*47+80)%Math.max(100,w),y=h*.72+(i%4)*13;c.fillStyle=i%2?"#f4d86d":"#f39ab2";c.beginPath();c.arc(x,y,3,0,Math.PI*2);c.fill();c.fillStyle="#3d8e67";c.fillRect(x-1,y,2,8)}
+ // house / garden
+ if(S.house){drawHouse2(c,w*.24,h*.45)}
+ S.plants.forEach((p,i)=>{const x=w*.28+p.x*28,y=h*.58+p.z*18;drawPlant2(c,x,y)});
+ // player
+ const px=w*.5+S.player.x*30,py=h*.57+S.player.z*19;drawPlayer2(c,px,py);
+ // sign
+ rounded(c,w*.06,h*.2,120,34,9,"#0b2332cc");c.fillStyle="#eef8f5";c.font="bold 11px Tahoma";c.textAlign="center";c.fillText("وادي النور",w*.06+60,h*.2+22);
+ c.restore();
+}
+function drawTree2(c,x,y,s){c.strokeStyle="#704b32";c.lineWidth=7*s;c.beginPath();c.moveTo(x,y+17*s);c.lineTo(x,y-5*s);c.stroke();c.fillStyle="#2e8b62";c.beginPath();c.arc(x,y-14*s,17*s,0,Math.PI*2);c.arc(x-12*s,y-8*s,12*s,0,Math.PI*2);c.arc(x+12*s,y-8*s,12*s,0,Math.PI*2);c.fill();c.fillStyle="#49b978";c.beginPath();c.arc(x-5*s,y-20*s,6*s,0,Math.PI*2);c.fill()}
+function drawPlant2(c,x,y){c.strokeStyle="#207d55";c.lineWidth=3;c.beginPath();c.moveTo(x,y+8);c.lineTo(x,y-9);c.stroke();c.fillStyle="#37c77d";c.beginPath();c.ellipse(x-5,y-6,7,4,-.5,0,Math.PI*2);c.ellipse(x+5,y-10,7,4,.5,0,Math.PI*2);c.fill()}
+function drawHouse2(c,x,y){rounded(c,x-40,y-38,80,62,7,"#b98552");c.fillStyle="#73454b";c.beginPath();c.moveTo(x-49,y-35);c.lineTo(x,y-78);c.lineTo(x+49,y-35);c.closePath();c.fill();rounded(c,x-8,y-4,16,28,3,"#53372f");rounded(c,x-30,y-24,16,13,2,"#8ed9db");rounded(c,x+14,y-24,16,13,2,"#8ed9db")}
+function drawPlayer2(c,x,y){c.fillStyle="#17304466";c.beginPath();c.ellipse(x,y+17,18,6,0,0,Math.PI*2);c.fill();c.fillStyle="#335c8d";c.fillRect(x-11,y-22,9,28);c.fillRect(x+2,y-22,9,28);c.fillStyle="#4d9bff";c.fillRect(x-14,y-48,28,29);c.fillStyle="#f1b988";c.beginPath();c.arc(x,y-57,13,0,Math.PI*2);c.fill();c.fillStyle="#2c2630";c.fillRect(x-13,y-66,26,8);c.fillStyle="#172338";c.fillRect(x-7,y-59,3,3);c.fillRect(x+4,y-59,3,3);c.strokeStyle="#d9f5ff";c.lineWidth=4;c.beginPath();c.moveTo(x-15,y-40);c.lineTo(x-23,y-27);c.moveTo(x+15,y-40);c.lineTo(x+23,y-27);c.stroke()}
+function drawAll(){drawWorldCanvas($("#worldCanvas"));drawWorldCanvas($("#worldCanvas2"))}
+function bindWorldDrag(canvas){if(!canvas)return;canvas.addEventListener("pointerdown",e=>{camera.drag=true;camera.lx=e.clientX;camera.ly=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener("pointermove",e=>{if(!camera.drag)return;camera.x=Math.max(-90,Math.min(90,camera.x+e.clientX-camera.lx));camera.y=Math.max(-50,Math.min(50,camera.y+e.clientY-camera.ly));camera.lx=e.clientX;camera.ly=e.clientY;drawAll()});canvas.addEventListener("pointerup",()=>camera.drag=false);canvas.addEventListener("pointercancel",()=>camera.drag=false)}
+bindWorldDrag($("#worldCanvas"));bindWorldDrag($("#worldCanvas2"));window.addEventListener("resize",drawAll);
+
+renderProgram();updateUI();drawAll();
+</script>
+</body>
+</html>
