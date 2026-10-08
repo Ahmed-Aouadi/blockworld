@@ -121,6 +121,29 @@ function foliage(w,x,y,z,s=1){
   w.scene.add(g);return g;
 }
 
+function createPalmTree(w,x,z,s=1){
+  const g=new THREE.Group();g.position.set(x,0,z);
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.28*s,.55*s,5.5*s,10),material(0x795033,.88));trunk.castShadow=true;g.add(trunk);
+  trunk.rotation.z=.08*Math.sin(x);
+  for(let i=0;i<9;i++){
+    const leaf=new THREE.Mesh(new THREE.ConeGeometry(.22*s,4.2*s,6),material(i%2?0x2e7048:0x3c8552,.9));
+    leaf.position.y=5.4*s;leaf.rotation.z=Math.PI/2.5;leaf.rotation.y=i*Math.PI*2/9;leaf.scale.z=.45;leaf.castShadow=true;g.add(leaf);
+  }
+  w.scene.add(g);return g;
+}
+function createRockCluster(w,x,z,s=1){
+  const g=new THREE.Group();g.position.set(x,0,z);
+  for(let i=0;i<5;i++){const r=new THREE.Mesh(new THREE.IcosahedronGeometry((.7+i%3*.35)*s,1),material(i%2?0x69716a:0x515b55,.98));r.position.set((i-2)*.7*s,.45+(i%2)*.2,(i%3-1)*.65*s);r.scale.y=.65;r.castShadow=true;r.receiveShadow=true;g.add(r)}
+  w.scene.add(g);return g;
+}
+function createWoodenLookout(w,x,z){
+  const g=new THREE.Group();g.position.set(x,0,z);const wood=material(0x67472f,.82);
+  for(const sx of [-1.8,1.8])for(const zz of [-1.8,1.8]){const p=new THREE.Mesh(new THREE.CylinderGeometry(.14,.18,7,8),wood);p.position.set(sx,3.5,zz);p.castShadow=true;g.add(p)}
+  const deck=new THREE.Mesh(new THREE.BoxGeometry(4.4,.35,4.4),wood);deck.position.y=6.4;deck.castShadow=true;g.add(deck);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(3.2,1.7,4),material(0x49382b,.92));roof.rotation.y=Math.PI/4;roof.position.y=9;roof.castShadow=true;g.add(roof);
+  for(const side of [-1,1]){const rail=new THREE.Mesh(new THREE.BoxGeometry(4,.18,.18),wood);rail.position.set(0,7.3,side*2);g.add(rail)}
+  w.scene.add(g);return g;
+}
 function createCinematicWorld(w){
   // A real playable island base: terrain + surrounding ocean.
   const terrainGeo=new THREE.PlaneGeometry(230,230,64,64);
@@ -147,6 +170,11 @@ function createCinematicWorld(w){
     for(let j=0;j<2;j++){const ledge=box(w,7,.55,3.8,0x596057,x-side*(1.4+j*.7),1.8+j*2.5,z+(j-.5)*1.4);ledge.rotation.z=side*(j%2?.08:-.05)}
   }
   createTemple(w,-5,-39);
+  createWoodenLookout(w,42,-8);createWoodenLookout(w,-42,18);
+  createAdventureCamp(w,12,-4);
+  for(let i=0;i<28;i++){const a=i*.73;createPalmTree(w,Math.cos(a)*(72+(i%5)*4),Math.sin(a)*(72+(i%5)*4),.85+(i%4)*.12)}
+  for(let i=0;i<46;i++)createRockCluster(w,-92+(i*37)%184,-92+(i*61)%184,.65+(i%4)*.18);
+
   for(let i=0;i<8;i++)box(w,11-i*.7,.28,1.2,0x6b6557,-5,0.3+i*.28,-34+i*1.2);
   createRuins(w,27,-18);createBridge(w,14,8);
 
@@ -154,6 +182,11 @@ function createCinematicWorld(w){
   for(const sx of [-3.3,3.3])arch.add(box(w,1.8,7,2.2,0x4e554e,sx,3.5,0));
   arch.add(box(w,8,1.8,2.2,0x4e554e,0,7,0));arch.add(box(w,4.2,3.8,.4,0x171c1a,0,1.9,.95));w.scene.add(arch);
 
+  // handcrafted landmarks: beach huts, jungle clearings and a river settlement
+  for(let i=0;i<7;i++){
+    const hx=-58+(i%4)*12,hz=42+Math.floor(i/4)*10;
+    createAdventureCamp(w,hx,hz).scale.setScalar(.65+(i%2)*.08);
+  }
   for(let i=0;i<260;i++){const x=-43+(i*19)%86,z=-48+(i*31)%96;if(Math.abs(x+17)<8&&Math.abs(z)<12)continue;createJungleTree(w,x,z,.72+(i%6)*.12)}
   for(let i=0;i<180;i++){const x=-44+(i*27)%88,z=-46+(i*17)%92;foliage(w,x,.2,z,.55+(i%5)*.12)}
   for(let i=0;i<220;i++){const rock=stone(w,.3+(i%6)*.15,.45+(i%5)*.28,0x5a6259,-43+(i*17)%86,-44+(i*29)%90);rock.rotation.z=(i%7)*.11}
@@ -187,6 +220,20 @@ function createCinematicWorld(w){
   for(let i=0;i<13;i++){const m=new THREE.Mesh(new THREE.ConeGeometry(9+(i%3)*4,18+(i%4)*5,8),material(0x40504a,.99));m.position.set(-62+i*11,8,-66);m.scale.z=.55;w.scene.add(m)}
 }
 function createAdventureCamp(w,x,z){
+  const g=new THREE.Group();g.position.set(x,0,z);
+  const wood=material(0x68472f,.78),dark=material(0x30271f,.9),cloth=material(0x8a5b3b,.92);
+  const floor=new THREE.Mesh(new THREE.BoxGeometry(7,.35,6),wood);floor.position.y=.25;floor.castShadow=true;floor.receiveShadow=true;g.add(floor);
+  for(const sx of [-3.1,3.1])for(const zz of [-2.6,2.6]){const post=new THREE.Mesh(new THREE.CylinderGeometry(.16,.2,3.8,8),wood);post.position.set(sx,2,zz);post.castShadow=true;g.add(post)}
+  for(let i=0;i<4;i++){const plank=new THREE.Mesh(new THREE.BoxGeometry(6.2,.16,.55),wood);plank.position.set(0,1.1+i*.55,-2.75);plank.rotation.z=(i%2?-1:1)*.025;g.add(plank)}
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(4.5,2.6,4),material(0x3e342b,.96));roof.rotation.y=Math.PI/4;roof.position.y=4.2;roof.scale.z=.78;roof.castShadow=true;g.add(roof);
+  const doorway=new THREE.Mesh(new THREE.BoxGeometry(1.35,2.4,.12),dark);doorway.position.set(0,1.35,-2.86);g.add(doorway);
+  const fireBase=new THREE.Mesh(new THREE.CylinderGeometry(.9,1.05,.2,18),dark);fireBase.position.set(0,.45,2.5);g.add(fireBase);
+  for(let i=0;i<4;i++){const log=new THREE.Mesh(new THREE.CylinderGeometry(.11,.13,1.4,8),wood);log.position.set((i%2-.5)*.65,.7,2.5);log.rotation.z=(i%2?Math.PI/2:0);g.add(log)}
+  const flame=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),new THREE.MeshStandardMaterial({color:0xffa13b,emissive:0xff4d12,emissiveIntensity:4}));flame.position.set(0,1.05,2.5);g.add(flame);
+  const light=new THREE.PointLight(0xff7b36,2.8,10);light.position.set(0,1.6,2.5);g.add(light);
+  w.scene.add(g);return g;
+}
+
   const g=new THREE.Group();g.position.set(x,0,z);
   const base=box(w,6,.45,5.2,0x4c4034,0,.22,0);g.add(base);
   const wall=box(w,5.5,2.8,.25,0x6b503a,0,1.7,-2.45);g.add(wall);
