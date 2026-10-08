@@ -25,17 +25,17 @@ function setup3D(canvas){
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
   const scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x73b5c0);
-  scene.fog=new THREE.FogExp2(0x78a99c,.0062);
+  scene.background=new THREE.Color(0x9bc7d0);
+  scene.fog=new THREE.FogExp2(0x7fa69a,.0026);
 
-  const camera=new THREE.PerspectiveCamera(58,1,.1,220);
-  const hemi=new THREE.HemisphereLight(0xc9e5e4,0x18271f,1.65);
+  const camera=new THREE.PerspectiveCamera(68,1,.08,700);
+  const hemi=new THREE.HemisphereLight(0xe4f5f1,0x17231d,2.0);
   scene.add(hemi);
-  const sun=new THREE.DirectionalLight(0xffd29a,4.5);
+  const sun=new THREE.DirectionalLight(0xffe0b0,5.2);
   sun.position.set(-45,70,20);sun.castShadow=true;
   sun.shadow.mapSize.set(2048,2048);
-  sun.shadow.camera.left=-55;sun.shadow.camera.right=55;sun.shadow.camera.top=55;sun.shadow.camera.bottom=-55;
-  sun.shadow.camera.near=1;sun.shadow.camera.far=150;
+  sun.shadow.camera.left=-150;sun.shadow.camera.right=150;sun.shadow.camera.top=150;sun.shadow.camera.bottom=-150;
+  sun.shadow.camera.near=1;sun.shadow.camera.far=420;
   scene.add(sun);
 
   const world={
@@ -85,7 +85,14 @@ function setup3D(canvas){
   if(!world._keysBound){
     world._keysBound=true;
     window.addEventListener("keydown",e=>{
-      if(S.settings?.keyboard===false)return; world.keys[e.key.toLowerCase()]=true;
+      if(S.settings?.keyboard===false)return;
+      const key=e.key.toLowerCase();
+      if(key==="e"){
+        const best=[...worlds.values()].flatMap(v=>v.interactive||[]).map(g=>g.userData).filter(a=>Math.hypot(S.player.x-a.x,S.player.z-a.z)<3.6).sort((a,b)=>Math.hypot(S.player.x-a.x,S.player.z-a.z)-Math.hypot(S.player.x-b.x,S.player.z-b.z))[0];
+        if(best){e.preventDefault();performInteraction(best.action)}
+        return;
+      }
+      world.keys[key]=true;
       if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(e.key.toLowerCase()))e.preventDefault();
     });
     window.addEventListener("keyup",e=>{world.keys[e.key.toLowerCase()]=false});
@@ -116,11 +123,15 @@ function foliage(w,x,y,z,s=1){
 
 function createCinematicWorld(w){
   // A real playable island base: terrain + surrounding ocean.
-  const island=new THREE.Mesh(new THREE.PlaneGeometry(118,118,24,24),material(0x3f6247,.98));
-  island.rotation.x=-Math.PI/2;island.position.y=-.18;island.receiveShadow=true;w.scene.add(island);
-  const shore=new THREE.Mesh(new THREE.RingGeometry(42,57,64),material(0xb49b6a,.99));
-  shore.rotation.x=-Math.PI/2;shore.position.y=-.08;w.scene.add(shore);
-  const ocean=new THREE.Mesh(new THREE.PlaneGeometry(260,260,32,32),new THREE.MeshPhysicalMaterial({color:0x1d6570,roughness:.18,metalness:.02,transparent:true,opacity:.9}));
+  const terrainGeo=new THREE.PlaneGeometry(230,230,64,64);
+  const pos=terrainGeo.attributes.position;
+  for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getY(i),r=Math.hypot(x,z);let h=0;h+=Math.max(0,1-r/108)*2.4;h+=Math.sin(x*.055)*1.5+Math.cos(z*.048)*1.2;h+=Math.sin((x+z)*.025)*2.2;h+=Math.max(0,1-Math.abs(x+18)/30)*Math.max(0,1-Math.abs(z-12)/75)*5;pos.setZ(i,h)}
+  terrainGeo.computeVertexNormals();
+  const island=new THREE.Mesh(terrainGeo,material(0x426b4d,.92));
+  island.rotation.x=-Math.PI/2;island.position.y=-.18;island.receiveShadow=true;w.scene.add(island);w.terrain=island;
+  const shore=new THREE.Mesh(new THREE.RingGeometry(92,112,96),material(0xc5aa72,.96));
+  shore.rotation.x=-Math.PI/2;shore.position.y=-.1;w.scene.add(shore);
+  const ocean=new THREE.Mesh(new THREE.PlaneGeometry(620,620,64,64),new THREE.MeshPhysicalMaterial({color:0x1d6570,roughness:.18,metalness:.02,transparent:true,opacity:.9}));
   ocean.rotation.x=-Math.PI/2;ocean.position.y=-.42;w.scene.add(ocean);w.ocean=ocean;
   for(let i=0;i<28;i++){const foam=new THREE.Mesh(new THREE.TorusGeometry(.45+(i%4)*.18,.035,6,20),new THREE.MeshBasicMaterial({color:0xbce8e5,transparent:true,opacity:.32}));const a=i*.9;foam.position.set(Math.cos(a)*(44+(i%5)*2),-.3,Math.sin(a)*(44+(i%5)*2));foam.rotation.x=Math.PI/2;w.scene.add(foam)}
   const path=new THREE.Mesh(new THREE.PlaneGeometry(7,92),material(0x7d7159,.96));
@@ -143,9 +154,9 @@ function createCinematicWorld(w){
   for(const sx of [-3.3,3.3])arch.add(box(w,1.8,7,2.2,0x4e554e,sx,3.5,0));
   arch.add(box(w,8,1.8,2.2,0x4e554e,0,7,0));arch.add(box(w,4.2,3.8,.4,0x171c1a,0,1.9,.95));w.scene.add(arch);
 
-  for(let i=0;i<96;i++){const x=-43+(i*19)%86,z=-48+(i*31)%96;if(Math.abs(x+17)<8&&Math.abs(z)<12)continue;createJungleTree(w,x,z,.72+(i%6)*.12)}
-  for(let i=0;i<64;i++){const x=-44+(i*27)%88,z=-46+(i*17)%92;foliage(w,x,.2,z,.55+(i%5)*.12)}
-  for(let i=0;i<72;i++){const rock=stone(w,.3+(i%6)*.15,.45+(i%5)*.28,0x5a6259,-43+(i*17)%86,-44+(i*29)%90);rock.rotation.z=(i%7)*.11}
+  for(let i=0;i<260;i++){const x=-43+(i*19)%86,z=-48+(i*31)%96;if(Math.abs(x+17)<8&&Math.abs(z)<12)continue;createJungleTree(w,x,z,.72+(i%6)*.12)}
+  for(let i=0;i<180;i++){const x=-44+(i*27)%88,z=-46+(i*17)%92;foliage(w,x,.2,z,.55+(i%5)*.12)}
+  for(let i=0;i<220;i++){const rock=stone(w,.3+(i%6)*.15,.45+(i%5)*.28,0x5a6259,-43+(i*17)%86,-44+(i*29)%90);rock.rotation.z=(i%7)*.11}
   for(let i=0;i<8;i++){const fall=new THREE.Mesh(new THREE.PlaneGeometry(2.2+(i%3)*.5,7+(i%2)*2),new THREE.MeshStandardMaterial({color:0xbfecee,transparent:true,opacity:.32,side:THREE.DoubleSide}));fall.position.set(-8+i*.65,4+(i%2),-45);fall.rotation.y=(i-4)*.035;w.scene.add(fall)}
   for(let i=0;i<18;i++){const spray=new THREE.Mesh(new THREE.SphereGeometry(.05+(i%3)*.025,7,6),new THREE.MeshBasicMaterial({color:0xd9ffff,transparent:true,opacity:.6}));spray.position.set(-8+(i%6)*.5,1+(i%5)*.25,-43+(i%3)*.4);w.scene.add(spray)}
   for(const p of [[-11,-28],[8,-27],[19,8],[-8,13],[9,-38],[27,27]])createTorch(w,p[0],p[1]);
@@ -283,13 +294,14 @@ function updateNearby(){
   let best=null,d0=Infinity;
   for(const w of worlds.values())for(const g of w.interactive||[]){
     const d=Math.hypot(S.player.x-g.userData.x,S.player.z-g.userData.z);
-    if(d<4.5&&d<d0){best=g.userData;d0=d}
+    if(d<3.6&&d<d0){best=g.userData;d0=d}
   }
   const e=$("#nearby"),a=$("#nearbyActions");if(!e||!a)return;
   if(!best){e.hidden=true;return}
   e.hidden=false;
-  a.innerHTML="<button>"+best.icon+" "+best.verb+" "+best.label+"</button>";
-  a.firstElementChild.onclick=()=>performInteraction(best.action);
+  a.innerHTML="<div class="ePrompt"><kbd>E</kbd><span>"+best.verb+" · "+best.label+"</span></div>";
+  e.dataset.action=best.action;
+  e.dataset.interaction=best.label;
 }
 
 function performInteraction(action){
