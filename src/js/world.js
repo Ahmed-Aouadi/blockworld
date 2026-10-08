@@ -115,6 +115,14 @@ function foliage(w,x,y,z,s=1){
 }
 
 function createCinematicWorld(w){
+  // A real playable island base: terrain + surrounding ocean.
+  const island=new THREE.Mesh(new THREE.PlaneGeometry(118,118,24,24),material(0x3f6247,.98));
+  island.rotation.x=-Math.PI/2;island.position.y=-.18;island.receiveShadow=true;w.scene.add(island);
+  const shore=new THREE.Mesh(new THREE.RingGeometry(42,57,64),material(0xb49b6a,.99));
+  shore.rotation.x=-Math.PI/2;shore.position.y=-.08;w.scene.add(shore);
+  const ocean=new THREE.Mesh(new THREE.PlaneGeometry(260,260,32,32),new THREE.MeshPhysicalMaterial({color:0x1d6570,roughness:.18,metalness:.02,transparent:true,opacity:.9}));
+  ocean.rotation.x=-Math.PI/2;ocean.position.y=-.42;w.scene.add(ocean);w.ocean=ocean;
+  for(let i=0;i<28;i++){const foam=new THREE.Mesh(new THREE.TorusGeometry(.45+(i%4)*.18,.035,6,20),new THREE.MeshBasicMaterial({color:0xbce8e5,transparent:true,opacity:.32}));const a=i*.9;foam.position.set(Math.cos(a)*(44+(i%5)*2),-.3,Math.sin(a)*(44+(i%5)*2));foam.rotation.x=Math.PI/2;w.scene.add(foam)}
   const path=new THREE.Mesh(new THREE.PlaneGeometry(7,92),material(0x7d7159,.96));
   path.rotation.x=-Math.PI/2;path.position.set(3,.22,0);w.scene.add(path);
   const river=new THREE.Mesh(new THREE.PlaneGeometry(11,118,1,20),new THREE.MeshPhysicalMaterial({color:0x2c7983,roughness:.08,metalness:.05,transparent:true,opacity:.82}));
@@ -236,6 +244,32 @@ function createAnimal(w,x,z,type){
   w.scene.add(g);return g;
 }
 
+async function executeWorldBlock(type){
+  const w=[...worlds.values()][0];
+  if(!w) return {label:TYPES[type]?.label||type};
+  const moveForward=async()=>{
+    const step=2.2; S.player.x=Math.max(-43,Math.min(43,S.player.x+Math.sin(w.yaw)*step)); S.player.z=Math.max(-45,Math.min(45,S.player.z+Math.cos(w.yaw)*step)); S.steps++; await animatePlayer("move");
+  };
+  if(type==="move"){await moveForward();return {label:"تحرك فعليًا"}}
+  if(type==="turn"){w.yaw+=Math.PI/2;S.rotation=(S.rotation+1)%4;await animatePlayer("turn");return {label:"استدار 90°"}}
+  if(type==="jump"){w.jump=1;w.jumpT=0;await animatePlayer("jump");return {label:"قفز فعليًا"}}
+  if(type==="repeat"){for(let i=0;i<3;i++)await moveForward();unlock("loop");return {label:"كرر الحركة ×3"}}
+  if(type==="collect"){
+    let best=null,d=Infinity;for(const g of w.interactive){const a=g.userData;if(["cut","mine","fish"].includes(a.action)){const q=Math.hypot(S.player.x-a.x,S.player.z-a.z);if(q<d){d=q;best=a}}}
+    if(best&&d<6){if(best.action==="cut")S.wood++;if(best.action==="mine")S.gem++;if(best.action==="fish")S.fish=(S.fish||0)+1;unlock("collector");await animateWorldAction("collect");return {label:"جمع "+best.label}}
+    S.wood++;S.gem++;unlock("collector");await animateWorldAction("collect");return {label:"جمع مورد"}}
+  if(type==="plant"){
+    if(S.seeds<=0)return {label:"لا توجد بذور"};S.seeds--;S.plants.push({x:S.player.x,z:S.player.z});unlock("gardener");await animateWorldAction("plant");return {label:"نبتة ظهرت في موقعك"}}
+  if(type==="build"){
+    if(S.house)return {label:"البناء موجود"};if(S.wood<3)return {label:"تحتاج 3 أخشاب"};
+    S.wood-=3;S.house=true;unlock("builder");
+    if(w.house){w.house.position.set(S.player.x*1.18,0,S.player.z*1.18);w.house.visible=true}
+    await animateWorldAction("build");return {label:"بُني في موقعك"};
+  }
+  return {label:TYPES[type]?.label||type};
+}
+window.executeWorldBlock=executeWorldBlock;
+
 function createInteractive(w,icon,label,verb,action,x,z){
   const g=new THREE.Group();g.position.set(x,0,z);
   g.userData={icon,label,verb,action,x,z};
@@ -334,6 +368,7 @@ function render3D(w){
   }
 
   if(w.water)w.water.material.opacity=.82+Math.sin(w.time*1.5)*.04;
+  if(w.ocean){w.ocean.position.y=-.42+Math.sin(w.time*.7)*.025;w.ocean.material.opacity=.88+Math.sin(w.time*.9)*.025;}
   if(w.portal){w.portal.rotation.z=w.time*.35;w.portal.scale.setScalar(1+Math.sin(w.time*2)*.035)}
   if(w.animals)w.animals.forEach((a,i)=>{
     const speed=a.userData.type==="fish"?.55:.22;
