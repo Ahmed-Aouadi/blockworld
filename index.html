@@ -5,7 +5,31 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07131f">
 <title>BlockVerse — مختبر البرمجة والمغامرة</title>
-<link rel="stylesheet" href="src/css/app.css"><link rel="stylesheet" href="src/css/world.css">
+<style>
+:root{--bg:#07131f;--panel:#0c1d2b;--panel2:#10283a;--line:#214158;--text:#f3f8fb;--muted:#91a8b8;--cyan:#52e2d2;--blue:#5c8dff;--green:#39d98a;--gold:#f7c95d;--danger:#ff6f7d;--purple:#9d7bff;--shadow:0 18px 50px #0005}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 75% -10%,#17435a 0,#0a1b2a 35%,#06101a 75%);color:var(--text);font-family:Tahoma,Arial,sans-serif}button{font:inherit;color:inherit;border:0;cursor:pointer}button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.top{height:68px;position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:0 22px;background:#071521ee;border-bottom:1px solid #25455b;backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:21px}.mark{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#4de3d1,#4c86ff);box-shadow:0 8px 25px #49dcd555;font-size:22px}.brand b{color:var(--cyan)}
+.topRight{display:flex;align-items:center;gap:9px}.level{background:#10283b;border:1px solid #294b62;border-radius:12px;padding:8px 11px;font-size:11px;color:var(--muted)}.level strong{color:#fff}.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#ffd37c,#ff8ba8)}
+.layout{max-width:1600px;margin:auto;padding:14px;display:grid;grid-template-columns:210px minmax(0,1fr);gap:14px}.side{position:sticky;top:82px;height:calc(100vh - 96px);background:#0a1927e8;border:1px solid var(--line);border-radius:18px;padding:10px;display:flex;flex-direction:column;gap:5px;box-shadow:var(--shadow)}
+.nav{display:flex;align-items:center;gap:10px;padding:12px;border-radius:11px;background:transparent;color:var(--muted);text-align:right}.nav:hover,.nav.active{background:linear-gradient(100deg,#315f9c,#6c5fe5);color:#fff}.nav i{font-style:normal;width:22px;text-align:center}.sideTip{margin-top:auto;border:1px solid #244358;background:#091722;border-radius:14px;padding:13px;text-align:center;color:var(--muted);font-size:11px;line-height:1.8}.sideTip .robot{font-size:34px}
+main{min-width:0}.hero{min-height:280px;border:1px solid #28516a;border-radius:22px;overflow:hidden;position:relative;background:linear-gradient(120deg,#0b2434,#12465a 52%,#183b5e);box-shadow:var(--shadow);display:flex;align-items:center}.hero:before,.hero:after{content:"";position:absolute;border-radius:50%;filter:blur(2px)}.hero:before{width:300px;height:300px;background:#44d7c722;left:6%;top:-160px}.hero:after{width:260px;height:260px;background:#6680ff25;right:-70px;bottom:-150px}.heroText{position:relative;z-index:2;padding:28px;max-width:610px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:bold}.hero h1{font-size:clamp(28px,3vw,45px);line-height:1.25;margin:10px 0}.hero h1 span{color:#68e8dc}.hero p{color:#c1d4df;line-height:1.9;font-size:13px;max-width:540px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.primary,.secondary,.danger{border-radius:11px;padding:11px 16px;font-weight:bold}.primary{background:linear-gradient(100deg,#1dcc9c,#478cff)}.secondary{background:#132c40;border:1px solid #33566d}.danger{background:#3a1822;border:1px solid #743340;color:#ffb7be}
+.heroArt{position:absolute;left:0;bottom:0;width:52%;height:100%;opacity:.9}.heroArt svg{width:100%;height:100%}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.stat,.panel{background:linear-gradient(145deg,#0d2030f5,#0a1927f5);border:1px solid var(--line);border-radius:17px;box-shadow:0 12px 35px #0003}.stat{padding:14px;display:flex;align-items:center;gap:11px}.statIcon{width:40px;height:40px;border-radius:12px;background:#15334a;display:grid;place-items:center;font-size:20px}.stat small{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}.stat b{font-size:17px}
+.section{display:none}.section.active{display:block}.sectionHead{display:flex;align-items:center;justify-content:space-between;margin:8px 2px 10px}.sectionHead h2{font-size:18px;margin:0}.sectionHead p{font-size:11px;color:var(--muted);margin:4px 0 0}
+.workspace{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:14px}.panelHead{display:flex;justify-content:space-between;align-items:center;padding:15px 16px 11px}.panelHead h3{font-size:15px;margin:0}.tag{font-size:10px;color:var(--cyan);background:#0e3440;border-radius:20px;padding:6px 9px}
+.editorBar{display:flex;gap:6px;flex-wrap:wrap;padding:9px;border-top:1px solid #1f3a4e;border-bottom:1px solid #1f3a4e;background:#091824}.tool{background:#142c40;border:1px solid #2d4e63;border-radius:8px;padding:8px 10px;font-size:11px}.tool.run{background:#20cb98;color:#06271e;font-weight:bold}.tool.small{padding:7px 9px}
+.editor{display:grid;grid-template-columns:126px minmax(0,1fr);min-height:340px}.palette{padding:10px;background:#091722;border-left:1px solid #1f3a4e}.label{font-size:10px;color:#829bad;margin:3px 0 9px}.block{width:100%;display:block;text-align:right;border-radius:8px;padding:9px 7px;margin-bottom:7px;font-size:10px;font-weight:bold;box-shadow:inset 0 -3px #0002}.block.blue{background:#3d80e9}.block.purple{background:#8865e7}.block.yellow{background:#eab73f;color:#201900}.block.green{background:#19b982;color:#04291f}.block.cyan{background:#19afc4;color:#06252a}.block.orange{background:#e9852d;color:#2e1600}
+.drop{padding:11px;background:#0d1d30;background-image:radial-gradient(#29455d 1px,transparent 1px);background-size:16px 16px}.dropTop{display:flex;justify-content:space-between;font-size:10px;color:#8fa5b7;margin-bottom:8px}.zone{min-height:270px;border:1px dashed #3b6179;border-radius:12px;padding:10px;background:#071522aa}.hint{text-align:center;color:#6f8799;font-size:11px;line-height:1.8;padding:60px 5px}.placed{display:flex;align-items:center;justify-content:space-between;gap:6px;border-radius:8px;padding:8px 9px;margin-bottom:7px;font-size:11px}.placed button{background:#0003;border-radius:5px;padding:2px 6px}.output{min-height:22px;color:#a7bac8;font-size:11px;line-height:1.6;margin-top:8px}
+.world{overflow:hidden}.worldFrame{margin:0 12px 12px;border:1px solid #31566b;border-radius:15px;overflow:hidden;position:relative;background:#9ad7ce}.worldFrame canvas{width:100%;height:560px;display:block;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}.worldBtns{display:flex;gap:6px;flex-wrap:wrap}.nearby{position:absolute;right:50%;bottom:60px;transform:translateX(50%);background:#071522ee;border:1px solid #6de1d055;border-radius:14px;padding:9px;min-width:230px;box-shadow:0 12px 35px #0008}.nearby[hidden]{display:none}.nearbyTitle{font-size:10px;color:#a9bdc9;margin-bottom:7px;text-align:center}.nearbyActions{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}.nearbyActions button{background:#16364a;border:1px solid #315a70;border-radius:8px;padding:7px 10px;font-size:10px}.worldHUD{position:absolute;top:10px;right:10px;left:10px;display:flex;justify-content:space-between;pointer-events:none}.chip{background:#071522d9;border:1px solid #ffffff28;border-radius:9px;padding:7px 9px;font-size:10px}.worldControls{position:absolute;bottom:10px;right:10px;left:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}.resources{display:flex;gap:5px;flex-wrap:wrap}.res{background:#071522df;border:1px solid #ffffff25;border-radius:8px;padding:7px 8px;font-size:11px}.canvasHint{position:absolute;bottom:55px;left:50%;transform:translateX(-50%);background:#071522c9;padding:7px 10px;border-radius:8px;color:#d5e4eb;font-size:10px;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.list{padding:0 15px 14px}.row{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #1d3548}.row:last-child{border-bottom:0}.ico{width:34px;height:34px;border-radius:10px;background:#15334a;display:grid;place-items:center}.grow{flex:1}.row b{font-size:12px}.row small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.bar{height:5px;border-radius:9px;background:#1e3649;overflow:hidden;margin-top:7px}.bar span{display:block;height:100%;background:linear-gradient(90deg,#25d59d,#5e90ff);width:0}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 14px 15px}.card{border:1px solid #264257;background:#091824;border-radius:12px;padding:13px 7px;text-align:center}.card .big{font-size:25px}.card b{display:block;font-size:10px;margin-top:6px}.card small{font-size:9px;color:var(--muted)}
+.pageGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.feature{padding:18px}.feature h3{margin:0 0 7px;font-size:14px}.feature p{color:var(--muted);font-size:11px;line-height:1.8;margin:0}.locked{opacity:.6}
+.setting{display:flex;justify-content:space-between;align-items:center;padding:15px;border-bottom:1px solid #1d3548}.setting:last-child{border-bottom:0}.setting b{font-size:12px}.setting small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.switch{width:42px;height:24px;border-radius:20px;background:#263e50;padding:3px}.switch span{display:block;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}.switch.on{background:#19bc8b}.switch.on span{transform:translateX(-18px)}
+footer{text-align:center;color:#657d8d;font-size:10px;padding:20px}.toast{position:fixed;left:18px;bottom:18px;z-index:80;background:#102a3d;border:1px solid #3a6178;border-radius:11px;padding:11px 15px;font-size:12px;opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:none}.modalBack{display:none;position:fixed;inset:0;background:#02080dcc;z-index:70;place-items:center;padding:18px}.modalBack.show{display:grid}.modal{width:min(520px,100%);background:#0d2030;border:1px solid #31556c;border-radius:18px;padding:21px;box-shadow:var(--shadow)}.modal h2{margin:0 0 9px;font-size:18px}.modal p{color:#a9bdc9;font-size:12px;line-height:1.9}.modalActions{display:flex;gap:7px;justify-content:flex-start}
+@media(max-width:1050px){.layout{grid-template-columns:165px 1fr}.workspace{grid-template-columns:1fr}.heroArt{width:58%;opacity:.55}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.top{height:60px;padding:0 10px}.topRight .level{display:none}.layout{display:block;padding:8px}.side{height:auto;position:static;flex-direction:row;overflow-x:auto;margin-bottom:9px;padding:6px}.nav{flex:0 0 auto;padding:9px;font-size:10px}.sideTip{display:none}.hero{min-height:420px;align-items:flex-start}.heroText{padding:21px 18px;max-width:100%}.heroArt{width:100%;height:205px;bottom:0;opacity:.6}.hero h1{font-size:29px}.hero p{font-size:12px}.stats{gap:7px}.stat{padding:10px}.statIcon{width:34px;height:34px}.stat b{font-size:15px}.editor{grid-template-columns:1fr}.palette{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;border-left:0;border-bottom:1px solid #1f3a4e;padding:7px}.label{grid-column:1/-1;margin:1px}.block{margin:0;font-size:9px;padding:8px 4px;text-align:center}.worldFrame canvas{height:420px}.canvasHint{bottom:54px}.grid2{grid-template-columns:1fr}.pageGrid{grid-template-columns:1fr}.cards{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:430px){.stats{grid-template-columns:1fr 1fr}.cards{grid-template-columns:1fr}.hero{min-height:430px}.heroArt{height:185px}.worldFrame canvas{height:360px}}
+</style>
 </head>
 <body>
 <header class="top">
@@ -111,11 +135,220 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="modalBack" id="modal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h2 id="modalTitle"></h2><p id="modalText"></p><div class="modalActions"><button class="primary" id="closeModal">حسنًا</button></div></div></div>
 
-<script src="src/js/core.js" defer></script>
-<script src="src/js/editor.js" defer></script>
-<script src="src/js/ui.js" defer></script>
-<script src="src/js/navigation.js" defer></script>
-<script src="src/js/world.js" defer></script>
-<script src="src/js/app.js" defer></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const TYPES={
+ move:{label:"⬆ تحرّك للأمام",cls:"blue"},turn:{label:"↪ استدر يمينًا",cls:"blue"},jump:{label:"↟ اقفز",cls:"purple"},
+ repeat:{label:"⟳ كرر 3 مرات",cls:"yellow"},collect:{label:"✦ اجمع موردًا",cls:"green"},plant:{label:"🌱 ازرع بذرة",cls:"cyan"},build:{label:"⌂ ابنِ منزلًا",cls:"orange"}
+};
+const ACH=[
+ ["first","🚀","أول انطلاقة","شغّل برنامجًا واحدًا"],["collector","🪵","جامع الموارد","اجمع الخشب"],["gardener","🌱","البستاني","ازرع بذرة"],["builder","🏡","البنّاء","ابنِ منزلاً بثلاثة أخشاب"],["loop","⟳","سيد التكرار","استخدم أمر التكرار"],["explorer","🧭","المستكشف","استكشف العالم"]
+];
+const defaultState={program:[],xp:0,used:0,wood:0,gem:0,seeds:3,fish:0,food:0,steps:0,rotation:0,player:{x:0,z:0},plants:[],house:false,ach:{},ran:false,explores:0,settings:{keyboard:true,hints:true}};
+let S=load();let history=[];let camera={x:0,y:0,drag:false,lx:0,ly:0};
+
+function load(){try{return {...defaultState,...JSON.parse(localStorage.getItem("blockverse-v2")||"{}")}}catch(e){return structuredClone(defaultState)}}
+function save(){localStorage.setItem("blockverse-v2",JSON.stringify(S))}
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(window._toast);window._toast=setTimeout(()=>e.classList.remove("show"),2200)}
+function modal(title,text){$("#modalTitle").textContent=title;$("#modalText").textContent=text;$("#modal").classList.add("show");$("#closeModal").focus()}
+$("#closeModal").onclick=()=>$("#modal").classList.remove("show");
+$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").classList.remove("show")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#modal").classList.remove("show")});
+
+function renderProgram(){
+ const z=$("#zone");z.innerHTML="";
+ if(!S.program.length)z.innerHTML='<div class="hint">أضف الأوامر هنا.<br>يمكنك حذف أي أمر أو التراجع عن آخر إضافة.</div>';
+ S.program.forEach((t,i)=>{const d=document.createElement("div");d.className="placed "+TYPES[t].cls;d.innerHTML="<span>"+(i+1)+". "+TYPES[t].label+"</span><button aria-label=\"حذف الأمر "+(i+1)+"\">×</button>";d.querySelector("button").onclick=()=>{history.push([...S.program]);S.program.splice(i,1);commit()};z.appendChild(d)});
+ $("#count").textContent=S.program.length+" / 15";
+}
+function add(type){if(S.program.length>=15){toast("الحد الأقصى 15 أمرًا");return}history.push([...S.program]);S.program.push(type);commit();$("#output").textContent="● أُضيف: "+TYPES[type].label}
+function commit(){save();renderProgram();updateUI()}
+$$(".block").forEach(b=>{b.onclick=()=>add(b.dataset.type);b.draggable=true;b.addEventListener("dragstart",e=>e.dataTransfer.setData("text/plain",b.dataset.type))});
+$("#zone").addEventListener("dragover",e=>e.preventDefault());
+$("#zone").addEventListener("drop",e=>{e.preventDefault();const t=e.dataTransfer.getData("text/plain");if(TYPES[t])add(t)});
+$("#undo").onclick=()=>{if(!history.length){toast("لا يوجد شيء للتراجع عنه");return}S.program=history.pop();commit();toast("تم التراجع")};
+$("#clear").onclick=()=>{if(!S.program.length)return;history.push([...S.program]);S.program=[];commit();$("#output").textContent="● مساحة البرنامج فارغة."};
+
+function unlock(id){if(!S.ach[id]){S.ach[id]=true;const a=ACH.find(x=>x[0]===id);if(a)toast("🏆 إنجاز جديد: "+a[2])}}
+async function run(){
+ if(!S.program.length){toast("أضف أمرًا واحدًا على الأقل");return}
+ const btn=$("#run");btn.disabled=true;let log=[];
+ for(const t of S.program){
+  S.used++;S.xp+=10;
+  if(t==="move"){S.player.x=Math.max(-18,Math.min(18,S.player.x+Math.cos(S.rotation*Math.PI/2)));S.player.z=Math.max(-18,Math.min(18,S.player.z+Math.sin(S.rotation*Math.PI/2)));S.steps++;log.push("تحرك");await animatePlayer("move")}
+  if(t==="turn"){S.rotation=(S.rotation+1)%4;log.push("استدارة");await animatePlayer("turn")}
+  if(t==="jump"){log.push("قفز");await animatePlayer("jump")}
+  if(t==="repeat"){for(let i=0;i<3;i++){S.player.x=Math.max(-18,Math.min(18,S.player.x+Math.cos(S.rotation*Math.PI/2)));S.player.z=Math.max(-18,Math.min(18,S.player.z+Math.sin(S.rotation*Math.PI/2)));S.steps++;await animatePlayer("move")}unlock("loop");log.push("تكرار ×3")}
+  if(t==="collect"){S.wood++;S.gem++;unlock("collector");log.push("جمع");await animatePulse()}
+  if(t==="plant"){if(S.seeds>0){S.seeds--;S.plants.push({x:S.player.x,z:S.player.z});unlock("gardener");log.push("زراعة");await animateWorldAction("plant")}else log.push("لا توجد بذور")}
+  if(t==="build"){if(S.wood>=3&&!S.house){S.wood-=3;S.house=true;unlock("builder");log.push("بناء");await animateWorldAction("build")}else if(S.house){log.push("المنزل موجود")}else log.push("تحتاج 3 أخشاب")}
+  save();updateUI();drawAll();
+ }
+ S.ran=true;unlock("first");save();updateUI();drawAll();$("#worldState").textContent="تم التنفيذ ✓";$("#output").textContent="✓ "+log.join(" · ");toast("تم التنفيذ · +"+S.program.length*10+" XP");btn.disabled=false;
+}
+$("#run").onclick=run;
+function resetWorld(){S.player={x:0,z:0};S.rotation=0;S.plants=[];S.house=false;save();updateUI();drawAll();toast("أعيد العالم فقط — تقدمك محفوظ")}
+$("#reset").onclick=resetWorld;
+function explore(){S.player.x=((S.player.x+1+5)%5)-2;S.player.z=((S.player.z+1+5)%5)-2;S.explores++;unlock("explorer");save();updateUI();drawAll();toast("اكتشفت مكانًا جديدًا")}
+$("#explore").onclick=explore;
+$$("[data-explore]").forEach(b=>b.onclick=explore);
+$("#fullscreen").onclick=()=>{const el=$(".worldFrame");if(!document.fullscreenElement)el.requestFullscreen?.();else document.exitFullscreen?.()};
+$("#begin").onclick=()=>{$("#workspace").scrollIntoView({behavior:"smooth",block:"start"});toast("ابدأ باختيار 2 أو 3 أوامر")};
+$("#how").onclick=()=>modal("كيف تلعب؟","اختر البلوكات أو اسحبها إلى البرنامج، ثم شغّلها. الموارد والإنجازات والبرنامج تُحفظ تلقائيًا على جهازك. أمر البناء يحتاج 3 أخشاب فعلية؛ وإعادة العالم لا تمسح تقدمك.");
+
+function level(){return Math.floor(S.xp/100)+1}
+function updateUI(){
+ const a=Object.keys(S.ach).length;
+ $("#xpStat").textContent=S.xp+" XP";$("#xpTop").textContent=S.xp+" XP";$("#level").textContent=level();$("#usedStat").textContent=S.used;$("#woodStat").textContent=S.wood;$("#wood").textContent=S.wood;$("#gem").textContent=S.gem;$("#seed").textContent=S.seeds;$("#fish").textContent=S.fish||0;$("#food").textContent=S.food||0;$("#achStat").textContent=a+" / "+ACH.length;
+ $("#p1").style.width=(S.steps>0?100:0)+"%";$("#p2").style.width=(S.ach.loop&&S.ach.collector?100:0)+"%";$("#p3").style.width=(S.ach.gardener||S.house?100:0)+"%";
+ $("#c1").textContent=S.steps?"✓":"○";$("#c2").textContent=S.ach.loop&&S.ach.collector?"✓":"🔒";$("#c3").textContent=S.ach.gardener||S.house?"✓":"🔒";
+ $("#worldLevel").textContent=level();$("#wood2").textContent=S.wood;$("#gem2").textContent=S.gem;
+ renderAchievements();renderTasks();renderLibrary();renderProject();renderSettings();
+}
+function renderAchievements(){
+ const html=ACH.map(a=>'<div class="card '+(S.ach[a[0]]?"":"locked")+'"><div class="big">'+a[1]+'</div><b>'+a[2]+'</b><small>'+(S.ach[a[0]]?"✓ مكتمل":a[3])+'</small></div>').join("");
+ $("#achievementCards").innerHTML=html;$("#allAchievements").innerHTML=ACH.map(a=>'<div class="panel feature '+(S.ach[a[0]]?"":"locked")+'"><div style="font-size:28px">'+a[1]+'</div><h3>'+a[2]+'</h3><p>'+a[3]+'<br><strong>'+(S.ach[a[0]]?"✓ تم فتحه":"غير مكتمل")+'</strong></p></div>').join("");
+}
+function renderTasks(){
+ const tasks=[["تحرك","نفّذ أمر تحرك",S.steps>0],["اجمع","اجمع خشبًا",S.ach.collector],["كرر","استخدم التكرار",S.ach.loop],["ازرع","ازرع بذرة",S.ach.gardener],["ابنِ","اجمع 3 أخشاب وابنِ",S.house],["استكشف","حرّك الكاميرا أو الشخصية",S.ach.explorer]];
+ $("#taskCards").innerHTML=tasks.map(x=>'<div class="panel feature"><div style="font-size:26px">'+(x[2]?"✅":"🎯")+'</div><h3>'+x[0]+'</h3><p>'+x[1]+'<br><strong>'+(x[2]?"مكتملة":"قيد التنفيذ")+'</strong></p></div>').join("");
+}
+function renderLibrary(){
+ const d={move:"تحريك الشخصية خطوة إلى الأمام.",turn:"تغيير اتجاه الشخصية.",jump:"تنفيذ قفزة مرئية.",repeat:"تنفيذ الحركة للأمام 3 مرات.",collect:"الحصول على خشب وجوهرة.",plant:"استهلاك بذرة وزراعة نبات.",build:"بناء منزل مقابل 3 أخشاب."};
+ $("#libraryCards").innerHTML=Object.keys(TYPES).map(k=>'<div class="panel feature"><div style="font-size:25px">'+TYPES[k].label.split(" ")[0]+'</div><h3>'+TYPES[k].label.slice(TYPES[k].label.indexOf(" ")+1)+'</h3><p>'+d[k]+'</p></div>').join("");
+}
+function renderProject(){
+ $("#projectInfo").innerHTML='<div class="row"><div class="ico">🗂</div><div class="grow"><b>مغامرتي الأولى</b><small>'+S.program.length+' أمر · '+S.xp+' XP · '+Object.keys(S.ach).length+' إنجازات</small></div><span>محفوظ ✓</span></div><div class="row"><div class="ico">💾</div><div class="grow"><b>حفظ محلي</b><small>لا توجد حسابات أو خوادم؛ بياناتك تبقى في هذا المتصفح.</small></div></div>';
+}
+function renderSettings(){
+ const set=(id,on)=>{const e=$("#"+id);if(!e)return;e.classList.toggle("on",on);e.querySelector("span").style.transform=on?"translateX(-18px)":"translateX(0)"};
+ set("keyboardToggle",S.settings.keyboard);set("hintToggle",S.settings.hints);
+ $(".canvasHint").style.display=S.settings.hints?"block":"none";
+}
+function factory(){
+ if(!confirm("سيتم حذف كل البرنامج والموارد والإنجازات. هل تريد المتابعة؟"))return;
+ S=structuredClone(defaultState);history=[];save();renderProgram();updateUI();toast("تم مسح التقدم بالكامل");
+}
+$("#newProject").onclick=()=>{if(S.program.length&&!confirm("بدء مشروع جديد؟ سيتم حذف البرنامج فقط مع إبقاء الإنجازات والموارد."))return;S.program=[];history=[];save();renderProgram();updateUI();showPage("home");toast("بدأ مشروع جديد")};
+$("#keyboardToggle").onclick=()=>{S.settings.keyboard=!S.settings.keyboard;save();updateUI()};
+$("#hintToggle").onclick=()=>{S.settings.hints=!S.settings.hints;save();updateUI()};
+$("#factoryReset").onclick=factory;
+
+function showPage(id){
+ $$(".section").forEach(s=>s.classList.toggle("active",s.id===id));$$(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));window.scrollTo({top:0,behavior:"smooth"});drawAll();
+}
+$$(".nav").forEach(n=>n.onclick=()=>showPage(n.dataset.page));
+$$("[data-home]").forEach(b=>b.onclick=()=>showPage("home"));
+document.addEventListener("keydown",e=>{if(!S.settings.keyboard||e.target.matches("input,textarea,button"))return;const k=e.key;if(!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(k))return;e.preventDefault();if(k==="ArrowUp")S.player.z=Math.max(-18,S.player.z-1);if(k==="ArrowDown")S.player.z=Math.min(18,S.player.z+1);if(k==="ArrowLeft")S.player.x=Math.max(-18,S.player.x-1);if(k==="ArrowRight")S.player.x=Math.min(18,S.player.x+1);S.steps++;save();updateUI();drawAll()});
+
+let THREE=null;
+const worlds=new Map();
+async function init3D(){
+  try{
+    THREE=await import("https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js");
+    setup3D($("#worldCanvas"));
+    setup3D($("#worldCanvas2"));
+    drawAll();
+  }catch(err){
+    console.error(err);
+    $("#worldState").textContent="وضع احتياطي";
+    $("#output").textContent="● تعذر تحميل محرك الرسوميات ثلاثي الأبعاد؛ بقية الموقع تعمل بصورة طبيعية.";
+  }
+}
+function setup3D(canvas){
+  if(!canvas||!THREE||worlds.has(canvas))return;
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:"high-performance"});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  const scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x8bcbd0);
+  scene.fog=new THREE.Fog(0x8bcbd0,28,75);
+  const camera=new THREE.PerspectiveCamera(52,1,.1,120);
+  camera.position.set(13,11,16);
+  const hemi=new THREE.HemisphereLight(0xdffcff,0x345448,2.2);scene.add(hemi);
+  const sun=new THREE.DirectionalLight(0xfff2ce,3.2);sun.position.set(-12,22,10);sun.castShadow=true;
+  sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-30;sun.shadow.camera.right=30;sun.shadow.camera.top=30;sun.shadow.camera.bottom=-30;scene.add(sun);
+  const world={renderer,scene,camera,target:new THREE.Vector3(0,0,0),yaw:.7,pitch:.42,distance:34,drag:false,lx:0,ly:0,player:null,interactive:[]};
+  createWorld(world);
+  worlds.set(canvas,world);
+  resize3D(world);
+  canvas.addEventListener("pointerdown",e=>{world.drag=true;world.lx=e.clientX;world.ly=e.clientY;canvas.setPointerCapture(e.pointerId)});
+  canvas.addEventListener("pointermove",e=>{
+    if(!world.drag)return;
+    world.yaw-=(e.clientX-world.lx)*.008;world.pitch=Math.max(.15,Math.min(1.15,world.pitch+(e.clientY-world.ly)*.006));
+    world.lx=e.clientX;world.ly=e.clientY;render3D(world);
+  });
+  ["pointerup","pointercancel"].forEach(k=>canvas.addEventListener(k,()=>world.drag=false));
+  canvas.addEventListener("wheel",e=>{e.preventDefault();world.distance=Math.max(14,Math.min(68,world.distance+e.deltaY*.025));render3D(world)},{passive:false});canvas.addEventListener("dblclick",()=>{if(typeof updateNearby==="function")updateNearby()});
+}
+function mat(color,rough=.85){
+  return new THREE.MeshStandardMaterial({color,roughness:rough,metalness:.05});
+}
+function box(world,w,h,d,color,x,y,z,opts={}){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color,opts.roughness??.85));
+  m.position.set(x,y,z);m.castShadow=opts.shadow!==false;m.receiveShadow=true;world.scene.add(m);return m;
+}
+function createWorld(w){
+ const ground=box(w,90,.7,90,0x4f9b72,0,-.45,0,{shadow:false});box(w,86,.18,86,0x78bd70,0,-.02,0,{shadow:false});
+ const water=new THREE.Mesh(new THREE.PlaneGeometry(25,86),new THREE.MeshStandardMaterial({color:0x3fadc4,roughness:.16,transparent:true,opacity:.9}));water.rotation.x=-Math.PI/2;water.position.set(-23,.05,0);w.scene.add(water);
+ for(let z=-38;z<=38;z+=5){const wave=new THREE.Mesh(new THREE.TorusGeometry(.8,.05,6,18),new THREE.MeshBasicMaterial({color:0x9deaf1,transparent:true,opacity:.55}));wave.rotation.x=Math.PI/2;wave.position.set(-23,.16,z);w.scene.add(wave)}
+ const path=new THREE.Mesh(new THREE.PlaneGeometry(7,78),mat(0xd7bd83));path.rotation.x=-Math.PI/2;path.position.set(1,.08,0);w.scene.add(path);
+ for(let i=0;i<18;i++){const r=2+(i%4)*1.3;const h=new THREE.Mesh(new THREE.SphereGeometry(r,20,14),mat(i%2?0x4b916f:0x5aa27b));h.scale.y=.65;h.position.set(-40+(i*13)%80,r*.42,-40+(i*19)%80);h.receiveShadow=true;w.scene.add(h)}
+ for(let i=0;i<45;i++){const x=-40+(i*17)%80,z=-38+(i*29)%76;if(Math.abs(x)<10&&Math.abs(z)<12)continue;createTree(w,x,z,.85+(i%5)*.13)}
+ for(let i=0;i<30;i++){const rock=new THREE.Mesh(new THREE.DodecahedronGeometry(.35+(i%4)*.2,0),mat(0x71858a));rock.scale.y=.6;rock.position.set(-40+(i*23)%80,.3,-40+(i*31)%80);rock.rotation.set(i*.3,i*.7,i*.2);w.scene.add(rock)}
+ for(let z=-30;z<=30;z+=6)createLamp(w,5,z);
+ w.house=createHouse(w,10,-4);w.house.visible=!!S.house;w.plantPool=[];for(let i=0;i<30;i++){const p=createPlant3D(w,0,0);p.visible=false;w.plantPool.push(p)}
+ w.animals=[];for(let i=0;i<8;i++)w.animals.push(createAnimal(w,8+(i*7)%28,-28+(i*13)%56,i%2?"rabbit":"deer"));for(let i=0;i<7;i++)w.animals.push(createAnimal(w,-19+(i*6)%12,-28+(i*9)%56,"fish"));
+ createInteractive(w,"🌳","شجرة","قطع","cut",17,7);createInteractive(w,"🚪","البيت","دخول","enter",10,-4);createInteractive(w,"💧","النهر","شرب","drink",-23,0);createInteractive(w,"🧑‍🌾","الحارس","تحدث","talk",7,12);createInteractive(w,"🐟","منطقة الصيد","صيد","fish",-18,8);createInteractive(w,"🪨","صخرة","تعدين","mine",-4,-12);createInteractive(w,"🌀","البوابة","دخول","portal",-12,14);
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(2.4,.22,16,56),mat(0x9b7cff,.3));ring.position.set(-12,2.6,14);ring.rotation.x=Math.PI/2;w.scene.add(ring);
+ const core=new THREE.Mesh(new THREE.CircleGeometry(2.1,48),new THREE.MeshBasicMaterial({color:0x493cbd,transparent:true,opacity:.5,side:THREE.DoubleSide}));core.position.set(-12,2.6,14);core.rotation.x=Math.PI/2;w.scene.add(core);
+ const p=new THREE.Group();const body=new THREE.Mesh(new THREE.CapsuleGeometry(.5,1,6,12),mat(0x3d83e8));body.position.y=1.15;p.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.5,20,16),mat(0xf0b889));head.position.y=2.1;p.add(head);const visor=new THREE.Mesh(new THREE.BoxGeometry(.65,.2,.08),new THREE.MeshStandardMaterial({color:0x172b43,metalness:.2,roughness:.25}));visor.position.set(0,2.13,.46);p.add(visor);const backpack=new THREE.Mesh(new THREE.BoxGeometry(.58,.8,.25),mat(0x253b5e));backpack.position.set(0,1.15,-.46);p.add(backpack);w.scene.add(p);w.player=p;
+ const sky=new THREE.Mesh(new THREE.SphereGeometry(44,24,16),new THREE.MeshBasicMaterial({color:0x7fcbd1,side:THREE.BackSide}));w.scene.add(sky);
+}
+function createTree(w,x,z,s){
+  const g=new THREE.Group();g.position.set(x,0,z);
+  const trunk=box(w,.48,2,.48,0x704a31,0,1,0);g.add(trunk);trunk.castShadow=true;
+  for(let i=0;i<3;i++){const crown=new THREE.Mesh(new THREE.SphereGeometry(1.35-(i*.15),16,12),mat(i===1?0x2f8c62:0x3aa06c));crown.position.set((i-1)*.55,2.2+(i%2)*.55,(i%2)*.35);crown.scale.y=.9;crown.castShadow=true;g.add(crown)}
+  g.scale.setScalar(s);w.scene.add(g);
+}
+function createLamp(w,x,z){
+  const pole=box(w,.12,2.8,.12,0x334858,x,1.4,z);pole.castShadow=true;
+  const light=new THREE.PointLight(0xffd77d,1.4,6);light.position.set(x,2.9,z);w.scene.add(light);
+  const bulb=new THREE.Mesh(new THREE.SphereGeometry(.18,12,10),new THREE.MeshStandardMaterial({color:0xffdf91,emissive:0xffa83d,emissiveIntensity:2}));bulb.position.copy(light.position);w.scene.add(bulb);
+}
+function createHouse(w,x,z){const g=new THREE.Group();g.position.set(x,0,z);const body=box(w,6,3.4,5.2,0xd09258,0,1.7,0);g.add(body);const roof=new THREE.Mesh(new THREE.ConeGeometry(4.2,2.4,4),mat(0x704a52));roof.rotation.y=Math.PI/4;roof.position.set(0,4.5,0);roof.scale.z=.75;g.add(roof);g.add(box(w,1.1,2.1,.12,0x55372f,0,1.05,-2.62));g.add(box(w,1.1,1,.1,0x8bd7dc,-2,1.9,-2.64),box(w,1.1,1,.1,0x8bd7dc,2,1.9,-2.64));w.scene.add(g);return g;}
+
+function createPlant3D(w,x,z){const g=new THREE.Group();g.position.set(x,0,z);g.add(box(w,.08,.75,.08,0x2e8759,0,.38,0));for(const dx of [-.18,.18]){const leaf=new THREE.Mesh(new THREE.SphereGeometry(.23,10,8),mat(0x35c77a));leaf.scale.set(1,.45,1.5);leaf.position.set(dx,.65,0);g.add(leaf)}w.scene.add(g);return g;}
+function createAnimal(w,x,z,type){const g=new THREE.Group();g.position.set(x,.2,z);g.userData={baseX:x,baseZ:z,phase:(x+z)%7};const fish=type==="fish";g.add(box(w,fish?1.1:.9,fish?.35:.65,fish?.35:.5,fish?0x55c9e5:0xc88b5b,0,.45,0));if(!fish){g.add(box(w,.55,.5,.5,0xd7a06d,.55,.65,0));g.add(box(w,.12,.25,.12,0x9d6649,.62,.95,-.2),box(w,.12,.25,.12,0x9d6649,.62,.95,.2));}else g.add(box(w,.2,.5,.5,0x3d93bd,-.65,.45,0));w.scene.add(g);return g;}
+function createInteractive(w,icon,label,verb,action,x,z){const g=new THREE.Group();g.position.set(x,0,z);g.userData={icon,label,verb,action,x,z};g.add(box(w,.12,1.8,.12,0x304b5a,0,.9,0));const m=new THREE.Mesh(new THREE.SphereGeometry(.42,14,12),new THREE.MeshStandardMaterial({color:0x58e0d0,emissive:0x174b49,emissiveIntensity:1.5}));m.position.y=2;g.add(m);w.scene.add(g);w.interactive.push(g);}
+function updateNearby(){let best=null,d0=Infinity;for(const w of worlds.values())for(const g of w.interactive||[]){const d=Math.hypot(S.player.x-g.userData.x,S.player.z-g.userData.z);if(d<4&&d<d0){best=g.userData;d0=d}}const e=$("#nearby"),a=$("#nearbyActions");if(!e||!a)return;if(!best){e.hidden=true;return}e.hidden=false;a.innerHTML='<button>'+best.icon+' '+best.verb+' '+best.label+'</button>';a.firstElementChild.onclick=()=>performInteraction(best.action);}
+function performInteraction(action){
+ if(action==="cut"){S.wood++;toast("🪵 قطعت خشبًا");}
+ else if(action==="enter"){toast("🏠 دخلت البيت");}
+ else if(action==="drink"){S.food=(S.food||0)+1;toast("💧 شربت من النهر");}
+ else if(action==="talk"){S.xp+=15;toast("🧑‍🌾 تحدثت مع الحارس · +15 XP");}
+ else if(action==="fish"){S.fish=(S.fish||0)+1;S.gem++;toast("🎣 اصطدت سمكة");}
+ else if(action==="mine"){S.gem++;toast("⛏ حصلت على جوهرة");}
+ else if(action==="portal"){toast("🌀 البوابة ستفتح منطقة جديدة لاحقًا");}
+ save();updateUI();drawAll();
+}
+
+function animatePlayer(type){return new Promise(resolve=>{const start=performance.now();for(const w of worlds.values())w.anim={type,start,duration:type==="jump"?550:420};function tick(now){let done=true;for(const w of worlds.values()){const p=Math.min(1,(now-w.anim.start)/w.anim.duration);w.anim.p=p;render3D(w);if(p<1)done=false}if(!done)requestAnimationFrame(tick);else{for(const w of worlds.values())w.anim=null;resolve()}}requestAnimationFrame(tick)})}
+function animatePulse(){return new Promise(r=>setTimeout(r,280))}
+function animateWorldAction(type){for(const w of worlds.values())w.actionAnim={type,start:performance.now()};return new Promise(r=>setTimeout(r,700))}
+
+function resize3D(w){
+  const r=w.renderer.domElement.getBoundingClientRect(),width=Math.max(1,r.width),height=Math.max(1,r.height);
+  w.renderer.setSize(width,height,false);w.camera.aspect=width/height;w.camera.updateProjectionMatrix();
+}
+function render3D(w){if(!THREE)return;const c=w.camera,h=Math.cos(w.pitch)*w.distance;c.position.set(Math.cos(w.yaw)*h,Math.sin(w.pitch)*w.distance,Math.sin(w.yaw)*h);c.lookAt(w.target);if(w.player){w.player.position.x=S.player.x*1.7;w.player.position.z=S.player.z*1.7;w.player.position.y=w.anim&&w.anim.type==="jump"?Math.sin(w.anim.p*Math.PI)*2.2:0;w.player.rotation.y=S.rotation*Math.PI/2}if(w.house){w.house.visible=!!S.house;if(S.house&&w.actionAnim?.type==="build"){const p=Math.min(1,(performance.now()-w.actionAnim.start)/700);w.house.scale.setScalar(.2+.8*p)}}if(w.plantPool)w.plantPool.forEach((p,i)=>{const s=S.plants[i];p.visible=!!s;if(s){p.position.x=s.x*1.7;p.position.z=s.z*1.7}});if(w.animals)w.animals.forEach(a=>{a.position.x=a.userData.baseX+Math.sin(performance.now()/1800+a.userData.phase)*.8;a.position.z=a.userData.baseZ+Math.cos(performance.now()/2100+a.userData.phase)*.5});w.renderer.render(w.scene,c);}
+
+function drawAll(){for(const w of worlds.values()){resize3D(w);render3D(w)}}
+window.addEventListener("resize",drawAll);
+init3D();
+renderProgram();updateUI();setTimeout(updateNearby,500);
+</script>
 </body>
 </html>
