@@ -25,14 +25,14 @@ function setup3D(canvas){
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
   const scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x87a9ad);
-  scene.fog=new THREE.FogExp2(0x8ba6a4,.0085);
+  scene.background=new THREE.Color(0x73b5c0);
+  scene.fog=new THREE.FogExp2(0x78a99c,.0062);
 
   const camera=new THREE.PerspectiveCamera(58,1,.1,220);
   const hemi=new THREE.HemisphereLight(0xc9e5e4,0x18271f,1.65);
   scene.add(hemi);
-  const sun=new THREE.DirectionalLight(0xffe2ad,3.8);
-  sun.position.set(-35,55,25);sun.castShadow=true;
+  const sun=new THREE.DirectionalLight(0xffd29a,4.5);
+  sun.position.set(-45,70,20);sun.castShadow=true;
   sun.shadow.mapSize.set(2048,2048);
   sun.shadow.camera.left=-55;sun.shadow.camera.right=55;sun.shadow.camera.top=55;sun.shadow.camera.bottom=-55;
   sun.shadow.camera.near=1;sun.shadow.camera.far=150;
@@ -46,13 +46,21 @@ function setup3D(canvas){
     actionAnim:null,anim:null,keys:{},time:0,velocity:new THREE.Vector3(),groundY:0,jump:0,jumpT:0
   };
   createCinematicWorld(world);
+  world.fps=true;
   worlds.set(canvas,world);
   resize3D(world);
   const frame=()=>{world._raf=requestAnimationFrame(frame);render3D(world)};
   frame();
 
   canvas.addEventListener("pointerdown",e=>{
+    if(world.fps && document.pointerLockElement!==canvas){canvas.requestPointerLock?.();return}
     world.drag=true;world.lx=e.clientX;world.ly=e.clientY;canvas.setPointerCapture?.(e.pointerId);
+  });
+  document.addEventListener("mousemove",e=>{
+    if(world.fps && document.pointerLockElement===canvas){
+      world.yaw-=e.movementX*.0028;
+      world.pitch=Math.max(-.35,Math.min(.65,world.pitch-e.movementY*.0022));
+    }
   });
   canvas.addEventListener("pointermove",e=>{
     if(!world.drag)return;
@@ -309,19 +317,21 @@ function render3D(w){
     if(moving)w.player.rotation.y=Math.atan2(w.velocity.x,w.velocity.z)+Math.PI;
     const bob=moving?Math.sin(w.time*11)*.045:Math.sin(w.time*2)*.012;
     w.player.position.y+=bob;
+    w.player.visible=!w.fps;
   }
 
-  // cinematic over-the-shoulder camera
-  const targetX=px,targetZ=pz;
-  const shoulder=new THREE.Vector3(
-    targetX-Math.sin(w.yaw)*w.distance,
-    3.2+w.distance*.17,
-    targetZ-Math.cos(w.yaw)*w.distance
-  );
-  shoulder.y+=Math.sin(w.pitch)*w.distance*.8;
-  w.camera.position.lerp(shoulder,.12);
-  w.target.set(targetX,1.35,targetZ);
-  w.camera.lookAt(w.target);
+  // Tropical first-person adventure camera.
+  const eyeY=1.62+(w.jump?Math.sin(w.jumpT*Math.PI)*1.45:0)+(moving?Math.sin(w.time*10)*.025:0);
+  const targetX=px+Math.sin(w.yaw)*8;
+  const targetZ=pz+Math.cos(w.yaw)*8;
+  if(w.fps){
+    w.camera.position.lerp(new THREE.Vector3(px,eyeY,pz),.28);
+    w.camera.lookAt(targetX,eyeY+Math.sin(w.pitch)*7,targetZ);
+  }else{
+    const shoulder=new THREE.Vector3(targetX-Math.sin(w.yaw)*w.distance,3.2+w.distance*.17,targetZ-Math.cos(w.yaw)*w.distance);
+    shoulder.y+=Math.sin(w.pitch)*w.distance*.8;
+    w.camera.position.lerp(shoulder,.12);w.target.set(px,1.35,pz);w.camera.lookAt(w.target);
+  }
 
   if(w.water)w.water.material.opacity=.82+Math.sin(w.time*1.5)*.04;
   if(w.portal){w.portal.rotation.z=w.time*.35;w.portal.scale.setScalar(1+Math.sin(w.time*2)*.035)}
