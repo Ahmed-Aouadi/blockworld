@@ -184,6 +184,8 @@ function createCinematicWorld(w){
   const scarf=new THREE.Mesh(new THREE.TorusGeometry(.38,.07,8,20),material(0xa24b37,.8));scarf.position.y=1.8;scarf.rotation.x=Math.PI/2;p.add(scarf);
   p.castShadow=true;w.scene.add(p);w.player=p;
 
+  w.house=createAdventureCamp(w,12,-4);w.house.visible=!!S.house;
+  w.plantPool=[];for(let i=0;i<30;i++){const plant=createAdventurePlant(w,0,0);plant.visible=false;w.plantPool.push(plant)}
   // portal
   const ring=new THREE.Mesh(new THREE.TorusGeometry(2.3,.18,16,48),material(0x69e3d7,.32,0.25));
   ring.position.set(-18,2.5,28);ring.rotation.x=Math.PI/2;w.scene.add(ring);w.portal=ring;
@@ -199,6 +201,21 @@ function createCinematicWorld(w){
   }
 }
 
+function createAdventureCamp(w,x,z){
+  const g=new THREE.Group();g.position.set(x,0,z);
+  const base=box(w,6,.45,5.2,0x4c4034,0,.22,0);g.add(base);
+  const wall=box(w,5.5,2.8,.25,0x6b503a,0,1.7,-2.45);g.add(wall);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(3.9,2.3,4),material(0x39483f,.9));roof.rotation.y=Math.PI/4;roof.position.y=4.2;roof.scale.z=.78;roof.castShadow=true;g.add(roof);
+  const fire=new THREE.Mesh(new THREE.CylinderGeometry(.8,.95,.18,18),material(0x25211e));fire.position.set(0,.4,2);g.add(fire);
+  const flame=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),new THREE.MeshStandardMaterial({color:0xff9d3b,emissive:0xff5317,emissiveIntensity:3}));flame.position.set(0,1,2);g.add(flame);
+  w.scene.add(g);return g;
+}
+function createAdventurePlant(w,x,z){
+  const g=new THREE.Group();g.position.set(x,0,z);
+  const stem=box(w,.08,.7,.08,0x3f7045,0,.35,0);g.add(stem);
+  for(const dx of [-.2,.2]){const leaf=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),material(0x5f9b55,.96));leaf.scale.set(1,.45,1.4);leaf.position.set(dx,.62,0);g.add(leaf)}
+  w.scene.add(g);return g;
+}
 function createJungleTree(w,x,z,s){
   const g=new THREE.Group();g.position.set(x,0,z);
   const trunk=box(w,.42*s,3.6*s,.42*s,0x5b3d2b,0,1.8*s,0);g.add(trunk);
