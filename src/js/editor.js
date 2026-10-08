@@ -8,7 +8,7 @@ function add(type){if(S.program.length>=15){toast("الحد الأقصى 15 أم
 function commit(){save();renderProgram();updateUI()}
 $$(".block").forEach(b=>{b.onclick=()=>add(b.dataset.type);b.draggable=true;b.addEventListener("dragstart",e=>e.dataTransfer.setData("text/plain",b.dataset.type))});
 $("#zone").addEventListener("dragover",e=>e.preventDefault());
-$("#zone").addEventListener("drop",e=>{e.preventDefault();const t=e.dataTransfer.getData("text/plain");if(TYPES[t])add(t)});
+$("#zone").addEventListener("drop",e=>{e.preventDefault();const idx=e.dataTransfer.getData("text/x-block-index");if(idx!==""){const from=Number(idx);const target=[...$("#zone").querySelectorAll(".placed")].findIndex(el=>{const r=el.getBoundingClientRect();return e.clientY<r.top+r.height/2});if(from>=0&&from<S.program.length){history.push([...S.program]);const [item]=S.program.splice(from,1);const insert=target<0?S.program.length:Math.min(target,S.program.length);S.program.splice(insert,0,item);commit();toast("تم تغيير ترتيب البلوك")};return}const t=e.dataTransfer.getData("text/plain");if(TYPES[t])add(t)});
 $("#undo").onclick=()=>{if(!history.length){toast("لا يوجد شيء للتراجع عنه");return}S.program=history.pop();commit();toast("تم التراجع")};
 $("#clear").onclick=()=>{if(!S.program.length)return;history.push([...S.program]);S.program=[];commit();$("#output").textContent="● مساحة البرنامج فارغة."};
 
