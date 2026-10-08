@@ -270,7 +270,7 @@ function setup3D(canvas){
   const hemi=new THREE.HemisphereLight(0xdffcff,0x345448,2.2);scene.add(hemi);
   const sun=new THREE.DirectionalLight(0xfff2ce,3.2);sun.position.set(-12,22,10);sun.castShadow=true;
   sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-30;sun.shadow.camera.right=30;sun.shadow.camera.top=30;sun.shadow.camera.bottom=-30;scene.add(sun);
-  const world={renderer,scene,camera,target:new THREE.Vector3(0,0,0),yaw:.7,pitch:.42,distance:34,drag:false,lx:0,ly:0,player:null};
+  const world={renderer,scene,camera,target:new THREE.Vector3(0,0,0),yaw:.7,pitch:.42,distance:34,drag:false,lx:0,ly:0,player:null,interactive:[]};
   createWorld(world);
   worlds.set(canvas,world);
   resize3D(world);
@@ -324,7 +324,17 @@ function createPlant3D(w,x,z){const g=new THREE.Group();g.position.set(x,0,z);g.
 function createAnimal(w,x,z,type){const g=new THREE.Group();g.position.set(x,.2,z);g.userData={baseX:x,baseZ:z,phase:(x+z)%7};const fish=type==="fish";g.add(box(w,fish?1.1:.9,fish?.35:.65,fish?.35:.5,fish?0x55c9e5:0xc88b5b,0,.45,0));if(!fish){g.add(box(w,.55,.5,.5,0xd7a06d,.55,.65,0));g.add(box(w,.12,.25,.12,0x9d6649,.62,.95,-.2),box(w,.12,.25,.12,0x9d6649,.62,.95,.2));}else g.add(box(w,.2,.5,.5,0x3d93bd,-.65,.45,0));w.scene.add(g);return g;}
 function createInteractive(w,icon,label,verb,action,x,z){const g=new THREE.Group();g.position.set(x,0,z);g.userData={icon,label,verb,action,x,z};g.add(box(w,.12,1.8,.12,0x304b5a,0,.9,0));const m=new THREE.Mesh(new THREE.SphereGeometry(.42,14,12),new THREE.MeshStandardMaterial({color:0x58e0d0,emissive:0x174b49,emissiveIntensity:1.5}));m.position.y=2;g.add(m);w.scene.add(g);w.interactive.push(g);}
 function updateNearby(){let best=null,d0=Infinity;for(const w of worlds.values())for(const g of w.interactive||[]){const d=Math.hypot(S.player.x-g.userData.x,S.player.z-g.userData.z);if(d<4&&d<d0){best=g.userData;d0=d}}const e=$("#nearby"),a=$("#nearbyActions");if(!e||!a)return;if(!best){e.hidden=true;return}e.hidden=false;a.innerHTML='<button>'+best.icon+' '+best.verb+' '+best.label+'</button>';a.firstElementChild.onclick=()=>performInteraction(best.action);}
-function performInteraction(action){if(action==="cut"){S.wood++;toast("🪵 قطعت خشبًا")}else if(action==="enter")toast("🏠 دخلت البيت")else if(action==="drink"){S.food=(S.food||0)+1;toast("💧 شربت من النهر")}else if(action==="talk"){S.xp+=15;toast("🧑‍🌾 تحدثت مع الحارس · +15 XP")}else if(action==="fish"){S.fish=(S.fish||0)+1;S.gem++;toast("🎣 اصطدت سمكة")}else if(action==="mine"){S.gem++;toast("⛏ حصلت على جوهرة")}else toast("🌀 البوابة ستفتح منطقة جديدة لاحقًا");save();updateUI();drawAll();}
+function performInteraction(action){
+ if(action==="cut"){S.wood++;toast("🪵 قطعت خشبًا");}
+ else if(action==="enter"){toast("🏠 دخلت البيت");}
+ else if(action==="drink"){S.food=(S.food||0)+1;toast("💧 شربت من النهر");}
+ else if(action==="talk"){S.xp+=15;toast("🧑‍🌾 تحدثت مع الحارس · +15 XP");}
+ else if(action==="fish"){S.fish=(S.fish||0)+1;S.gem++;toast("🎣 اصطدت سمكة");}
+ else if(action==="mine"){S.gem++;toast("⛏ حصلت على جوهرة");}
+ else if(action==="portal"){toast("🌀 البوابة ستفتح منطقة جديدة لاحقًا");}
+ save();updateUI();drawAll();
+}
+
 function animatePlayer(type){return new Promise(resolve=>{const start=performance.now();for(const w of worlds.values())w.anim={type,start,duration:type==="jump"?550:420};function tick(now){let done=true;for(const w of worlds.values()){const p=Math.min(1,(now-w.anim.start)/w.anim.duration);w.anim.p=p;render3D(w);if(p<1)done=false}if(!done)requestAnimationFrame(tick);else{for(const w of worlds.values())w.anim=null;resolve()}}requestAnimationFrame(tick)})}
 function animatePulse(){return new Promise(r=>setTimeout(r,280))}
 function animateWorldAction(type){for(const w of worlds.values())w.actionAnim={type,start:performance.now()};return new Promise(r=>setTimeout(r,700))}
