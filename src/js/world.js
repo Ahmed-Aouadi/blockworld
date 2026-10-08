@@ -64,6 +64,14 @@ function setup3D(canvas){
     world.distance=Math.max(7,Math.min(28,world.distance+e.deltaY*.018));
   },{passive:false});
 
+  $(".movePad [data-move]").forEach(btn=>{
+    const map={up:"w",down:"s",left:"a",right:"d",jump:" "},key=map[btn.dataset.move];
+    const on=()=>{world.keys[key]=true};
+    const off=()=>{world.keys[key]=false};
+    btn.addEventListener("pointerdown",e=>{e.preventDefault();on()});
+    ["pointerup","pointercancel","pointerleave"].forEach(ev=>btn.addEventListener(ev,off));
+  });
+
   if(!world._keysBound){
     world._keysBound=true;
     window.addEventListener("keydown",e=>{
