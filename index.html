@@ -370,56 +370,7 @@ function render3D(w){
 function drawAll(){for(const w of worlds.values()){resize3D(w);render3D(w)}}
 window.addEventListener("resize",drawAll);
 init3D();
-renderProgram();updateUI();drawAll();toast("تم مسح التقدم بالكامل");
-}
-$("#newProject").onclick=()=>{if(S.program.length&&!confirm("بدء مشروع جديد؟ سيتم حذف البرنامج فقط مع إبقاء الإنجازات والموارد."))return;S.program=[];history=[];save();renderProgram();updateUI();showPage("home");toast("بدأ مشروع جديد")};
-$("#keyboardToggle").onclick=()=>{S.settings.keyboard=!S.settings.keyboard;save();updateUI()};
-$("#hintToggle").onclick=()=>{S.settings.hints=!S.settings.hints;save();updateUI()};
-$("#factoryReset").onclick=factory;
-
-function showPage(id){
- $$(".section").forEach(s=>s.classList.toggle("active",s.id===id));$$(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));window.scrollTo({top:0,behavior:"smooth"});drawAll();
-}
-$$(".nav").forEach(n=>n.onclick=()=>showPage(n.dataset.page));
-$$("[data-home]").forEach(b=>b.onclick=()=>showPage("home"));
-document.addEventListener("keydown",e=>{if(!S.settings.keyboard||e.target.matches("input,textarea,button"))return;const k=e.key;if(!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(k))return;e.preventDefault();if(k==="ArrowUp")S.player.z=Math.max(-4,S.player.z-1);if(k==="ArrowDown")S.player.z=Math.min(4,S.player.z+1);if(k==="ArrowLeft")S.player.x=Math.max(-4,S.player.x-1);if(k==="ArrowRight")S.player.x=Math.min(4,S.player.x+1);S.steps++;save();updateUI();drawAll()});
-
-function setupCanvas(c){const r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);c.width=Math.max(1,r.width*d);c.height=Math.max(1,r.height*d);const x=c.getContext("2d");x.setTransform(d,0,0,d,0,0);return[x,r.width,r.height]}
-function rounded(c,x,y,w,h,r,fill){c.fillStyle=fill;c.beginPath();c.roundRect(x,y,w,h,r);c.fill()}
-function drawWorldCanvas(canvas){
- const [c,w,h]=setupCanvas(canvas);const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,"#b8e7e1");g.addColorStop(.55,"#8bd0c0");g.addColorStop(1,"#5b9f88");c.fillStyle=g;c.fillRect(0,0,w,h);
- // stylized 2D world: no fake cubes/isometric geometry
- c.save();c.translate(camera.x,camera.y);
- // distant hills
- c.fillStyle="#5a9e84";c.beginPath();c.moveTo(-100,h*.55);c.quadraticCurveTo(w*.2,h*.28,w*.42,h*.55);c.quadraticCurveTo(w*.66,h*.3,w+120,h*.54);c.lineTo(w+120,h);c.lineTo(-100,h);c.fill();
- c.fillStyle="#427b70";c.beginPath();c.moveTo(-100,h*.67);c.quadraticCurveTo(w*.25,h*.42,w*.5,h*.67);c.quadraticCurveTo(w*.75,h*.45,w+120,h*.66);c.lineTo(w+120,h);c.lineTo(-100,h);c.fill();
- // winding path
- c.strokeStyle="#e6c88b";c.lineWidth=48;c.lineCap="round";c.beginPath();c.moveTo(w*.05,h*.86);c.bezierCurveTo(w*.28,h*.68,w*.28,h*.9,w*.5,h*.68);c.bezierCurveTo(w*.68,h*.5,w*.78,h*.65,w*.98,h*.42);c.stroke();
- c.strokeStyle="#f2d9a4";c.lineWidth=40;c.stroke();
- // lake
- c.fillStyle="#4eb7cf";c.beginPath();c.ellipse(w*.78,h*.78,w*.19,h*.1,-.12,0,Math.PI*2);c.fill();c.strokeStyle="#78d7df";c.lineWidth=3;c.beginPath();c.ellipse(w*.78,h*.78,w*.14,h*.05,-.12,0,Math.PI*2);c.stroke();
- // trees
- for(let i=0;i<18;i++){let x=(i*83+35)%Math.max(100,w),y=h*.48+(i%5)*22;if(x>w*.68&&y>h*.68)continue;drawTree2(c,x,y,1+(i%3)*.12)}
- // flowers
- for(let i=0;i<18;i++){let x=(i*47+80)%Math.max(100,w),y=h*.72+(i%4)*13;c.fillStyle=i%2?"#f4d86d":"#f39ab2";c.beginPath();c.arc(x,y,3,0,Math.PI*2);c.fill();c.fillStyle="#3d8e67";c.fillRect(x-1,y,2,8)}
- // house / garden
- if(S.house){drawHouse2(c,w*.24,h*.45)}
- S.plants.forEach((p,i)=>{const x=w*.28+p.x*28,y=h*.58+p.z*18;drawPlant2(c,x,y)});
- // player
- const px=w*.5+S.player.x*30,py=h*.57+S.player.z*19;drawPlayer2(c,px,py);
- // sign
- rounded(c,w*.06,h*.2,120,34,9,"#0b2332cc");c.fillStyle="#eef8f5";c.font="bold 11px Tahoma";c.textAlign="center";c.fillText("وادي النور",w*.06+60,h*.2+22);
- c.restore();
-}
-function drawTree2(c,x,y,s){c.strokeStyle="#704b32";c.lineWidth=7*s;c.beginPath();c.moveTo(x,y+17*s);c.lineTo(x,y-5*s);c.stroke();c.fillStyle="#2e8b62";c.beginPath();c.arc(x,y-14*s,17*s,0,Math.PI*2);c.arc(x-12*s,y-8*s,12*s,0,Math.PI*2);c.arc(x+12*s,y-8*s,12*s,0,Math.PI*2);c.fill();c.fillStyle="#49b978";c.beginPath();c.arc(x-5*s,y-20*s,6*s,0,Math.PI*2);c.fill()}
-function drawPlant2(c,x,y){c.strokeStyle="#207d55";c.lineWidth=3;c.beginPath();c.moveTo(x,y+8);c.lineTo(x,y-9);c.stroke();c.fillStyle="#37c77d";c.beginPath();c.ellipse(x-5,y-6,7,4,-.5,0,Math.PI*2);c.ellipse(x+5,y-10,7,4,.5,0,Math.PI*2);c.fill()}
-function drawHouse2(c,x,y){rounded(c,x-40,y-38,80,62,7,"#b98552");c.fillStyle="#73454b";c.beginPath();c.moveTo(x-49,y-35);c.lineTo(x,y-78);c.lineTo(x+49,y-35);c.closePath();c.fill();rounded(c,x-8,y-4,16,28,3,"#53372f");rounded(c,x-30,y-24,16,13,2,"#8ed9db");rounded(c,x+14,y-24,16,13,2,"#8ed9db")}
-function drawPlayer2(c,x,y){c.fillStyle="#17304466";c.beginPath();c.ellipse(x,y+17,18,6,0,0,Math.PI*2);c.fill();c.fillStyle="#335c8d";c.fillRect(x-11,y-22,9,28);c.fillRect(x+2,y-22,9,28);c.fillStyle="#4d9bff";c.fillRect(x-14,y-48,28,29);c.fillStyle="#f1b988";c.beginPath();c.arc(x,y-57,13,0,Math.PI*2);c.fill();c.fillStyle="#2c2630";c.fillRect(x-13,y-66,26,8);c.fillStyle="#172338";c.fillRect(x-7,y-59,3,3);c.fillRect(x+4,y-59,3,3);c.strokeStyle="#d9f5ff";c.lineWidth=4;c.beginPath();c.moveTo(x-15,y-40);c.lineTo(x-23,y-27);c.moveTo(x+15,y-40);c.lineTo(x+23,y-27);c.stroke()}
-function drawAll(){drawWorldCanvas($("#worldCanvas"));drawWorldCanvas($("#worldCanvas2"))}
-function bindWorldDrag(canvas){if(!canvas)return;canvas.addEventListener("pointerdown",e=>{camera.drag=true;camera.lx=e.clientX;camera.ly=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener("pointermove",e=>{if(!camera.drag)return;camera.x=Math.max(-90,Math.min(90,camera.x+e.clientX-camera.lx));camera.y=Math.max(-50,Math.min(50,camera.y+e.clientY-camera.ly));camera.lx=e.clientX;camera.ly=e.clientY;drawAll()});canvas.addEventListener("pointerup",()=>camera.drag=false);canvas.addEventListener("pointercancel",()=>camera.drag=false)}
-bindWorldDrag($("#worldCanvas"));bindWorldDrag($("#worldCanvas2"));window.addEventListener("resize",drawAll);
-
-renderProgram();updateUI();drawAll();
+renderProgram();updateUI();
 </script>
 </body>
 </html>
