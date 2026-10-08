@@ -16,7 +16,7 @@ const ASSETS={
 async function init3D(){
   try{
     THREE=await import("https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js");
-    ({GLTFLoader}=await import("https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js"));
+    ({GLTFLoader}=await import("https://esm.sh/three@0.180.0/examples/jsm/loaders/GLTFLoader.js"));
     await Promise.all([setup3D($("#worldCanvas")),setup3D($("#worldCanvas2"))]);
     drawAll();
   }catch(err){
