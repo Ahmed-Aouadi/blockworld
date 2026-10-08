@@ -334,13 +334,13 @@ function render3D(w){
   const strafe=(k.d||k.arrowright?1:0)-(k.a||k.arrowleft?1:0);
   const moving=!!(forward||strafe);
   const sprint=k.shift?1.7:1;
-  if(moving&&S.settings?.keyboard!==false){
+  if(moving&&!S.running&&S.settings?.keyboard!==false){
     const len=Math.hypot(forward,strafe)||1, f=forward/len,s=strafe/len,fx=Math.sin(w.yaw),fz=Math.cos(w.yaw);
     const tx=(fx*f+Math.cos(w.yaw)*s)*.20*sprint, tz=(fz*f-Math.sin(w.yaw)*s)*.20*sprint;
     w.velocity.x+=(tx-w.velocity.x)*.22;w.velocity.z+=(tz-w.velocity.z)*.22;
     S.player.x=Math.max(-42,Math.min(42,S.player.x+w.velocity.x));S.player.z=Math.max(-45,Math.min(45,S.player.z+w.velocity.z));
   }else{w.velocity.x*=.78;w.velocity.z*=.78}
-  if(k[" "]&&!w.jump&&S.settings?.keyboard!==false){w.jump=1;w.jumpT=0;k[" "]=false}
+  if(k[" "]&&!w.jump&&!S.running&&S.settings?.keyboard!==false){w.jump=1;w.jumpT=0;k[" "]=false}
   if(w.jump){w.jumpT=Math.min(1,w.jumpT+.055);if(w.jumpT>=1)w.jump=0}
 
   const px=S.player.x*1.18,pz=S.player.z*1.18;
