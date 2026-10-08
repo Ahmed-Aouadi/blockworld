@@ -20,3 +20,8 @@
 
 .fpsWorld{position:relative;overflow:hidden;background:#17241f}.fpsWorld canvas{cursor:crosshair}.fpsCrosshair{position:absolute;left:50%;top:50%;width:16px;height:16px;transform:translate(-50%,-50%);pointer-events:none;z-index:40}.fpsCrosshair i{position:absolute;background:rgba(255,255,255,.9);box-shadow:0 0 4px rgba(0,0,0,.7)}.fpsCrosshair i:first-child{width:2px;height:16px;left:7px;top:0}.fpsCrosshair i:last-child{height:2px;width:16px;left:0;top:7px}.fpsHint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);padding:8px 14px;border-radius:999px;background:rgba(4,13,16,.62);color:rgba(245,255,252,.82);font-size:11px;backdrop-filter:blur(10px);pointer-events:none;z-index:35;white-space:nowrap}
 @media(max-width:720px){.fpsHint{display:none}.fpsCrosshair{transform:translate(-50%,-50%) scale(.8)}}
+
+/* Live programming state */
+.placed.running{outline:2px solid rgba(91,231,211,.95);box-shadow:0 0 0 4px rgba(91,231,211,.12),0 14px 34px rgba(0,0,0,.28);transform:translateX(-3px) scale(1.015);filter:brightness(1.15)}
+.placed.running:before{content:"▶";display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#58dfcf;color:#062028;font-size:10px;margin-inline-end:6px;box-shadow:0 0 16px rgba(88,224,208,.55)}
+.placed .blockIndex{display:flex;align-items:center;gap:5px}
