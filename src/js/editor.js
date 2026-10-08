@@ -15,19 +15,30 @@ $("#clear").onclick=()=>{if(!S.program.length)return;history.push([...S.program]
 function unlock(id){if(!S.ach[id]){S.ach[id]=true;const a=ACH.find(x=>x[0]===id);if(a)toast("🏆 إنجاز جديد: "+a[2])}}
 async function run(){
  if(!S.program.length){toast("أضف أمرًا واحدًا على الأقل");return}
- const btn=$("#run");btn.disabled=true;let log=[];
- for(const t of S.program){
-  S.used++;S.xp+=10;
-  if(t==="move"){S.player.x=Math.max(-18,Math.min(18,S.player.x+Math.cos(S.rotation*Math.PI/2)));S.player.z=Math.max(-18,Math.min(18,S.player.z+Math.sin(S.rotation*Math.PI/2)));S.steps++;log.push("تحرك");await animatePlayer("move")}
-  if(t==="turn"){S.rotation=(S.rotation+1)%4;log.push("استدارة");await animatePlayer("turn")}
-  if(t==="jump"){log.push("قفز");await animatePlayer("jump")}
-  if(t==="repeat"){for(let i=0;i<3;i++){S.player.x=Math.max(-18,Math.min(18,S.player.x+Math.cos(S.rotation*Math.PI/2)));S.player.z=Math.max(-18,Math.min(18,S.player.z+Math.sin(S.rotation*Math.PI/2)));S.steps++;await animatePlayer("move")}unlock("loop");log.push("تكرار ×3")}
-  if(t==="collect"){S.wood++;S.gem++;unlock("collector");log.push("جمع");await animatePulse()}
-  if(t==="plant"){if(S.seeds>0){S.seeds--;S.plants.push({x:S.player.x,z:S.player.z});unlock("gardener");log.push("زراعة");await animateWorldAction("plant")}else log.push("لا توجد بذور")}
-  if(t==="build"){if(S.wood>=3&&!S.house){S.wood-=3;S.house=true;unlock("builder");log.push("بناء");await animateWorldAction("build")}else if(S.house){log.push("المنزل موجود")}else log.push("تحتاج 3 أخشاب")}
-  save();updateUI();drawAll();
- }
- S.ran=true;unlock("first");save();updateUI();drawAll();$("#worldState").textContent="تم التنفيذ ✓";$("#output").textContent="✓ "+log.join(" · ");toast("تم التنفيذ · +"+S.program.length*10+" XP");btn.disabled=false;
+ const btn=$("#run");btn.disabled=true;S.running=true;S.runningIndex=-1;renderProgram();
+ try{
+  const log=[];
+  for(let i=0;i<S.program.length;i++){
+   const t=S.program[i];S.runningIndex=i;renderProgram();
+   S.used++;S.xp+=10;
+   const result=window.executeWorldBlock?await window.executeWorldBlock(t):await legacyBlock(t);
+   log.push(result?.label||TYPES[t].label);
+   save();updateUI();
+  }
+  S.ran=true;unlock("first");save();updateUI();
+  $("#worldState").textContent="تم التنفيذ ✓";$("#output").textContent="✓ "+log.join(" · ");toast("تم التنفيذ · +"+S.program.length*10+" XP");
+ }catch(err){console.error(err);$("#output").textContent="⚠ تعذر تنفيذ البرنامج: "+(err.message||"خطأ غير معروف");toast("حدث خطأ أثناء التنفيذ")}
+ finally{S.running=false;S.runningIndex=-1;renderProgram();updateUI();btn.disabled=false}
+}
+async function legacyBlock(t){
+ if(t==="move"){S.steps++;await animatePlayer("move");return {label:"تحرك"}}
+ if(t==="turn"){S.rotation=(S.rotation+1)%4;await animatePlayer("turn");return {label:"استدارة"}}
+ if(t==="jump"){await animatePlayer("jump");return {label:"قفز"}}
+ if(t==="repeat"){for(let i=0;i<3;i++){S.steps++;await animatePlayer("move")}unlock("loop");return {label:"تكرار ×3"}}
+ if(t==="collect"){S.wood++;S.gem++;unlock("collector");await animatePulse();return {label:"جمع"}}
+ if(t==="plant"){if(S.seeds>0){S.seeds--;S.plants.push({x:S.player.x,z:S.player.z});unlock("gardener");await animateWorldAction("plant");return {label:"زراعة"}}return {label:"لا توجد بذور"}}
+ if(t==="build"){if(S.wood>=3&&!S.house){S.wood-=3;S.house=true;unlock("builder");await animateWorldAction("build");return {label:"بناء"}}return {label:S.house?"المنزل موجود":"تحتاج 3 أخشاب"}}
+ return {label:TYPES[t]?.label||t}
 }
 $("#run").onclick=run;
 function resetWorld(){S.player={x:0,z:0};S.rotation=0;S.plants=[];S.house=false;save();updateUI();drawAll();toast("أعيد العالم فقط — تقدمك محفوظ")}
