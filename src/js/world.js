@@ -48,6 +48,8 @@ function setup3D(canvas){
   createCinematicWorld(world);
   worlds.set(canvas,world);
   resize3D(world);
+  const frame=()=>{world._raf=requestAnimationFrame(frame);render3D(world)};
+  frame();
 
   canvas.addEventListener("pointerdown",e=>{
     world.drag=true;world.lx=e.clientX;world.ly=e.clientY;canvas.setPointerCapture?.(e.pointerId);
