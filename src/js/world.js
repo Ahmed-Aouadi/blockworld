@@ -43,7 +43,7 @@ function setup3D(canvas){
     target:new THREE.Vector3(0,1.3,0),
     yaw:.25,pitch:.30,distance:14,drag:false,lx:0,ly:0,
     player:null,interactive:[],animals:[],water:null,waterTime:0,
-    actionAnim:null,anim:null,keys:{},time:0
+    actionAnim:null,anim:null,keys:{},time:0,velocity:new THREE.Vector3(),groundY:0,jump:0,jumpT:0
   };
   createCinematicWorld(world);
   worlds.set(canvas,world);
@@ -67,7 +67,7 @@ function setup3D(canvas){
   if(!world._keysBound){
     world._keysBound=true;
     window.addEventListener("keydown",e=>{
-      world.keys[e.key.toLowerCase()]=true;
+      if(S.settings?.keyboard===false)return; world.keys[e.key.toLowerCase()]=true;
       if(["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(e.key.toLowerCase()))e.preventDefault();
     });
     window.addEventListener("keyup",e=>{world.keys[e.key.toLowerCase()]=false});
@@ -97,110 +97,58 @@ function foliage(w,x,y,z,s=1){
 }
 
 function createCinematicWorld(w){
-  // layered jungle terrain
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(150,150,1,1),material(0x344d3c,.98));
-  ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;w.scene.add(ground);
+  const path=new THREE.Mesh(new THREE.PlaneGeometry(7,92),material(0x7d7159,.96));
+  path.rotation.x=-Math.PI/2;path.position.set(3,.22,0);w.scene.add(path);
+  const river=new THREE.Mesh(new THREE.PlaneGeometry(11,118,1,20),new THREE.MeshPhysicalMaterial({color:0x2c7983,roughness:.08,metalness:.05,transparent:true,opacity:.82}));
+  river.rotation.x=-Math.PI/2;river.position.set(-17,.05,0);w.scene.add(river);w.water=river;
+  const pool=new THREE.Mesh(new THREE.CylinderGeometry(10,11,.35,40),new THREE.MeshPhysicalMaterial({color:0x286f79,roughness:.08,transparent:true,opacity:.86}));
+  pool.position.set(-8,.1,-38);w.scene.add(pool);
 
-  // playable clearings
-  for(let i=0;i<16;i++){
-    const r=5+(i%4)*1.5;
-    const island=new THREE.Mesh(new THREE.CylinderGeometry(r,r*1.08,.55,12),material(i%2?0x587052:0x465e49,.98));
-    island.position.set(-42+(i*19)%84,.12,-42+(i*31)%84);
-    island.scale.z=.75;island.castShadow=true;island.receiveShadow=true;w.scene.add(island);
+  for(let i=0;i<18;i++){
+    const side=i%2?-1:1,x=side*(47+(i%3)*2),z=-48+i*5.6,h=7+(i%4)*2.5;
+    const rock=stone(w,4.8+(i%3)*1.1,h,0x465049,x,z);rock.scale.z=1.35;
+    for(let j=0;j<2;j++){const ledge=box(w,7,.55,3.8,0x596057,x-side*(1.4+j*.7),1.8+j*2.5,z+(j-.5)*1.4);ledge.rotation.z=side*(j%2?.08:-.05)}
   }
+  createTemple(w,-5,-39);
+  for(let i=0;i<8;i++)box(w,11-i*.7,.28,1.2,0x6b6557,-5,0.3+i*.28,-34+i*1.2);
+  createRuins(w,27,-18);createBridge(w,14,8);
 
-  // cliffs and canyon walls
-  for(let i=0;i<14;i++){
-    const x=i%2?-43-i*.8:43+i*.55;
-    const z=-40+i*6.2;
-    const rock=stone(w,4.5+(i%3),7+(i%4)*2,0x3b4640,x,z);
-    rock.scale.z=1.3;
-  }
-  for(let i=0;i<8;i++){
-    const rock=stone(w,3.2+(i%2),5+(i%3)*1.5,0x4b5147,-22+i*6,35);
-    rock.scale.z=.65;
-  }
+  const arch=new THREE.Group();arch.position.set(25,0,27);
+  for(const sx of [-3.3,3.3])arch.add(box(w,1.8,7,2.2,0x4e554e,sx,3.5,0));
+  arch.add(box(w,8,1.8,2.2,0x4e554e,0,7,0));arch.add(box(w,4.2,3.8,.4,0x171c1a,0,1.9,.95));w.scene.add(arch);
 
-  // river + waterfall pool
-  const river=new THREE.Mesh(new THREE.PlaneGeometry(13,110,1,8),new THREE.MeshStandardMaterial({
-    color:0x397f87,roughness:.18,metalness:.02,transparent:true,opacity:.88
-  }));
-  river.rotation.x=-Math.PI/2;river.position.set(-15,.14,0);w.scene.add(river);w.water=river;
-  const pool=new THREE.Mesh(new THREE.CylinderGeometry(9,10,.22,32),new THREE.MeshStandardMaterial({color:0x2d7880,roughness:.16,transparent:true,opacity:.92}));
-  pool.position.set(-4,.13,-28);w.scene.add(pool);
-  for(let i=0;i<9;i++){
-    const fall=new THREE.Mesh(new THREE.PlaneGeometry(2.5+(i%3)*.4,6+(i%2)*2),new THREE.MeshStandardMaterial({color:0xbbecef,transparent:true,opacity:.42,side:THREE.DoubleSide}));
-    fall.position.set(-4+i*.8,4+(i%2),-36);fall.rotation.y=(i-4)*.05;w.scene.add(fall);
-  }
+  for(let i=0;i<96;i++){const x=-43+(i*19)%86,z=-48+(i*31)%96;if(Math.abs(x+17)<8&&Math.abs(z)<12)continue;createJungleTree(w,x,z,.72+(i%6)*.12)}
+  for(let i=0;i<64;i++){const x=-44+(i*27)%88,z=-46+(i*17)%92;foliage(w,x,.2,z,.55+(i%5)*.12)}
+  for(let i=0;i<72;i++){const rock=stone(w,.3+(i%6)*.15,.45+(i%5)*.28,0x5a6259,-43+(i*17)%86,-44+(i*29)%90);rock.rotation.z=(i%7)*.11}
+  for(let i=0;i<8;i++){const fall=new THREE.Mesh(new THREE.PlaneGeometry(2.2+(i%3)*.5,7+(i%2)*2),new THREE.MeshStandardMaterial({color:0xbfecee,transparent:true,opacity:.32,side:THREE.DoubleSide}));fall.position.set(-8+i*.65,4+(i%2),-45);fall.rotation.y=(i-4)*.035;w.scene.add(fall)}
+  for(let i=0;i<18;i++){const spray=new THREE.Mesh(new THREE.SphereGeometry(.05+(i%3)*.025,7,6),new THREE.MeshBasicMaterial({color:0xd9ffff,transparent:true,opacity:.6}));spray.position.set(-8+(i%6)*.5,1+(i%5)*.25,-43+(i%3)*.4);w.scene.add(spray)}
+  for(const p of [[-11,-28],[8,-27],[19,8],[-8,13],[9,-38],[27,27]])createTorch(w,p[0],p[1]);
 
-  // ancient path, ruins and temple
-  const path=new THREE.Mesh(new THREE.PlaneGeometry(5.5,74),material(0x82745b,.95));
-  path.rotation.x=-Math.PI/2;path.position.set(2,.2,0);w.scene.add(path);
-  createTemple(w,-3,-33);
-  createRuins(w,24,-18);
-  createBridge(w,14,9);
+  createInteractive(w,"🌿","شجرة","قطع","cut",18,4);createInteractive(w,"🏛️","المعبد","دخول","enter",-5,-35);
+  createInteractive(w,"💧","الشلال","شرب","drink",-8,-41);createInteractive(w,"🧑‍🌾","المرشد","تحدث","talk",7,13);
+  createInteractive(w,"🐟","النهر","صيد","fish",-17,8);createInteractive(w,"🪨","الآثار","تعدين","mine",27,-18);createInteractive(w,"🌀","البوابة","دخول","portal",-27,31);
 
-  // jungle
-  for(let i=0;i<72;i++){
-    const x=-38+(i*17)%76,z=-42+(i*29)%82;
-    if(Math.abs(x)<9&&Math.abs(z)<12)continue;
-    createJungleTree(w,x,z,.8+(i%5)*.13);
-  }
-  for(let i=0;i<44;i++){
-    const x=-39+(i*23)%78,z=-40+(i*13)%80;
-    foliage(w,x,.2,z,.65+(i%4)*.12);
-  }
-  for(let i=0;i<55;i++){
-    const r=.35+(i%5)*.17;
-    const rock=stone(w,r,.5+(i%4)*.25,0x5d665c,-39+(i*17)%78,-39+(i*27)%78);
-    rock.rotation.z=(i%5)*.13;
-  }
+  for(let i=0;i<12;i++)w.animals.push(createAnimal(w,8+(i*7)%30,-28+(i*11)%58,i%4===0?"deer":"boar"));
+  for(let i=0;i<8;i++)w.animals.push(createAnimal(w,-17+(i%4)*2,-25+i*8,"fish"));
 
-  // torches / warm adventure lighting
-  for(const p of [[-8,-22],[9,-22],[17,7],[-10,12],[6,-31]]){
-    createTorch(w,p[0],p[1]);
-  }
-
-  // collectibles / interaction anchors
-  createInteractive(w,"🌿","نبات","جمع","cut",18,4);
-  createInteractive(w,"🏛️","معبد","دخول","enter",-3,-30);
-  createInteractive(w,"💧","الشلال","شرب","drink",-5,-30);
-  createInteractive(w,"🧑‍🌾","المرشد","تحدث","talk",7,13);
-  createInteractive(w,"🐟","النهر","صيد","fish",-15,8);
-  createInteractive(w,"🪨","أثر قديم","تعدين","mine",24,-18);
-  createInteractive(w,"🌀","البوابة","دخول","portal",-18,28);
-
-  // animals
-  for(let i=0;i<10;i++)w.animals.push(createAnimal(w,9+(i*7)%25,-26+(i*11)%55,i%3===0?"deer":"boar"));
-  for(let i=0;i<6;i++)w.animals.push(createAnimal(w,-15+(i%3)*2,-25+i*9,"fish"));
-
-  // player - stylized adventurer silhouette
   const p=new THREE.Group();
-  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.42,.9,6,12),material(0x273b42,.72));
-  torso.position.y=1.25;p.add(torso);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.39,20,16),material(0xb97955,.78));head.position.y=2.15;p.add(head);
-  const hair=new THREE.Mesh(new THREE.SphereGeometry(.42,18,12),material(0x2a201c,.9));hair.scale.y=.58;hair.position.set(0,2.37,0);p.add(hair);
-  const pack=new THREE.Mesh(new THREE.BoxGeometry(.7,.75,.28),material(0x4b3328,.82));pack.position.set(0,1.25,-.48);p.add(pack);
-  const scarf=new THREE.Mesh(new THREE.TorusGeometry(.38,.07,8,20),material(0xa24b37,.8));scarf.position.y=1.8;scarf.rotation.x=Math.PI/2;p.add(scarf);
-  p.castShadow=true;w.scene.add(p);w.player=p;
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.43,.82,7,14),material(0x26363b,.7));torso.position.y=1.35;p.add(torso);
+  const vest=new THREE.Mesh(new THREE.BoxGeometry(.58,.8,.46),material(0x5b4637,.78));vest.position.set(0,1.35,.08);p.add(vest);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.36,20,16),material(0xb87854,.8));head.position.y=2.2;p.add(head);
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(.4,18,12),material(0x251d1a,.92));hair.scale.y=.58;hair.position.set(0,2.42,-.01);p.add(hair);
+  const pack=new THREE.Mesh(new THREE.BoxGeometry(.68,.78,.3),material(0x4a3228,.8));pack.position.set(0,1.3,-.5);p.add(pack);
+  for(const sx of [-.52,.52]){const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.11,.65,5,8),material(0xb87854,.82));arm.position.set(sx,1.28,0);arm.rotation.z=sx*.28;p.add(arm)}
+  for(const sx of [-.18,.18]){const boot=new THREE.Mesh(new THREE.BoxGeometry(.2,.65,.32),material(0x262727,.8));boot.position.set(sx,.48,.02);p.add(boot)}
+  const scarf=new THREE.Mesh(new THREE.TorusGeometry(.38,.06,8,20),material(0xa24b37,.8));scarf.position.y=1.86;scarf.rotation.x=Math.PI/2;p.add(scarf);
+  p.traverse(o=>{if(o.isMesh)o.castShadow=true});w.scene.add(p);w.player=p;
 
   w.house=createAdventureCamp(w,12,-4);w.house.visible=!!S.house;
   w.plantPool=[];for(let i=0;i<30;i++){const plant=createAdventurePlant(w,0,0);plant.visible=false;w.plantPool.push(plant)}
-  // portal
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(2.3,.18,16,48),material(0x69e3d7,.32,0.25));
-  ring.position.set(-18,2.5,28);ring.rotation.x=Math.PI/2;w.scene.add(ring);w.portal=ring;
-
-  // atmospheric sky dome
-  const sky=new THREE.Mesh(new THREE.SphereGeometry(110,32,18),new THREE.MeshBasicMaterial({color:0x8baaa7,side:THREE.BackSide}));
-  w.scene.add(sky);
-
-  // distant mountain silhouettes
-  for(let i=0;i<9;i++){
-    const m=new THREE.Mesh(new THREE.ConeGeometry(8+(i%3)*3,15+(i%4)*4,7),material(0x43534d,.98));
-    m.position.set(-55+i*14,7,-58);m.scale.z=.65;w.scene.add(m);
-  }
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(2.3,.16,18,56),new THREE.MeshStandardMaterial({color:0x68e4d5,emissive:0x1d9587,emissiveIntensity:2,roughness:.3}));
+  ring.position.set(-27,2.5,31);ring.rotation.x=Math.PI/2;w.scene.add(ring);w.portal=ring;
+  const sky=new THREE.Mesh(new THREE.SphereGeometry(115,32,18),new THREE.MeshBasicMaterial({color:0x829f9d,side:THREE.BackSide}));w.scene.add(sky);
+  for(let i=0;i<13;i++){const m=new THREE.Mesh(new THREE.ConeGeometry(9+(i%3)*4,18+(i%4)*5,8),material(0x40504a,.99));m.position.set(-62+i*11,8,-66);m.scale.z=.55;w.scene.add(m)}
 }
-
 function createAdventureCamp(w,x,z){
   const g=new THREE.Group();g.position.set(x,0,z);
   const base=box(w,6,.45,5.2,0x4c4034,0,.22,0);g.add(base);
@@ -332,19 +280,23 @@ function render3D(w){
   const k=w.keys;
   const forward=(k.w||k.arrowup?1:0)-(k.s||k.arrowdown?1:0);
   const strafe=(k.d||k.arrowright?1:0)-(k.a||k.arrowleft?1:0);
-  if(forward||strafe){
-    const speed=.075;
-    const fx=Math.sin(w.yaw),fz=Math.cos(w.yaw);
-    S.player.x=Math.max(-34,Math.min(34,S.player.x+fx*forward*speed+Math.cos(w.yaw)*strafe*speed));
-    S.player.z=Math.max(-38,Math.min(38,S.player.z+fz*forward*speed-Math.sin(w.yaw)*strafe*speed));
-  }
+  const moving=!!(forward||strafe);
+  const sprint=k.shift?1.7:1;
+  if(moving&&S.settings?.keyboard!==false){
+    const len=Math.hypot(forward,strafe)||1, f=forward/len,s=strafe/len,fx=Math.sin(w.yaw),fz=Math.cos(w.yaw);
+    const tx=(fx*f+Math.cos(w.yaw)*s)*.20*sprint, tz=(fz*f-Math.sin(w.yaw)*s)*.20*sprint;
+    w.velocity.x+=(tx-w.velocity.x)*.22;w.velocity.z+=(tz-w.velocity.z)*.22;
+    S.player.x=Math.max(-42,Math.min(42,S.player.x+w.velocity.x));S.player.z=Math.max(-45,Math.min(45,S.player.z+w.velocity.z));
+  }else{w.velocity.x*=.78;w.velocity.z*=.78}
+  if(k[" "]&&!w.jump&&S.settings?.keyboard!==false){w.jump=1;w.jumpT=0;k[" "]=false}
+  if(w.jump){w.jumpT=Math.min(1,w.jumpT+.055);if(w.jumpT>=1)w.jump=0}
 
-  const px=S.player.x*1.45,pz=S.player.z*1.45;
+  const px=S.player.x*1.18,pz=S.player.z*1.18;
   if(w.player){
-    const moving=forward||strafe;
     w.player.position.x=px;w.player.position.z=pz;
-    w.player.position.y=w.anim&&w.anim.type==="jump"?Math.sin(w.anim.p*Math.PI)*2.2:0;
-    if(moving)w.player.rotation.y=Math.atan2(Math.sin(w.yaw),Math.cos(w.yaw))+Math.PI;
+    const jumpArc=w.jump?Math.sin(w.jumpT*Math.PI)*1.65:0;
+    w.player.position.y=jumpArc+(w.anim&&w.anim.type==="jump"?Math.sin(w.anim.p*Math.PI)*.7:0);
+    if(moving)w.player.rotation.y=Math.atan2(w.velocity.x,w.velocity.z)+Math.PI;
     const bob=moving?Math.sin(w.time*11)*.045:Math.sin(w.time*2)*.012;
     w.player.position.y+=bob;
   }
@@ -370,7 +322,7 @@ function render3D(w){
     a.rotation.y=Math.sin(w.time*speed+a.userData.phase)*.3;
   });
   if(w.house){w.house.visible=!!S.house}
-  if(w.plantPool)w.plantPool.forEach((p,i)=>{const s=S.plants[i];p.visible=!!s;if(s){p.position.x=s.x*1.45;p.position.z=s.z*1.45}});
+  if(w.plantPool)w.plantPool.forEach((p,i)=>{const s=S.plants[i];p.visible=!!s;if(s){p.position.x=s.x*1.18;p.position.z=s.z*1.18}});
   updateNearby();
   w.renderer.render(w.scene,w.camera);
 }
