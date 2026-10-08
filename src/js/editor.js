@@ -1,7 +1,7 @@
 function renderProgram(){
  const z=$("#zone");z.innerHTML="";
  if(!S.program.length)z.innerHTML='<div class="hint">أضف الأوامر هنا.<br>يمكنك حذف أي أمر أو التراجع عن آخر إضافة.</div>';
- S.program.forEach((t,i)=>{const d=document.createElement("div");d.className="placed "+TYPES[t].cls+(S.runningIndex===i?" running":"");d.dataset.index=i;d.innerHTML="<span class=\"blockIndex\">"+(i+1)+". "+TYPES[t].label+"</span><button aria-label=\"حذف الأمر "+(i+1)+"\">×</button>";d.querySelector("button").onclick=()=>{history.push([...S.program]);S.program.splice(i,1);commit()};z.appendChild(d)});
+ S.program.forEach((t,i)=>{const d=document.createElement("div");d.className="placed "+TYPES[t].cls+(S.runningIndex===i?" running":"");d.dataset.index=i;d.innerHTML="<span class=\"blockIndex\">"+(i+1)+". "+TYPES[t].label+"</span><button aria-label=\"حذف الأمر "+(i+1)+"\">×</button>";d.draggable=!S.running;d.addEventListener("dragstart",e=>{e.stopPropagation();e.dataTransfer.setData("text/x-block-index",String(i))});d.querySelector("button").onclick=()=>{history.push([...S.program]);S.program.splice(i,1);commit()};z.appendChild(d)});
  $("#count").textContent=S.program.length+" / 15";
 }
 function add(type){if(S.program.length>=15){toast("الحد الأقصى 15 أمرًا");return}history.push([...S.program]);S.program.push(type);commit();$("#output").textContent="● أُضيف: "+TYPES[type].label}
