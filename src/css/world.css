@@ -31,3 +31,6 @@
 .ePrompt{display:flex;align-items:center;gap:10px;padding:9px 14px;border:1px solid rgba(255,255,255,.22);border-radius:12px;background:rgba(8,18,17,.78);backdrop-filter:blur(10px);box-shadow:0 8px 28px rgba(0,0,0,.28);color:#f4f7f3;font-size:13px;font-weight:700}
 .ePrompt kbd{display:grid;place-items:center;min-width:31px;height:31px;padding:0 7px;border-radius:7px;border:1px solid rgba(255,255,255,.42);background:linear-gradient(#f5f5f0,#cfd5ce);color:#18221d;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18),0 2px 7px rgba(0,0,0,.3);font:800 14px/1 system-ui}
 .fpsWorld{background:#0b1714}
+
+/* Authored-asset adventure presentation */
+.assetWorld{background:#0b1714!important;image-rendering:auto}.assetWorld canvas{cursor:crosshair!important}.assetWorld:focus{outline:none}.worldFrame:has(.assetWorld){background:#07110f;box-shadow:0 30px 90px rgba(0,0,0,.42)}
