@@ -299,7 +299,7 @@ function updateNearby(){
   const e=$("#nearby"),a=$("#nearbyActions");if(!e||!a)return;
   if(!best){e.hidden=true;return}
   e.hidden=false;
-  a.innerHTML="<div class="ePrompt"><kbd>E</kbd><span>"+best.verb+" · "+best.label+"</span></div>";
+  a.innerHTML='<div class="ePrompt"><kbd>E</kbd><span>'+best.verb+' · '+best.label+'</span></div>';
   e.dataset.action=best.action;
   e.dataset.interaction=best.label;
 }
