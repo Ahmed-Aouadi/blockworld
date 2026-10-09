@@ -51,6 +51,7 @@ test('custom block parser accepts the editor example and rejects arbitrary code'
   assert.throws(() => parseCustom('fetch("https://example.com");'));
   assert.throws(() => parseCustom('while(true){}'));
   assert.throws(() => parseCustom('forward(secret);'));
+  assert.doesNotThrow(() => parseCustom('turn(-90);'));
 });
 
 test('server save validator accepts a valid save and rejects malformed saves', () => {
