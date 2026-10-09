@@ -131,3 +131,30 @@ html[data-world-time="night"] #bTime{background:#ffe7a3}
 #bMusic{white-space:nowrap;background:#e5f8ed}
 #bMusic[aria-pressed="false"]{background:#f1f1f5;opacity:.85}
 @media(max-width:640px){#bMusic{font-size:10px;padding:3px 7px}}
+
+
+/* أدوات إضافية مع الحفاظ على هوية BlockWorld الحالية */
+#bTools{white-space:nowrap;background:#fff0bd}
+#bwTools{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:12px;background:rgba(30,20,80,.5)}
+#bwTools.on{display:flex}
+.bw-toolbox{width:min(620px,100%);max-height:min(90vh,850px);overflow:auto;overscroll-behavior:contain;background:#fff;border:4px solid var(--ink);border-radius:24px;padding:16px;box-shadow:0 8px 0 var(--ink);display:flex;flex-direction:column;gap:10px}
+.bw-toolhead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bw-toolhead h2{font-size:22px;margin:0}
+.bw-toolhead button{min-width:40px}
+.bw-toolstatus{padding:8px 10px;background:#eef6ff;border:2px solid #dce5fa;border-radius:12px;font-weight:800;font-size:13px}
+.bw-tool-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.bw-tool-actions button,.bw-import{min-width:0;display:flex;align-items:center;justify-content:center;text-align:center;min-height:42px;border:2px solid var(--ink);border-radius:12px;background:#f3f5ff;box-shadow:0 3px 0 var(--ink);padding:7px;font-weight:800;cursor:pointer}
+.bw-import{position:relative;overflow:hidden;background:#e2f8e9}
+.bw-import input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.bw-toolbox h3{font-size:17px;margin-top:3px}
+.bw-muted{font-size:13px;color:#687092;line-height:1.5}
+.bw-ask{display:flex;gap:8px}.bw-ask input{min-width:0;flex:1}.bw-ask button{background:#ffe7a3}
+.bw-result{background:#f8f6ff;border:2px dashed #c8b8ff;border-radius:13px;padding:10px;line-height:1.6}
+.bw-result p{font-size:13px;margin:3px 0 8px}
+.bw-result button{width:100%;min-height:40px}
+.bw-challenges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.bw-challenge{display:flex;flex-direction:column;gap:3px;padding:9px;border:2px solid #e0e3f2;border-radius:12px;background:#fff;font-size:13px}
+.bw-challenge small{color:#687092;line-height:1.4}.bw-challenge span{font-weight:800;color:#7b6b9f;font-size:12px}
+.bw-challenge.done{background:#e9faef;border-color:#85dba2}.bw-challenge.done span{color:#20864a}
+@media(max-width:640px){#bTools{font-size:10px;padding:3px 7px}.bw-toolbox{padding:12px;border-radius:18px;max-height:92vh}.bw-toolhead h2{font-size:19px}.bw-challenges{grid-template-columns:1fr}.bw-tool-actions{gap:7px}.bw-ask{flex-direction:column}.bw-ask button{min-height:38px}}
+@media(prefers-reduced-motion:reduce){.bw-toolbox *{scroll-behavior:auto!important;transition:none!important}}
