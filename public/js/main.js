@@ -62,8 +62,8 @@ async function tick(){if(NET.guest)return;try{const r=await NET.api('tick',{x:pl
  r.ms.forEach(addMsg);r.inbox.forEach(g=>{S.inv[g.item]=(S.inv[g.item]||0)+g.n;toast('🎁 '+g.from+' أهداك '+g.n+'× '+(ELS[+g.item.slice(1)]||{n:'عنصر'}).n);dirty()});if(r.inbox.length)refreshPanels();
  $('#onl').textContent='👤 '+(SH?r.pl.length+1:1)+' متصل';if(openP==='Near')rNear()}catch(e){}}
 // ---------- الحفظ والدخول ----------
-function serialize(){S.placed=placed.map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]);S.pos=[pl.x,pl.z]}
-async function saveNow(){if(!started||!isDirty)return;isDirty=false;serialize();const save={xp:S.xp,inv:S.inv,placed:S.placed,custom:S.custom,found:S.found,pos:S.pos,hue:S.hue};
+function serialize(){S.placed=placed.map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]);S.pos=[pl.x,pl.z];S.prog=prog}
+async function saveNow(){if(!started||!isDirty)return;isDirty=false;serialize();const save={xp:S.xp,inv:S.inv,placed:S.placed,custom:S.custom,found:S.found,pos:S.pos,hue:S.hue,prog:S.prog||[]};
  try{if(NET.guest)localStorage.setItem('bw_guest',JSON.stringify(save));else await NET.api('save',{save})}catch(e){isDirty=true}}
 function startGame(save,name,hue){if(started)return;started=true;S={...S,...(save||{})};S.hue=hue||S.hue;if(!save||!Object.keys(S.inv||{}).length){S.inv=S.inv||{};[1,7,16,20,30,44,58,70].forEach(i=>{if(ELS[i])S.inv['e'+i]=3})}
  $('#auth').style.display='none';$('#hud').hidden=false;try{initWorld()}catch(e){document.body.innerHTML='<p style="padding:30px;font-size:20px">يحتاج المتصفح إلى WebGL ليعمل بلوك وورلد.</p>';return}
@@ -79,7 +79,7 @@ $('#bGuest').onclick=()=>{let s=null;try{s=JSON.parse(localStorage.getItem('bw_g
 document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel(b.dataset.p));
 $('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH)syncPlayers([]);toast(SH?'العالم المشترك: سترى اللاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
 $('#bShare').textContent='🏡 خاص';
-$('#tDel').onclick=()=>{setTool('del');toast('🗑 انقر على عنصر لحذفه')};$('#tSel').onclick=()=>{setTool('sel');toast('👆 انقر على عنصر لبرمجته')};$('#tOff').onclick=()=>{setTool(null);if(openP==='Build')rBuild()};
+$('#tDel').onclick=()=>{setTool('del');toast('🗑 انقر على العنصر الذي تريد حذفه')};$('#tSel').onclick=()=>{setTool('sel');toast('🧩 انقر على عنصر لفتح إعدادات برمجته')};$('#tCopy').onclick=()=>{setTool('copy');toast('📋 انقر على عنصر لنسخه — يلزم توفره في الحقيبة')};$('#tOff').onclick=()=>{setTool(null);if(openP==='Build')rBuild()};
 $('#tRot').onclick=()=>{rot+=Math.PI/4;if(ghost)ghostPlace()};$('#tUp').onclick=()=>{elev=Math.min(4.4,elev+.55);toast('الارتفاع: '+Math.round(elev/.55));if(ghost)ghostPlace()};$('#tDn').onclick=()=>{elev=Math.max(0,elev-.55);toast('الارتفاع: '+Math.round(elev/.55));if(ghost)ghostPlace()};
 document.querySelectorAll('#dpad [data-k]').forEach(b=>{const k=b.dataset.k;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointercancel','pointerleave'].forEach(v=>b.addEventListener(v,()=>keys[k]=false))});
 $('#jump').addEventListener('pointerdown',e=>{e.preventDefault();keys.jump=true});
