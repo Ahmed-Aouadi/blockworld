@@ -112,3 +112,11 @@ html[data-world-time="night"] #bTime{background:#ffe7a3}
  #pCode .program-tools button{padding:2px 7px}
  #pCode .code-search,#pBuild .code-search{font-size:13px}
 }
+
+#pCode .program-tools #templatesBtn{background:#d8f8e7}
+.template-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-height:52vh;overflow:auto;padding:3px}
+.template-card{display:flex;flex-direction:column;align-items:flex-start;gap:5px;text-align:start;min-height:78px;background:linear-gradient(145deg,#fff,#f0f4ff);border:2px solid #d4daf1;border-radius:13px;box-shadow:0 3px 0 #c7cfea;padding:10px}
+.template-card b{font-size:14px}
+.template-card small{font-size:12px;font-weight:500;line-height:1.45;color:#687092}
+.template-card:hover{background:#fff2be;border-color:#e4bc44}
+@media(max-width:420px){.template-list{grid-template-columns:1fr}.template-card{min-height:60px}}
