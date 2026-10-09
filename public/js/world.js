@@ -102,7 +102,7 @@ function initWorld(){
    let stacked=false;
    for(const hit of hits){let obj=hit.object;while(obj&&!obj.userData.po)obj=obj.parent;const base=obj&&obj.userData.po;if(!base||!hit.face)continue;
     const normal=hit.face.normal.clone().applyMatrix3(new T.Matrix3().getNormalMatrix(hit.object.matrixWorld)).normalize();
-    const d=DEFS[tool.k]&&DEFS[tool.k][tool.i],part=d&&tool.k==='p'?(PART_Y[d.b]||0):0;
+    const def=DEFS[tool.k]&&DEFS[tool.k][tool.i],part=def&&tool.k==='p'?(PART_Y[def.b]||0)*BUILD_SCALE:0;
     if(normal.y>.5){
      gpos.x=Math.round(hit.point.x*2)/2;gpos.z=Math.round(hit.point.z*2)/2;
      elev=Math.max(0,hit.point.y-H(gpos.x,gpos.z)-part);
@@ -122,7 +122,7 @@ function initWorld(){
      }
      gpos.x=Math.max(-HALF+2,Math.min(HALF-2,gpos.x));
      gpos.z=Math.max(-HALF+2,Math.min(HALF-2,gpos.z));
-     elev=base.e||0;
+     const baseDef=DEFS[base.k]&&DEFS[base.k][base.i],basePart=baseDef&&base.k==='p'?(PART_Y[baseDef.b]||0)*BUILD_SCALE:0;elev=Math.max(0,(base.g.position.y-basePart)-H(gpos.x,gpos.z)-part);
     }
     stacked=true;break;
    }
