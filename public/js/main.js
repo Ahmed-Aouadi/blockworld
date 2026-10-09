@@ -226,8 +226,14 @@ function syncWorlds(worlds){
   remoteWorldSignatures.set(id,signature);
  }
 }
-let tickBusy=false;
-async function tick(){if(NET.guest||tickBusy)return;tickBusy=true;try{const r=await NET.api('tick',{x:pl.x,z:pl.z,ry:pl.ry,sh:SH?1:0,since});since=Math.max(since,r.last||0);syncPlayers(SH?r.pl:[]);syncWorlds(SH?(r.worlds||[]):[]);
+let tickBusy=false,lastSharedPlacementSignature=null;
+async function tick(){if(NET.guest||tickBusy)return;tickBusy=true;try{
+ const payload={x:pl.x,z:pl.z,ry:pl.ry,sh:SH?1:0,since};
+ let placementSignature=null;
+ if(SH){const localPlaced=placed.filter(p=>!p.remoteOwner).map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]).slice(0,1000);placementSignature=JSON.stringify(localPlaced);if(placementSignature!==lastSharedPlacementSignature)payload.placed=localPlaced}
+ const r=await NET.api('tick',payload);
+ if(SH&&payload.placed)lastSharedPlacementSignature=placementSignature;
+ since=Math.max(since,r.last||0);syncPlayers(SH?r.pl:[]);syncWorlds(SH?(r.worlds||[]):[]);
  r.ms.forEach(addMsg);r.inbox.forEach(g=>{S.inv[g.item]=(S.inv[g.item]||0)+g.n;toast('🎁 '+g.from+' أهداك '+g.n+'× '+(ELS[+g.item.slice(1)]||{n:'عنصر'}).n);dirty()});if(r.inbox.length)refreshPanels();
  $('#onl').textContent='👤 '+(SH?r.pl.length+1:1)+' متصل';if(openP==='Near')rNear()}catch(e){}finally{tickBusy=false}}
 // ---------- الحفظ والدخول ----------
@@ -250,7 +256,7 @@ $('#bSound').onclick=toggleSound;$('#bMusic').onclick=toggleMusic;updateMusicBut
 $('#bSound').textContent=soundOn?'🔊 الصوت':'🔇 الصوت';
 document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel(b.dataset.p));
 $('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر لتحديده ثم استخدم الأسهم للتحريك')};
-$('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH){syncPlayers([]);syncWorlds([])}tick();toast(SH?'العالم المشترك: سترى اللاعبين وعناصر البناء التي حفظوها':'عالمك الخاص: تتجول وحدك')};
+$('#bShare').onclick=()=>{SH=!SH;lastSharedPlacementSignature=null;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH){syncPlayers([]);syncWorlds([])}tick();toast(SH?'العالم المشترك: ستظهر عناصر بنائك للاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
 $('#quickBuild').onclick=()=>{PN.forEach(p=>$('#p'+p).classList.remove('on'));openP='Build';$('#pBuild').classList.add('on');renderPanel('Build');updateQuickBuild()};
 $('#bShare').textContent='🏡 خاص';
 let nightMode=false;$('#bTime').onclick=()=>{nightMode=!nightMode;setWorldTime(nightMode);$('#bTime').textContent=nightMode?'☀️ نهار':'🌙 ليل';if(musicOn&&musicMaster){musicMaster.gain.setTargetAtTime(musicVolume,soundCtx.currentTime,.8);playMusicPhrase()}toast(nightMode?'🌙 تم تفعيل أجواء الليل':'☀️ عادت أجواء النهار')};
