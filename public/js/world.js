@@ -15,10 +15,10 @@ function mk(b,c,ghost){const g=new T.Group();
  if(b==='door'){add(['box',[.1,1.1,.2],0xf5f5f5,-.48,.55,0]);add(['box',[.1,1.1,.2],0xf5f5f5,.48,.55,0]);add(['box',[1,.12,.2],0xf5f5f5,0,1.06,0]);const pv=new T.Group();pv.position.set(-.45,0,0);add(['box',[.86,1,.08],'c',.43,.5,0],pv);add(['sph',[.05],0xffd23f,.78,.5,.06],pv);g.add(pv);g.userData.door=pv;g.userData.open=0}
  else{(B[b]||B.rock).forEach(p=>add(p));if(b==='mill'){const bl=new T.Group();bl.position.set(0,1.3,.38);for(let i=0;i<4;i++){const sg=new T.Group();sg.rotation.z=i*1.5708;add(['box',[.12,.7,.02],0xffffff,0,.35,0],sg);bl.add(sg)}g.add(bl);g.userData.spin=bl}}
  return g}
-function mkAvatar(hue,name){
- const g=new T.Group(),col=new T.Color().setHSL(hue/360,.72,.54),shade=col.clone().multiplyScalar(.72),light=col.clone().lerp(new T.Color(0xffffff),.58);
+function mkAvatar(hue,name,appearance={}){
+ const g=new T.Group(),col=new T.Color(appearance.outfit||new T.Color().setHSL(hue/360,.72,.54)),shade=new T.Color(appearance.trim||col.clone().multiplyScalar(.72)),light=col.clone().lerp(new T.Color(0xffffff),.58);
  const mat=(color,roughness=.58,metalness=0)=>new T.MeshStandardMaterial({color,roughness,metalness});
- const skin=mat(0xffd2ad),skinShade=mat(0xeeb28e),cloth=mat(col),clothDark=mat(shade),clothLight=mat(light),white=mat(0xffffff),ink=mat(0x29253b),shoeMat=mat(0x34364b),gold=mat(0xffca58,.35,.18),hair=mat(0x49334a),cheek=mat(0xff9d9e);
+ const skin=mat(appearance.skin||0xffd2ad),skinShade=mat(0xeeb28e),cloth=mat(col),clothDark=mat(shade),clothLight=mat(light),white=mat(0xffffff),ink=mat(0x29253b),shoeMat=mat(appearance.shoes||0x34364b),gold=mat(appearance.scarf||0xffca58,.35,.18),hair=mat(appearance.hair||0x49334a),cheek=mat(0xff9d9e),pants=mat(appearance.pants||0x34364b);
  const add=(geo,material,x,y,z,sx=1,sy=1,sz=1,parent=g)=>{const m=new T.Mesh(geo,material);m.position.set(x,y,z);m.scale.set(sx,sy,sz);parent.add(m);return m};
  const ball=(material,x,y,z,sx,sy,sz,parent=g)=>add(new T.SphereGeometry(1,16,12),material,x,y,z,sx,sy,sz,parent);
  // Rounded jacket and compact silhouette.
@@ -43,16 +43,20 @@ function mkAvatar(hue,name){
  ball(clothDark,0,-.13,0,.095,.19,.105,armR);ball(skin,.015,-.285,.025,.075,.075,.075,armR);
  ball(shoeMat,0,.36,0,.23,.12,.18);
  const legL=new T.Group();legL.position.set(-.12,.34,0);g.add(legL);
- ball(clothDark,0,-.105,0,.105,.19,.12,legL);ball(shoeMat,0,-.23,.065,.13,.075,.19,legL);
+ ball(pants,0,-.105,0,.105,.19,.12,legL);ball(shoeMat,0,-.23,.065,.13,.075,.19,legL);
  const legR=new T.Group();legR.position.set(.12,.34,0);g.add(legR);
- ball(clothDark,0,-.105,0,.105,.19,.12,legR);ball(shoeMat,0,-.23,.065,.13,.075,.19,legR);
+ ball(pants,0,-.105,0,.105,.19,.12,legR);ball(shoeMat,0,-.23,.065,.13,.075,.19,legR);
  add(new T.CylinderGeometry(.235,.235,.065,16),gold,0,.48,0,1,.6,.78);
  ball(clothDark,0,.7,-.225,.19,.23,.09);ball(gold,0,.75,.241,.065,.065,.025);
  g.userData.armL=armL;g.userData.armR=armR;g.userData.legL=legL;g.userData.legR=legR;
+ g.userData.styleMats={skin,hair,cloth,clothDark,clothLight,shoeMat,gold,pants};
+ const hatMat=mat(appearance.hatColor||0x3da5ff),hatTrim=mat(0xffca58,.35,.18),accessories={};const cap=new T.Group();cap.add(new T.Mesh(new T.SphereGeometry(.205,14,9,0,Math.PI*2,0,Math.PI/2),hatMat));const brim=new T.Mesh(new T.CylinderGeometry(.22,.22,.035,16),hatMat);brim.position.y=.01;cap.add(brim);cap.position.set(0,1.45,-.015);g.add(cap);accessories.cap=cap;const crown=new T.Group();const crownBase=new T.Mesh(new T.CylinderGeometry(.16,.19,.09,8),hatMat);crownBase.position.y=1.44;crown.add(crownBase);for(let i=0;i<5;i++){const tip=new T.Mesh(new T.ConeGeometry(.045,.13,5),hatTrim);const a=i*Math.PI*2/5;tip.position.set(Math.cos(a)*.13,1.53,Math.sin(a)*.13);crown.add(tip)}g.add(crown);accessories.crown=crown;g.userData.accessories=accessories;g.userData.appearance={...appearance};applyAvatarAppearanceTo(g,appearance);
  // Keep the old animation hooks compatible with the game loop.
  g.userData.f1=legL;g.userData.f2=legR;
  if(name){const cv=document.createElement('canvas');cv.width=320;cv.height=84;const x=cv.getContext('2d');x.fillStyle='rgba(255,255,255,.94)';x.beginPath();x.roundRect(8,8,304,64,24);x.fill();x.strokeStyle='#d9dcf4';x.lineWidth=3;x.stroke();x.font='bold 32px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#2b2a5a';x.fillText(String(name).slice(0,18),160,42);const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),depthTest:false}));sp.scale.set(2.25,.59,1);sp.position.y=1.83;g.add(sp)}
  return g}
+function applyAvatarAppearanceTo(avatar,appearance={}){const m=avatar&&avatar.userData&&avatar.userData.styleMats;if(!m)return;const set=(material,value)=>{if(material&&value!=null)material.color.set(value)};set(m.skin,appearance.skin||0xffd2ad);set(m.hair,appearance.hair||0x49334a);set(m.cloth,appearance.outfit||0x3da5ff);set(m.clothDark,appearance.trim||new T.Color(appearance.outfit||0x3da5ff).multiplyScalar(.72));set(m.clothLight,new T.Color(appearance.outfit||0x3da5ff).lerp(new T.Color(0xffffff),.58));set(m.pants,appearance.pants||0x34364b);set(m.shoeMat,appearance.shoes||0x34364b);set(m.gold,appearance.scarf||0xffca58);const ac=avatar.userData.accessories;if(ac){Object.values(ac).forEach(g=>g.visible=false);if(ac[appearance.hat])ac[appearance.hat].visible=true;const hm=ac.cap&&ac.cap.children[0]&&ac.cap.children[0].material,cm=ac.crown&&ac.crown.children[0]&&ac.crown.children[0].material;if(hm)hm.color.set(appearance.hatColor||appearance.outfit||0x3da5ff);if(cm)cm.color.set(appearance.hatColor||appearance.outfit||0x3da5ff);if(ac.crown)ac.crown.children.slice(1).forEach(o=>o.material.color.set(0xffca58))}avatar.userData.appearance={...appearance}}
+function setAvatarAppearance(appearance){if(!pl||!pl.g)return;applyAvatarAppearanceTo(pl.g,appearance||{});S.avatar={...(appearance||{})}}
 let R,scene,cam,terrain,pl,placed=[],cols=[],others={},ghost=null,tool=null,elev=0,manualElev=0,rot=0,cy=0,cp=.45,cd=8,keys={},ctl={lock:false},gifts=[],clouds=[],curZone=0,gpos={x:0,z:0},rc=new T.Raycaster(),moved=0;
 const walkable=(x,z)=>Math.abs(x)<HALF-2&&Math.abs(z)<HALF-2&&H(x,z)>-.45;
 function collide(x,z){let ax=x,az=z;for(const c of cols){if(c.door&&c.o.g.userData.open>.5)continue;if((c.o.e||0)>1.2)continue;const dx=ax-c.x,dz=az-c.z,s=Math.sin(c.ry),co=Math.cos(c.ry),lx=dx*co-dz*s,lz=dx*s+dz*co,qx=Math.max(-c.hx,Math.min(c.hx,lx)),qz=Math.max(-c.hz,Math.min(c.hz,lz)),ex=lx-qx,ez=lz-qz,d=Math.hypot(ex,ez);
@@ -86,7 +90,7 @@ function initWorld(){
   const ok=ELS.filter(e=>sets[zi].includes(e.b)&&(zi!==4||e.c>0xe0e0e0||e.b==='rock'||e.b==='snowman'));if(!ok.length)continue;const d=ok[(hs(n,3)*ok.length)|0],g=mk(d.b,d.c);g.position.set(x,H(x,z),z);g.rotation.y=hs(n,5)*6.28;const s=.8+hs(n,9)*.6;g.scale.setScalar(d.b==='house'?1.3:s);scene.add(g)}
  // صناديق الهدايا
  for(let n=0;n<34;n++){const x=(hs(n,21)-.5)*(HALF*1.7),z=(hs(n,23)-.5)*(HALF*1.7);if(H(x,z)<0||Math.hypot(x,z)<4)continue;const g=new T.Group(),c=new T.Color().setHSL(hs(n,2),.8,.6);const b=new T.Mesh(new T.BoxGeometry(.5,.5,.5),new T.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.3}));b.position.y=.4;const r=new T.Mesh(new T.BoxGeometry(.54,.1,.1),new T.MeshStandardMaterial({color:0xffffff}));r.position.y=.4;const r2=r.clone();r2.rotation.y=1.57;g.add(b,r,r2);g.position.set(x,H(x,z),z);scene.add(g);gifts.push({g,x,z,alive:true,t:0})}
- pl={g:mkAvatar(S.hue||200),x:0,z:6,ry:3.14,vy:0,jy:0,walk:0};scene.add(pl.g);
+ pl={g:mkAvatar(S.hue||200,'',S.avatar||{}),x:0,z:6,ry:3.14,vy:0,jy:0,walk:0};scene.add(pl.g);
  const rs=()=>{R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()};addEventListener('resize',rs);rs();
  let dn=null;
  cv.addEventListener('pointerdown',e=>{dn={x:e.clientX,y:e.clientY};moved=0;try{cv.setPointerCapture(e.pointerId)}catch(_){}});
