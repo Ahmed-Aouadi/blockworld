@@ -39,12 +39,12 @@ function ghostPlace(){if(!ghost)return;const d=DEFS[tool.k][tool.i];ghost.positi
 function pick(e){const r=R.domElement.getBoundingClientRect();rc.setFromCamera(new T.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),cam)}
 function initWorld(){
  const cv=document.getElementById('cv');R=new T.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio||1,2));R.outputEncoding=T.sRGBEncoding;
- scene=new T.Scene();scene.background=new T.Color(0x8fd8ff);scene.fog=new T.Fog(0xbfeaff,55,165);cam=new T.PerspectiveCamera(55,1,.1,300);
- scene.add(new T.HemisphereLight(0xffffff,0xa8d8a0,.95));const sun=new T.DirectionalLight(0xfff3d0,.9);sun.position.set(40,70,25);scene.add(sun);
+ scene=new T.Scene();scene.background=new T.Color(0x55d7ff);scene.fog=new T.Fog(0x9cecff,65,190);cam=new T.PerspectiveCamera(55,1,.1,300);
+ scene.add(new T.HemisphereLight(0xffffff,0x72e0a1,1.15));const sun=new T.DirectionalLight(0xfff3d0,.9);sun.position.set(40,70,25);scene.add(sun);
  const geo=new T.PlaneGeometry(HALF*2,HALF*2,120,120);geo.rotateX(-Math.PI/2);const pos=geo.attributes.position,col=[];
  for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getZ(i),h=H(x,z);pos.setY(i,h);col.push(...tcol(x,z,h))}geo.setAttribute('color',new T.Float32BufferAttribute(col,3));geo.computeVertexNormals();
  terrain=new T.Mesh(geo,new T.MeshStandardMaterial({vertexColors:true,roughness:.95}));scene.add(terrain);
- const wt=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x35c8f5,transparent:true,opacity:.82,roughness:.2}));wt.rotation.x=-Math.PI/2;wt.position.y=-.7;scene.add(wt);
+ const wt=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x18dce8,transparent:true,opacity:.86,roughness:.16}));wt.rotation.x=-Math.PI/2;wt.position.y=-.7;scene.add(wt);
  for(let i=0;i<10;i++){const g=new T.Group();for(let j=0;j<4;j++){const s=new T.Mesh(new T.SphereGeometry(2+Math.random()*2,10,8),new T.MeshBasicMaterial({color:0xffffff,fog:false}));s.position.set(j*2.6-4,Math.random(),Math.random()*1.5);g.add(s)}g.position.set(Math.random()*240-120,28+Math.random()*10,Math.random()*240-120);scene.add(g);clouds.push(g)}
  // زرع العناصر في المناطق
  const sets={0:['flower','tulip','bush','grass','round'],1:['pine','round','mushroom','fern','bamboo'],2:['palm','bamboo','flower','grass'],3:['cactus','rock','palm'],4:['pine','rock','snowman'],5:['house','lamp','flower','bush']};
