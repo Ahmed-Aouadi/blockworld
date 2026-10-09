@@ -65,6 +65,7 @@ function hitPlaced(e){pick(e);const h=rc.intersectObjects(placed.map(p=>p.g),tru
 function onWorldClick(e){if(!tool)return;
  if(tool==='del'){const po=hitPlaced(e);if(po){removeObj(po);if(po.k==='e')S.inv['e'+po.i]=(S.inv['e'+po.i]||0)+1;dirty();refreshPanels();spark_toast('🗑 تم الحذف')}}
  else if(tool==='sel'){const po=hitPlaced(e);if(po)openScript(po)}
+ else if(tool==='copy'){const po=hitPlaced(e);if(po){const d=DEFS[po.k]&&DEFS[po.k][po.i];if(!d)return;const key='e'+po.i;if(po.k==='e'&&!(S.inv[key]>0))return toast('لا توجد نسخة في الحقيبة — اجمع هدية أولًا');if(po.k==='e')S.inv[key]--;const x=Math.round((po.x+1.4*Math.cos(po.ry||0))*2)/2,z=Math.round((po.z-1.4*Math.sin(po.ry||0))*2)/2;const copy=placeObj({k:po.k,i:po.i,x,z,ry:po.ry||0,e:po.e||0});if(po.beh)copy.beh={...po.beh};S.xp+=1;dirty();refreshPanels();toast('📋 تم نسخ العنصر')}}
  else if(tool.k){if(tool.k==='e'){const key='e'+tool.i;if(!(S.inv[key]>0))return toast('لا تملك هذا العنصر — اجمع الهدايا 🎁 أو اطلبه من صديق');S.inv[key]--}
   placeObj({k:tool.k,i:tool.i,x:gpos.x,z:gpos.z,ry:rot,e:elev});S.xp+=1;dirty();refreshPanels()}}
 const lerpAng=(a,b,t)=>{let d=((b-a+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI;return a+d*t};
