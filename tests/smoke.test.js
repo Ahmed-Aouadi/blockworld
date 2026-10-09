@@ -91,3 +91,33 @@ test('side placement aligns real world-space object bounds instead of fixed offs
   assert.ok(world.includes('targetBox.max.z-candidateBox.min.z'));
   assert.ok(!world.includes('base.x+Math.sign(normal.x)*1'));
 });
+
+
+test('mobile build controls stay usable and selected builds can be hidden without cancelling placement', () => {
+  const html = read('public/index.html');
+  const css = read('public/css/style.css');
+  const main = read('public/js/main.js');
+  const world = read('public/js/world.js');
+  assert.match(html, /id="quickBuild"/);
+  assert.match(css, /#quickBuild\.on\{display:block\}/);
+  assert.match(css, /grid-template-columns:repeat\(3,43px\)/);
+  assert.match(main, /function hideBuildPanel\(\)/);
+  assert.match(main, /function updateQuickBuild\(\)/);
+  assert.match(world, /if\(typeof updateQuickBuild==='function'\)updateQuickBuild\(\)/);
+});
+
+test('shared players receive each active builder world without saving remote objects locally', () => {
+  const api = read('api/[...path].js');
+  const server = read('server.js');
+  const main = read('public/js/main.js');
+  const world = read('public/js/world.js');
+  assert.match(api, /worlds = await sql/);
+  assert.match(api, /worlds:worlds\.map/);
+  assert.match(server, /const worlds=active/);
+  assert.match(server, /return send\(r,200,\{pl,worlds,ms,inbox,last:cid\}\)/);
+  assert.match(main, /syncWorlds\(SH\?\(r\.worlds\|\|\[\]\):\[\]\)/);
+  assert.match(main, /placed\.filter\(p=>!p\.remoteOwner\)/);
+  assert.match(main, /function syncWorlds\(worlds\)/);
+  assert.match(world, /function placeObj\(po,remoteOwner=null\)/);
+  assert.match(world, /function hitPlaced\(e\)\{pick\(e\);const h=rc\.intersectObjects\(placed\.filter\(p=>!p\.remoteOwner\)/);
+});
