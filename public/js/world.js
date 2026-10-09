@@ -110,13 +110,14 @@ function initWorld(){
      const targetBox=new T.Box3().setFromObject(base.g);
      ghost.position.set(0,0,0);ghost.rotation.y=rot;ghost.updateMatrixWorld(true);
      const candidateBox=new T.Box3().setFromObject(ghost);
-     const halfX=(candidateBox.max.x-candidateBox.min.x)/2,halfZ=(candidateBox.max.z-candidateBox.min.z)/2;
+     const targetCX=(targetBox.min.x+targetBox.max.x)/2,targetCZ=(targetBox.min.z+targetBox.max.z)/2;
+     const candidateCX=(candidateBox.min.x+candidateBox.max.x)/2,candidateCZ=(candidateBox.min.z+candidateBox.max.z)/2;
      if(Math.abs(normal.x)>=Math.abs(normal.z)){
-      gpos.x=normal.x>=0?targetBox.max.x+halfX:targetBox.min.x-halfX;
-      gpos.z=base.z;
+      gpos.x=normal.x>=0?targetBox.max.x-candidateBox.min.x:targetBox.min.x-candidateBox.max.x;
+      gpos.z=targetCZ-candidateCZ;
      }else{
-      gpos.z=normal.z>=0?targetBox.max.z+halfZ:targetBox.min.z-halfZ;
-      gpos.x=base.x;
+      gpos.z=normal.z>=0?targetBox.max.z-candidateBox.min.z:targetBox.min.z-candidateBox.max.z;
+      gpos.x=targetCX-candidateCX;
      }
      gpos.x=Math.max(-HALF+2,Math.min(HALF-2,gpos.x));
      gpos.z=Math.max(-HALF+2,Math.min(HALF-2,gpos.z));
