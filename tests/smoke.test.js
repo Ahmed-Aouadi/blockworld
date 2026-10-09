@@ -177,3 +177,19 @@ test('shared world persistence is separate from personal saves and survives disc
   assert.match(api, /UPDATE bw_shared_world SET placed=/);
   assert.match(api, /sharedWorld, ms:/);
 });
+
+
+test('shared world exposes staged exploration and building quests with claimable rewards', () => {
+  const main = read('public/js/main.js');
+  const html = read('public/index.html');
+  const css = read('public/css/style.css');
+  assert.match(main, /const WORLD_QUESTS=\[/);
+  assert.match(main, /id:'explore2'/);
+  assert.match(main, /id:'explore6'/);
+  assert.match(main, /id:'build10'/);
+  assert.match(main, /function showWorldQuests\(\)/);
+  assert.match(main, /S\.xp\+=q\.reward/);
+  assert.match(main, /\$\('#zn'\)\.onclick=showWorldQuests/);
+  assert.match(css, /\.quest-list/);
+  assert.match(html, /id="zn"/);
+});
