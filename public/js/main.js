@@ -1,5 +1,22 @@
 // الواجهة: الحسابات، اللوحات، الدردشة، الهدايا، الحفظ
 const $=s=>document.querySelector(s);
+
+// مؤثرات صوتية مولّدة داخل المتصفح، بلا ملفات خارجية.
+let soundOn=true,soundCtx=null,soundLast=0;
+try{soundOn=localStorage.getItem('bw_sound')!=='off'}catch(_){}
+function sfx(kind='ui'){
+ if(!soundOn)return;
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  if(!soundCtx)soundCtx=new AC();if(soundCtx.state==='suspended')soundCtx.resume();
+  const now=soundCtx.currentTime;
+  const seq={ui:[[520,.045,'sine']],open:[[440,.06,'sine'],[660,.08,'sine']],step:[[250,.045,'triangle'],[340,.05,'triangle']],jump:[[330,.07,'sine'],[520,.12,'sine'],[680,.1,'sine']],build:[[390,.06,'triangle'],[520,.07,'triangle'],[760,.11,'sine']],collect:[[620,.06,'sine'],[830,.08,'sine'],[1040,.13,'sine']],turn:[[420,.05,'sine']],run:[[440,.07,'triangle'],[660,.08,'triangle']],done:[[523,.09,'sine'],[659,.09,'sine'],[784,.16,'sine']],error:[[240,.13,'sawtooth'],[180,.15,'sawtooth']],night:[[360,.1,'sine'],[290,.14,'sine']],say:[[560,.055,'sine']]};
+  const notes=seq[kind]||seq.ui;notes.forEach((n,i)=>{const o=soundCtx.createOscillator(),g=soundCtx.createGain();o.type=n[2];o.frequency.setValueAtTime(n[0],now+i*.075);g.gain.setValueAtTime(.0001,now+i*.075);g.gain.exponentialRampToValueAtTime(.055,now+i*.075+.012);g.gain.exponentialRampToValueAtTime(.0001,now+i*.075+n[1]);o.connect(g);g.connect(soundCtx.destination);o.start(now+i*.075);o.stop(now+i*.075+n[1]+.015)});
+ }catch(_){}
+}
+function toggleSound(){soundOn=!soundOn;try{localStorage.setItem('bw_sound',soundOn?'on':'off')}catch(_){}const b=$('#bSound');if(b){b.textContent=soundOn?'🔊 الصوت':'🔇 الصوت';b.title=soundOn?'إيقاف المؤثرات الصوتية':'تشغيل المؤثرات الصوتية'}if(soundOn)sfx('open');toast(soundOn?'🔊 تم تشغيل المؤثرات الصوتية':'🔇 تم كتم المؤثرات الصوتية')}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.id==='bSound'||b.disabled)return;const id=b.id||'',t=(b.textContent||'').trim();if(id==='runb')return;if(id==='bTime')sfx('night');else if(id==='bAvatar'||id==='bHelp'||id==='bShare'||b.dataset.p)sfx('open');else if(/حفظ|وضع|بناء|نسخ|تأكيد/.test(t))sfx('build');else if(/تشغيل|ابدأ/.test(t))sfx('run');else sfx('ui')},true);
+
 let S={xp:0,inv:{},placed:[],custom:[],found:{},pos:[0,6],hue:200,avatar:{skin:0xffd2ad,hair:0x49334a,outfit:0x3da5ff,trim:0x2674b4,pants:0x34364b,shoes:0x34364b,scarf:0xffca58,hat:'none',hatColor:0x3da5ff},prog:[]},SH=false,since=0,chatTo=null,started=false,isDirty=false,saving=false,saveVersion=0,openP=null;
 let selectedPo=null,selectionBox=null;
 // سحب اللوحات من شريط العنوان لتغيير مكانها ومنع تداخل لوحة البرمجة مع الأدوات.
@@ -155,6 +172,8 @@ $('#bGuest').onclick=()=>{let s=null;try{s=JSON.parse(localStorage.getItem('bw_g
 (async()=>{const t=localStorage.getItem('bw_t');if(!t)return;NET.token=t;try{const r=await NET.api('me');NET.guest=false;startGame(r.save,r.name,r.hue)}catch(e){NET.token=null;localStorage.removeItem('bw_t')}})();
 // ---------- الأزرار ----------
 $('#bAvatar').onclick=avatarModal;
+$('#bSound').onclick=toggleSound;
+$('#bSound').textContent=soundOn?'🔊 الصوت':'🔇 الصوت';
 document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel(b.dataset.p));
 $('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر لتحديده ثم استخدم الأسهم للتحريك')};
 $('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH)syncPlayers([]);toast(SH?'العالم المشترك: سترى اللاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
