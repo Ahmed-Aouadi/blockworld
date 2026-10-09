@@ -145,3 +145,19 @@ test('shared building publishes changed local blocks immediately and validates s
   assert.match(server, /const validSharedPlaced=!!on\[k\]\.sh&&Array\.isArray\(b\.placed\)/);
   assert.match(server, /U\[k\]\.save=\{\.\.\.\(U\[k\]\.save\|\|\{\}\),placed:b\.placed\}/);
 });
+
+
+test('shared build collision uses rendered scale and includes remote-owned structures', () => {
+  const world = read('public/js/world.js');
+  assert.match(world, /if\(po\.k==='p'&&s\)cols\.push/);
+  assert.match(world, /hx:s\[0\]\*BUILD_SCALE,hz:s\[1\]\*BUILD_SCALE/);
+  assert.match(world, /g\.scale\.setScalar\(BUILD_SCALE\*\(1\+Math\.sin\(w\*6\.283\/p\)\*\.25\)\)/);
+  assert.match(world, /const def=DEFS\[tool\.k\]&&DEFS\[tool\.k\]\[tool\.i\],part=def&&tool\.k==='p'\?/);
+});
+
+test('remote player motion is frame-rate independent and animates walking', () => {
+  const world = read('public/js/world.js');
+  assert.match(world, /blend=1-Math\.exp\(-dt\*14\)/);
+  assert.match(world, /o\.phase\+=dt\*Math\.min\(14,7\+speed\*1\.4\)/);
+  assert.match(world, /u\.armL\.rotation\.x=gait\*\.62/);
+});
