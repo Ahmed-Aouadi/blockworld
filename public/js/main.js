@@ -1,6 +1,7 @@
 // الواجهة: الحسابات، اللوحات، الدردشة، الهدايا، الحفظ
 const $=s=>document.querySelector(s);
 let S={xp:0,inv:{},placed:[],custom:[],found:{},pos:[0,6],hue:200,prog:[]},SH=false,since=0,chatTo=null,started=false,isDirty=false,saving=false,saveVersion=0,openP=null;
+let selectedPo=null,selectionBox=null;
 // سحب اللوحات من شريط العنوان لتغيير مكانها ومنع تداخل لوحة البرمجة مع الأدوات.
 (function enablePanelDragging(){
  let drag=null;
@@ -24,6 +25,14 @@ let S={xp:0,inv:{},placed:[],custom:[],found:{},pos:[0,6],hue:200,prog:[]},SH=fa
  document.addEventListener('pointerup',stop);document.addEventListener('pointercancel',stop);
 })();
 const rnd=n=>Math.floor(Math.random()*n);
+function clearPlacedSelection(){if(selectionBox&&typeof scene!=='undefined')scene.remove(selectionBox);selectionBox=null;selectedPo=null}
+function selectPlaced(po){clearPlacedSelection();selectedPo=po;selectionBox=new THREE.BoxHelper(po.g,0xffc928);scene.add(selectionBox);toast('تم تحديد العنصر — الأسهم للتحريك، Q/E للتدوير، Delete للحذف');}
+function moveSelected(dx,dz){if(!selectedPo)return;const po=selectedPo,x=Math.max(-HALF+2,Math.min(HALF-2,Math.round((po.x+dx)*2)/2)),z=Math.max(-HALF+2,Math.min(HALF-2,Math.round((po.z+dz)*2)/2));if(!walkable(x,z))return;po.x=x;po.z=z;po.g.position.x=x;po.g.position.z=z;po.g.userData.x0=x;po.g.userData.z0=z;po.g.userData.y0=Math.max(H(x,z),-.3)+(po.e||0)+(po.k==='p'&&PART_Y[DEFS[po.k][po.i].b]||0);po.g.position.y=po.g.userData.y0;const c=cols.find(v=>v.o===po);if(c){c.x=x;c.z=z}if(selectionBox)selectionBox.update();dirty()}
+function rotateSelected(dir){if(!selectedPo)return;const po=selectedPo;po.ry=((po.ry||0)+dir*Math.PI/4)%(Math.PI*2);po.g.rotation.y=po.ry;po.g.userData.ry0=po.ry;const c=cols.find(v=>v.o===po);if(c)c.ry=po.ry;if(selectionBox)selectionBox.update();dirty()}
+function changeSelectedHeight(dir){if(!selectedPo)return;selectedPo.e=Math.max(0,Math.min(4.4,Math.round(((selectedPo.e||0)+dir*.55)*100)/100));const po=selectedPo;po.g.position.y=Math.max(H(po.x,po.z),-.3)+(po.e||0)+(po.k==='p'&&PART_Y[DEFS[po.k][po.i].b]||0);po.g.userData.y0=po.g.position.y;if(selectionBox)selectionBox.update();dirty()}
+function deleteSelected(){if(!selectedPo)return;const po=selectedPo;removeObj(po);if(po.k==='e')S.inv['e'+po.i]=(S.inv['e'+po.i]||0)+1;clearPlacedSelection();dirty();refreshPanels();toast('تم حذف العنصر المحدد')}
+function duplicateSelected(){if(!selectedPo)return;const po=selectedPo;if(po.k==='e'&&!(S.inv['e'+po.i]>0))return toast('لا توجد نسخة في الحقيبة');if(po.k==='e')S.inv['e'+po.i]--;const copy=placeObj({k:po.k,i:po.i,x:Math.min(HALF-2,po.x+1),z:po.z,ry:po.ry||0,e:po.e||0});if(po.beh)copy.beh={...po.beh};selectPlaced(copy);dirty();refreshPanels();toast('تم نسخ العنصر')}
+
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2400)}
 const spark_toast=toast,dirty=()=>{isDirty=true;saveVersion++;hud()};
 function hud(){const l=Math.floor(S.xp/100)+1;$('#lv').textContent=l;$('#xb').style.width=S.xp%100+'%'}
@@ -101,11 +110,22 @@ $('#bGuest').onclick=()=>{let s=null;try{s=JSON.parse(localStorage.getItem('bw_g
 document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel(b.dataset.p));
 $('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH)syncPlayers([]);toast(SH?'العالم المشترك: سترى اللاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
 $('#bShare').textContent='🏡 خاص';
-$('#tDel').onclick=()=>{setTool('del');toast('🗑 انقر على العنصر الذي تريد حذفه')};$('#tSel').onclick=()=>{setTool('sel');toast('🧩 انقر على عنصر لفتح إعدادات برمجته')};$('#tCopy').onclick=()=>{setTool('copy');toast('📋 انقر على عنصر لنسخه — يلزم توفره في الحقيبة')};$('#tOff').onclick=()=>{setTool(null);if(openP==='Build')rBuild()};
+$('#tDel').onclick=()=>{clearPlacedSelection();setTool('del');toast('🗑 انقر على العنصر الذي تريد حذفه')};$('#tMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر ثم حرّكه بالأسهم أو WASD')};$('#tSel').onclick=()=>{clearPlacedSelection();setTool('sel');toast('🧩 انقر على عنصر لفتح إعدادات برمجته')};$('#tCopy').onclick=()=>{setTool('copy');toast('📋 انقر على عنصر لنسخه — يلزم توفره في الحقيبة')};$('#tOff').onclick=()=>{setTool(null);if(openP==='Build')rBuild()};
 $('#tRot').onclick=()=>{rot+=Math.PI/4;if(ghost)ghostPlace()};$('#tUp').onclick=()=>{elev=Math.min(4.4,elev+.55);toast('الارتفاع: '+Math.round(elev/.55));if(ghost)ghostPlace()};$('#tDn').onclick=()=>{elev=Math.max(0,elev-.55);toast('الارتفاع: '+Math.round(elev/.55));if(ghost)ghostPlace()};
 document.querySelectorAll('#dpad [data-k]').forEach(b=>{const k=b.dataset.k;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointercancel','pointerleave'].forEach(v=>b.addEventListener(v,()=>keys[k]=false))});
 $('#jump').addEventListener('pointerdown',e=>{e.preventDefault();keys.jump=true});
 const KM={KeyW:'up',ArrowUp:'up',KeyS:'down',ArrowDown:'down',KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right'};
-addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select'))return;if(KM[e.code]){keys[KM[e.code]]=true;e.preventDefault()}if(e.code==='Space'){keys.jump=true;e.preventDefault()}if(e.key==='Shift')keys.shift=true;
- if(e.code==='KeyR'&&tool&&tool.k){rot+=Math.PI/4;ghostPlace()}if(e.code==='Escape'){if(openP)togglePanel(openP);setTool(null);closeModal()}});
+addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select'))return;
+ if(tool==='move'&&selectedPo){
+  const step=e.shiftKey?1:.5;
+  if(KM[e.code]){const k=KM[e.code];moveSelected(k==='left'?-step:k==='right'?step:0,k==='up'?-step:k==='down'?step:0);e.preventDefault();return}
+  if(e.code==='KeyQ'){rotateSelected(-1);e.preventDefault();return}
+  if(e.code==='KeyE'){rotateSelected(1);e.preventDefault();return}
+  if(e.code==='PageUp'||e.code==='Equal'||e.code==='NumpadAdd'){changeSelectedHeight(1);e.preventDefault();return}
+  if(e.code==='PageDown'||e.code==='Minus'||e.code==='NumpadSubtract'){changeSelectedHeight(-1);e.preventDefault();return}
+  if(e.code==='Delete'||e.code==='Backspace'){deleteSelected();e.preventDefault();return}
+  if(e.ctrlKey&&e.code==='KeyD'){duplicateSelected();e.preventDefault();return}
+ }
+ if(KM[e.code]){keys[KM[e.code]]=true;e.preventDefault()}if(e.code==='Space'){keys.jump=true;e.preventDefault()}if(e.key==='Shift')keys.shift=true;
+ if(e.code==='KeyR'&&tool&&tool.k){rot+=Math.PI/4;ghostPlace()}if(e.code==='Escape'){if(openP)togglePanel(openP);clearPlacedSelection();setTool(null);closeModal()}});
 addEventListener('keyup',e=>{if(KM[e.code])keys[KM[e.code]]=false;if(e.key==='Shift')keys.shift=false});
