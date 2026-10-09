@@ -85,9 +85,9 @@ test('network polling is guarded and removed placed objects release GPU resource
 
 test('side placement aligns real world-space object bounds instead of fixed offsets', () => {
   const world = read('public/js/world.js');
-  assert.match(world, /new T\\.Box3\\(\\)\\.setFromObject\\(base\\.g\\)/);
-  assert.match(world, /new T\\.Box3\\(\\)\\.setFromObject\\(ghost\\)/);
-  assert.match(world, /targetBox\\.max\\.x-candidateBox\\.min\\.x/);
-  assert.match(world, /targetBox\\.max\\.z-candidateBox\\.min\\.z/);
-  assert.doesNotMatch(world, /base\\.x\\+Math\\.sign\\(normal\\.x\\)\\*1/);
+  assert.ok(world.includes('new T.Box3().setFromObject(base.g)'));
+  assert.ok(world.includes('new T.Box3().setFromObject(ghost)'));
+  assert.ok(world.includes('targetBox.max.x-candidateBox.min.x'));
+  assert.ok(world.includes('targetBox.max.z-candidateBox.min.z'));
+  assert.ok(!world.includes('base.x+Math.sign(normal.x)*1'));
 });
