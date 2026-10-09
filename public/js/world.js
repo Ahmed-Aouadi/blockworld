@@ -1,14 +1,14 @@
 // العالم ثلاثي الأبعاد: تضاريس ملونة، مناطق، لاعب، بناء، سلوكيات العناصر، لاعبون آخرون
-const T=THREE,HALF=60;
+const T=THREE,HALF=240;
 const hs=(x,z)=>{let h=Math.imul(x|0,374761393)+Math.imul(z|0,668265263)|0;h=Math.imul(h^(h>>>13),1274126177);return((h^(h>>>16))>>>0)/4294967295};
 const sm=t=>t*t*(3-2*t),vn=(x,z)=>{const i=Math.floor(x),j=Math.floor(z),fx=sm(x-i),fz=sm(z-j),a=hs(i,j),b=hs(i+1,j),c=hs(i,j+1),d=hs(i+1,j+1);return a+(b-a)*fx+(c-a)*fz+(a-b-c+d)*fx*fz};
 const fbm=(x,z)=>{let a=.5,f=1,s=0;for(let i=0;i<4;i++){s+=vn(x*f,z*f)*a;a/=2;f*=2}return s/.9375},gs=(d,r)=>Math.exp(-d*d/(r*r));
-function H(x,z){let h=(fbm(x/26+3,z/26)-.5)*2.8;const d=i=>Math.hypot(x-ZONES[i].x,z-ZONES[i].z);h+=gs(d(1),19)*5.2;h+=gs(d(4),18)*2.8;h-=gs(d(2),14)*2.4;const sp=Math.min(1,Math.hypot(x,z)/18);h*=sp*sp*(3-2*sp);return h-Math.max(0,Math.max(Math.abs(x),Math.abs(z))/HALF-.88)*18}
+function H(x,z){let h=(fbm(x/26+3,z/26)-.5)*2.8;const d=i=>Math.hypot(x-ZONES[i].x,z-ZONES[i].z);h+=gs(d(1),19)*5.2;h+=gs(d(4),18)*2.8;h-=gs(d(2),14)*2.4;const sp=Math.min(1,Math.hypot(x,z)/18);h*=sp*sp*(3-2*sp);return h-Math.max(0,Math.max(Math.abs(x),Math.abs(z))/HALF-.94)*12}
 function tcol(x,z,h){let c=[.32,.68,.27];const zw=i=>gs(Math.hypot(x-ZONES[i].x,z-ZONES[i].z),ZONES[i].r*.8),mix=(a,w)=>{w=Math.max(0,Math.min(1,w));for(let i=0;i<3;i++)c[i]+=(a[i]-c[i])*w};
  mix([.22,.55,.25],zw(1)*.72);mix([.91,.73,.36],zw(3)*.92);mix([.88,.94,1],zw(4)*.95+Math.max(0,h-4)*.1);mix([.55,.66,.84],zw(5)*.32);if(h<.45)mix([.82,.75,.48],Math.min(1,(.45-h)*1.15));if(h<-.65)mix([.43,.75,.79],Math.min(1,(-h-.4)*1.8));const n=.97+hs(Math.round(x*1.7),Math.round(z*1.7))*.06;return c.map(v=>Math.max(0,Math.min(1,v*n)))}
 const GEO={sph:a=>new T.SphereGeometry(a[0],12,10),box:a=>new T.BoxGeometry(a[0],a[1],a[2]),cyl:a=>new T.CylinderGeometry(a[0],a[1],a[2],10),cone:a=>new T.ConeGeometry(a[0],a[1],8),pyr:a=>new T.ConeGeometry(a[0],a[1],4),oct:a=>new T.OctahedronGeometry(a[0]),ico:a=>new T.IcosahedronGeometry(a[0],0),tor:a=>new T.TorusGeometry(a[0],a[1],8,18,a[2]||6.283)};
 function mk(b,c,ghost){const g=new T.Group();
- const add=(p,par)=>{const[s,d,col,x,y,z,sx,sy,sz,rx,ry,rz]=p,cc=col==='c'?c:col,m=new T.Mesh(GEO[s](d),new T.MeshStandardMaterial({color:cc,roughness:.65,flatShading:s==='ico'||s==='oct',emissive:col==='c'&&EM.has(b)?cc:0,emissiveIntensity:.4,transparent:!!ghost,opacity:ghost?.5:1}));
+ const add=(p,par)=>{const[s,d,col,x,y,z,sx,sy,sz,rx,ry,rz]=p,cc=col==='c'?c:col,m=new T.Mesh(GEO[s](d),new T.MeshStandardMaterial({color:cc,roughness:.65,flatShading:s==='ico'||s==='oct',emissive:col==='c'&&EM.has(b)?cc:0,emissiveIntensity:.14,transparent:!!ghost,opacity:ghost?.5:1}));
   m.position.set(x||0,y||0,z||0);m.scale.set(sx||1,sy||1,sz||1);m.rotation.set(rx||0,ry||0,rz||0);if(col==='c')m.userData.tint=1;(par||g).add(m)};
  if(b==='door'){add(['box',[.1,1.1,.2],0xf5f5f5,-.48,.55,0]);add(['box',[.1,1.1,.2],0xf5f5f5,.48,.55,0]);add(['box',[1,.12,.2],0xf5f5f5,0,1.06,0]);const pv=new T.Group();pv.position.set(-.45,0,0);add(['box',[.86,1,.08],'c',.43,.5,0],pv);add(['sph',[.05],0xffd23f,.78,.5,.06],pv);g.add(pv);g.userData.door=pv;g.userData.open=0}
  else{(B[b]||B.rock).forEach(p=>add(p));if(b==='mill'){const bl=new T.Group();bl.position.set(0,1.3,.38);for(let i=0;i<4;i++){const sg=new T.Group();sg.rotation.z=i*1.5708;add(['box',[.12,.7,.02],0xffffff,0,.35,0],sg);bl.add(sg)}g.add(bl);g.userData.spin=bl}}
@@ -39,19 +39,19 @@ function ghostPlace(){if(!ghost)return;const d=DEFS[tool.k][tool.i];ghost.positi
 function pick(e){const r=R.domElement.getBoundingClientRect();rc.setFromCamera(new T.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),cam)}
 function initWorld(){
  const cv=document.getElementById('cv');R=new T.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio||1,2));R.outputEncoding=T.sRGBEncoding;
- scene=new T.Scene();scene.background=new T.Color(0x55d7ff);scene.fog=new T.Fog(0x9cecff,65,190);cam=new T.PerspectiveCamera(55,1,.1,300);
- scene.add(new T.HemisphereLight(0xffffff,0x72e0a1,1.15));const sun=new T.DirectionalLight(0xfff3d0,.9);sun.position.set(40,70,25);scene.add(sun);
- const geo=new T.PlaneGeometry(HALF*2,HALF*2,120,120);geo.rotateX(-Math.PI/2);const pos=geo.attributes.position,col=[];
+ scene=new T.Scene();scene.background=new T.Color(0xa7c5d5);scene.fog=new T.Fog(0xa7c5d5,260,820);cam=new T.PerspectiveCamera(55,1,.1,1400);
+ scene.add(new T.HemisphereLight(0xffffff,0x71947d,.58));const sun=new T.DirectionalLight(0xfff3d0,.48);sun.position.set(40,70,25);scene.add(sun);
+ const geo=new T.PlaneGeometry(HALF*2,HALF*2,240,240);geo.rotateX(-Math.PI/2);const pos=geo.attributes.position,col=[];
  for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getZ(i),h=H(x,z);pos.setY(i,h);col.push(...tcol(x,z,h))}geo.setAttribute('color',new T.Float32BufferAttribute(col,3));geo.computeVertexNormals();
  terrain=new T.Mesh(geo,new T.MeshStandardMaterial({vertexColors:true,roughness:.95}));scene.add(terrain);
- const wt=new T.Mesh(new T.PlaneGeometry(400,400),new T.MeshStandardMaterial({color:0x18dce8,transparent:true,opacity:.86,roughness:.16}));wt.rotation.x=-Math.PI/2;wt.position.y=-.7;scene.add(wt);
- for(let i=0;i<10;i++){const g=new T.Group();for(let j=0;j<4;j++){const s=new T.Mesh(new T.SphereGeometry(2+Math.random()*2,10,8),new T.MeshBasicMaterial({color:0xffffff,fog:false}));s.position.set(j*2.6-4,Math.random(),Math.random()*1.5);g.add(s)}g.position.set(Math.random()*240-120,28+Math.random()*10,Math.random()*240-120);scene.add(g);clouds.push(g)}
+ const wt=new T.Mesh(new T.PlaneGeometry(HALF*4,HALF*4),new T.MeshStandardMaterial({color:0x47b8c5,transparent:true,opacity:.68,roughness:.38}));wt.rotation.x=-Math.PI/2;wt.position.y=-.7;scene.add(wt);
+ for(let i=0;i<10;i++){const g=new T.Group();for(let j=0;j<4;j++){const s=new T.Mesh(new T.SphereGeometry(2+Math.random()*2,10,8),new T.MeshBasicMaterial({color:0xffffff,fog:false}));s.position.set(j*2.6-4,Math.random(),Math.random()*1.5);g.add(s)}g.position.set(Math.random()*900-450,28+Math.random()*10,Math.random()*900-450);scene.add(g);clouds.push(g)}
  // زرع العناصر في المناطق
  const sets={0:['flower','tulip','bush','grass','round'],1:['pine','round','mushroom','fern','bamboo'],2:['palm','bamboo','flower','grass'],3:['cactus','rock','palm'],4:['pine','rock','snowman'],5:['house','lamp','flower','bush']};
  for(let n=0;n<340;n++){const x=(hs(n,7)-.5)*(HALF*1.8),z=(hs(n,13)-.5)*(HALF*1.8);if(Math.hypot(x,z)<5||H(x,z)<-.2)continue;let zi=0,bd=1e9;ZONES.forEach((q,i)=>{const d=Math.hypot(x-q.x,z-q.z)/q.r;if(d<bd){bd=d;zi=i}});if(bd>1.15)continue;
   const ok=ELS.filter(e=>sets[zi].includes(e.b)&&(zi!==4||e.c>0xe0e0e0||e.b==='rock'||e.b==='snowman'));if(!ok.length)continue;const d=ok[(hs(n,3)*ok.length)|0],g=mk(d.b,d.c);g.position.set(x,H(x,z),z);g.rotation.y=hs(n,5)*6.28;const s=.8+hs(n,9)*.6;g.scale.setScalar(d.b==='house'?1.3:s);scene.add(g)}
  // صناديق الهدايا
- for(let n=0;n<34;n++){const x=(hs(n,21)-.5)*100,z=(hs(n,23)-.5)*100;if(H(x,z)<0||Math.hypot(x,z)<4)continue;const g=new T.Group(),c=new T.Color().setHSL(hs(n,2),.8,.6);const b=new T.Mesh(new T.BoxGeometry(.5,.5,.5),new T.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.3}));b.position.y=.4;const r=new T.Mesh(new T.BoxGeometry(.54,.1,.1),new T.MeshStandardMaterial({color:0xffffff}));r.position.y=.4;const r2=r.clone();r2.rotation.y=1.57;g.add(b,r,r2);g.position.set(x,H(x,z),z);scene.add(g);gifts.push({g,x,z,alive:true,t:0})}
+ for(let n=0;n<34;n++){const x=(hs(n,21)-.5)*(HALF*1.7),z=(hs(n,23)-.5)*(HALF*1.7);if(H(x,z)<0||Math.hypot(x,z)<4)continue;const g=new T.Group(),c=new T.Color().setHSL(hs(n,2),.8,.6);const b=new T.Mesh(new T.BoxGeometry(.5,.5,.5),new T.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.3}));b.position.y=.4;const r=new T.Mesh(new T.BoxGeometry(.54,.1,.1),new T.MeshStandardMaterial({color:0xffffff}));r.position.y=.4;const r2=r.clone();r2.rotation.y=1.57;g.add(b,r,r2);g.position.set(x,H(x,z),z);scene.add(g);gifts.push({g,x,z,alive:true,t:0})}
  pl={g:mkAvatar(S.hue||200),x:0,z:6,ry:3.14,vy:0,jy:0,walk:0};scene.add(pl.g);
  const rs=()=>{R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()};addEventListener('resize',rs);rs();
  let dn=null;
@@ -82,6 +82,6 @@ function frame(dt,t){
  for(const id in others){const o=others[id];o.x+=(o.tx-o.x)*Math.min(1,dt*6);o.z+=(o.tz-o.z)*Math.min(1,dt*6);o.ry=lerpAng(o.ry,o.try,.2);o.g.position.set(o.x,Math.max(H(o.x,o.z),-.3),o.z);o.g.rotation.y=o.ry}
  for(const po of placed){const u=po.g.userData;behave(po,dt,t);if(u.door){const near=Math.hypot(pl.x-po.x,pl.z-po.z)<2.4||u.force;u.open+=((near?1:0)-u.open)*Math.min(1,dt*6);u.door.rotation.y=-u.open*1.7}if(u.spin)u.spin.rotation.z+=dt*1.5}
  scene.traverse&&0;for(const g of gifts){if(!g.alive){if(t>g.t){g.alive=true;g.g.visible=true}continue}g.g.rotation.y+=dt*1.5;g.g.position.y=H(g.x,g.z)+Math.sin(t*3+g.x)*.12;if(Math.hypot(pl.x-g.x,pl.z-g.z)<1){g.alive=false;g.g.visible=false;g.t=t+45;onGift()}}
- clouds.forEach(c=>{c.position.x+=dt*.8;if(c.position.x>130)c.position.x=-130});
+ clouds.forEach(c=>{c.position.x+=dt*.8;if(c.position.x>480)c.position.x=-480});
  let zi=0,bd=1e9;ZONES.forEach((q,i)=>{const d=Math.hypot(pl.x-q.x,pl.z-q.z)/q.r;if(d<bd){bd=d;zi=i}});if(bd<.8){if(zi!==curZone||!curZone&&zi===0){curZone=zi;onZone(zi)}}
  R.render(scene,cam)}
