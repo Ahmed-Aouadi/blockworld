@@ -41,7 +41,10 @@ function importWorld(file){
   try{
    const d=JSON.parse(String(rd.result||'')),s=d&&d.save;
    if(!d||d.format!=='blockworld-world'||d.version!==1||!s||!Array.isArray(s.placed)||!Array.isArray(s.pos)||!Array.isArray(s.prog))throw Error('ملف العالم غير صالح أو من إصدار غير مدعوم');
-   if(s.placed.length>2000||s.prog.length>120||!s.inv||typeof s.inv!=='object')throw Error('الملف يتجاوز الحدود الآمنة');
+   if(s.placed.length>2000||s.prog.length>120||(s.custom||[]).length>80||!s.inv||typeof s.inv!=='object')throw Error('الملف يتجاوز الحدود الآمنة');
+   if(!Number.isFinite(+s.xp)||+s.xp<0||+s.xp>1000000000||s.pos.some(v=>!Number.isFinite(+v)||Math.abs(+v)>500))throw Error('قيمة التقدم أو الموقع غير صالحة');
+   if(!Object.entries(s.inv).every(([k,v])=>/^e\\d{1,3}$/.test(k)&&+k.slice(1)<ELS.length&&Number.isInteger(v)&&v>=0&&v<=999))throw Error('الحقيبة تحتوي على قيم غير صالحة');
+   if(!s.prog.every(b=>b&&typeof b.k==='string'&&b.k.length<40&&Object.prototype.hasOwnProperty.call(b,'p'))||(s.custom||[]).some(b=>!b||typeof b.name!=='string'||typeof b.code!=='string'||b.name.length>20||b.code.length>5000))throw Error('توجد بلوكات أو أوامر مخصصة غير صالحة');
    const valid=s.placed.every(a=>Array.isArray(a)&&DEFS[a[0]]&&DEFS[a[0]][a[1]]&&Number.isFinite(+a[2])&&Number.isFinite(+a[3])&&Math.abs(+a[2])<500&&Math.abs(+a[3])<500);
    if(!valid)throw Error('يحتوي الملف على عناصر أو إحداثيات غير صالحة');
    if(!confirm('سيستبدل هذا الملف عالمك الحالي. هل تريد المتابعة؟'))return;
@@ -120,9 +123,10 @@ function mount(){
  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTools()});
 }
 function installHistoryHooks(){
- const wrap=(name)=>{try{const orig=window[name]||eval(name);if(typeof orig!=='function')return;const wrapped=function(...args){if(started&&!restoring&&!batch)pushHistory();return orig.apply(this,args)};window[name]=wrapped;try{eval(name+' = wrapped')}catch(_){}}catch(e){}};
+ const wrap=(name)=>{try{const orig=window[name]||eval(name);if(typeof orig!=='function')return;const wrapped=function(...args){if(started&&!restoring&&!batch){pushHistory();if(name==='placeObj'&&args[0]&&args[0].k==='e'&&history.length){const h=history[history.length-1],key='e'+args[0].i;h.inv[key]=(h.inv[key]||0)+1}}return orig.apply(this,args)};window[name]=wrapped;try{eval(name+' = wrapped')}catch(_){}}catch(e){}};
  // Classic-script function bindings are wrapped directly so existing controls are tracked too.
  ['placeObj','removeObj','moveSelected','rotateSelected','changeSelectedHeight'].forEach(wrap);
+ try{const startOriginal=startGame;startGame=function(...args){restoring=true;try{return startOriginal.apply(this,args)}finally{restoring=false;history=[];future=[];saveBackup()}}}catch(_){}
 }
 document.addEventListener('DOMContentLoaded',mount,{once:true});
 if(document.readyState!=='loading')mount();
