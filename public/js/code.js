@@ -55,6 +55,7 @@ async function runCustom(i){const cb=S.custom[i];if(!cb)return;const src=cb.code
  try{const fn=new AF('forward','back','turn','jump','wait','say','place','dance','color','size','emote','collect','goto','side',src);
   await fn(n=>A.step(0,n),n=>A.step(Math.PI,n),d=>A.turn(d),h=>A.jump(h),s=>A.wait(s),t=>A.say(t),q=>A.placeBy(q),()=>A.dance(),h=>A.color(h),s=>A.size(s),e=>A.emote(e),()=>A.collect(),i2=>A.goto(i2),n=>A.str(n))}
  catch(e){if(e==='STOP')throw e;toast('⚠ خطأ في بلوكك «'+cb.name+'»: '+(e.message||e))}}
-async function runProg(){if(running){stopF=true;return}if(!prog.length)return toast('أضف بلوكات أولًا 🧩');running=true;stopF=false;ctl.lock=true;speed=1;V.c=0;document.getElementById('runb').textContent='⏹ إيقاف';
- try{await execList(parseProg(prog));S.xp+=prog.length*2;toast('✓ انتهى البرنامج +'+prog.length*2+' XP')}catch(e){if(e!=='STOP')console.error(e)}
- running=false;ctl.lock=false;curI=-1;pl.walk=0;document.getElementById('runb').textContent='▶ تشغيل';drawProg();dirty()}
+async function runProg(){if(running){stopF=true;return}if(!prog.length)return toast('أضف بلوكات أولًا 🧩');const runSnapshot=prog.map(b=>({...b}));running=true;stopF=false;ctl.lock=true;speed=1;V.c=0;document.getElementById('runb').textContent='⏹ إيقاف';
+ try{await execList(parseProg(runSnapshot));S.xp+=runSnapshot.length*2;toast('✓ انتهى البرنامج +'+runSnapshot.length*2+' XP')}catch(e){if(e!=='STOP')console.error(e)}
+ // تنفيذ البرنامج لا يحذف بلوكاته؛ أعد القائمة الأصلية حتى تبقى جاهزة للتشغيل والتعديل.
+ prog=runSnapshot;S.prog=prog;running=false;ctl.lock=false;curI=-1;pl.walk=0;document.getElementById('runb').textContent='▶ تشغيل';drawProg();dirty()}
