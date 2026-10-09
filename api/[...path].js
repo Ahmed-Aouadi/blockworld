@@ -14,7 +14,7 @@ function validPlacedList(list, max = 1000) {
     (a[4] === undefined || Number.isFinite(Number(a[4]))) &&
     (a[5] === undefined || (Number.isFinite(Number(a[5])) && Number(a[5]) >= 0 && Number(a[5]) <= 10)) &&
     (a[6] === undefined || a[6] === 0 || allowedBehaviors.has(a[6])) &&
-    (a[7] === undefined || Number.isFinite(Number(a[7]))
+    (a[7] === undefined || Number.isFinite(Number(a[7])))
   );
 }
 function validSave(s) {

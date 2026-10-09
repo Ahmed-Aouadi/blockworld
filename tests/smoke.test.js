@@ -117,7 +117,8 @@ test('shared world is globally persistent and separate from private saves', () =
   assert.match(server, /sharedWorld,ms,inbox,last:cid/);
   assert.match(main, /privatePlacedCache=placed\.filter/);
   assert.match(main, /placed:\(SH&&privatePlacedCache\?privatePlacedCache:S\.placed\)/);
-  assert.match(main, /payload\.worldAdd=worldAdd/);\n  assert.match(main, /payload\.worldRemove=worldRemove/);
+  assert.match(main, /payload\.worldAdd=worldAdd/);
+  assert.match(main, /payload\.worldRemove=worldRemove/);
   assert.match(main, /Array\.isArray\(r\.sharedWorld\)/);
   assert.match(main, /function syncWorlds\(worlds\)/);
 });
@@ -138,7 +139,8 @@ test('shared building snapshots are stored globally without touching personal sa
   const server = read('server.js');
   assert.match(main, /lastSharedPlacementSignature=null/);
   assert.match(main, /const baseline=Array\.isArray\(lastSharedWorldSnapshot\)/);
-  assert.match(main, /payload\.worldAdd=worldAdd/);\n  assert.match(main, /payload\.worldRemove=worldRemove/);
+  assert.match(main, /payload\.worldAdd=worldAdd/);
+  assert.match(main, /payload\.worldRemove=worldRemove/);
   assert.match(main, /lastSharedWorldSnapshot=r\.sharedWorld/);
   assert.match(api, /const validSharedChanges = shared && validPlacedList\(worldAdd\) && validPlacedList\(worldRemove\)/);
   assert.match(api, /UPDATE bw_shared_world SET placed=/);
