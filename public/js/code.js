@@ -45,17 +45,17 @@ function parseProg(p){const root=[],st=[root];p.forEach((b,i)=>{if(b.k==='end'){
 async function execList(list){for(const n of list){chk();curI=n.i;drawProg();const k=n.k;
  if(k==='repeat'){for(let j=0;j<n.p;j++){await execList(n.b);chk()}}else if(k==='forever'){while(true){await execList(n.b);await frameP();chk()}}
  else if(k==='ifc'){if(V.c>n.p)await execList(n.b)}else if(COND[k]){if(COND[k]())await execList(n.b)}
- else if(k==='fwd')await A.step(0,n.p);else if(k==='back')await A.step(Math.PI,n.p);else if(k==='str')await A.str(n.p);else if(k==='turn')await A.turn(n.p);else if(k==='jump')await A.jump(n.p);
- else if(k==='goto')await A.goto(n.p);else if(k==='wait')await A.wait(n.p);else if(k==='say')await A.say(n.p);else if(k==='color')await A.color(n.p);else if(k==='size')await A.size(n.p);
- else if(k==='emote')await A.emote(n.p);else if(k==='dance')await A.dance();else if(k==='speed')speed=n.p;else if(k==='place')await A.place(n.p);else if(k==='house')await A.house();
- else if(k==='collect')await A.collect();else if(k==='door')await A.door();else if(k==='remove')await A.remove();else if(k==='setc')V.c=0;else if(k==='addc')V.c+=n.p;else if(k==='stop')throw'STOP';
+ else if(k==='fwd'){sfx('step');await A.step(0,n.p)}else if(k==='back'){sfx('step');await A.step(Math.PI,n.p)}else if(k==='str'){sfx('step');await A.str(n.p)}else if(k==='turn'){sfx('turn');await A.turn(n.p)}else if(k==='jump'){sfx('jump');await A.jump(n.p)}
+ else if(k==='goto')await A.goto(n.p);else if(k==='wait')await A.wait(n.p);else if(k==='say'){sfx('say');await A.say(n.p)}else if(k==='color')await A.color(n.p);else if(k==='size')await A.size(n.p);
+ else if(k==='emote')await A.emote(n.p);else if(k==='dance')await A.dance();else if(k==='speed')speed=n.p;else if(k==='place'){sfx('build');await A.place(n.p)}else if(k==='house'){sfx('build');await A.house()}
+ else if(k==='collect'){sfx('collect');await A.collect()}else if(k==='door')await A.door();else if(k==='remove')await A.remove();else if(k==='setc')V.c=0;else if(k==='addc')V.c+=n.p;else if(k==='stop')throw'STOP';
  else if(k==='custom')await runCustom(n.p)}}
 const AF=Object.getPrototypeOf(async function(){}).constructor;
 async function runCustom(i){const cb=S.custom[i];if(!cb)return;const src=cb.code.replace(/\b(forward|back|turn|jump|wait|say|place|dance|color|size|emote|collect|goto|side)\s*\(/g,'await $1(');
  try{const fn=new AF('forward','back','turn','jump','wait','say','place','dance','color','size','emote','collect','goto','side',src);
   await fn(n=>A.step(0,n),n=>A.step(Math.PI,n),d=>A.turn(d),h=>A.jump(h),s=>A.wait(s),t=>A.say(t),q=>A.placeBy(q),()=>A.dance(),h=>A.color(h),s=>A.size(s),e=>A.emote(e),()=>A.collect(),i2=>A.goto(i2),n=>A.str(n))}
  catch(e){if(e==='STOP')throw e;toast('⚠ خطأ في بلوكك «'+cb.name+'»: '+(e.message||e))}}
-async function runProg(){if(running){stopF=true;return}if(!prog.length)return toast('أضف بلوكات أولًا 🧩');const runSnapshot=prog.map(b=>({...b}));running=true;stopF=false;ctl.lock=true;speed=1;V.c=0;document.getElementById('runb').textContent='⏹ إيقاف';
- try{await execList(parseProg(runSnapshot));S.xp+=runSnapshot.length*2;toast('✓ انتهى البرنامج +'+runSnapshot.length*2+' XP')}catch(e){if(e!=='STOP')console.error(e)}
+async function runProg(){if(running){stopF=true;return}if(!prog.length)return toast('أضف بلوكات أولًا 🧩');sfx('run');const runSnapshot=prog.map(b=>({...b}));running=true;stopF=false;ctl.lock=true;speed=1;V.c=0;document.getElementById('runb').textContent='⏹ إيقاف';
+ try{await execList(parseProg(runSnapshot));S.xp+=runSnapshot.length*2;sfx('done');toast('✓ انتهى البرنامج +'+runSnapshot.length*2+' XP')}catch(e){if(e!=='STOP'){sfx('error');console.error(e)}}
  // تنفيذ البرنامج لا يحذف بلوكاته؛ أعد القائمة الأصلية حتى تبقى جاهزة للتشغيل والتعديل.
  prog=runSnapshot;S.prog=prog;running=false;ctl.lock=false;curI=-1;pl.walk=0;document.getElementById('runb').textContent='▶ تشغيل';drawProg();dirty()}
