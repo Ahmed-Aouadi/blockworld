@@ -105,7 +105,7 @@ function startGame(save,name,hue){if(started)return;started=true;S={...S,...(sav
 async function auth(kind){const n=$('#un').value.trim(),p=$('#pw').value;$('#aerr').textContent='';try{const r=await NET.api(kind,{name:n,pass:p});NET.token=r.token;NET.guest=false;localStorage.setItem('bw_t',r.token);startGame(r.save,r.name,r.hue)}catch(e){$('#aerr').textContent=e.message==='Failed to fetch'?'الخادم غير متصل — شغّل node server.js أو العب كضيف':e.message}}
 $('#bLogin').onclick=()=>auth('login');$('#bReg').onclick=()=>auth('register');$('#pw').onkeydown=e=>{if(e.key==='Enter')auth('login')};
 $('#bGuest').onclick=()=>{let s=null;try{s=JSON.parse(localStorage.getItem('bw_guest')||'null')}catch(e){}NET.guest=true;startGame(s,'',200)};
-(async()=>{const t=localStorage.getItem('bw_t');if(!t)return;NET.token=t;try{const r=await NET.api('me');NET.guest=false;startGame(r.save,r.name,r.hue)}catch(e){NET.token=null}})();
+(async()=>{const t=localStorage.getItem('bw_t');if(!t)return;NET.token=t;try{const r=await NET.api('me');NET.guest=false;startGame(r.save,r.name,r.hue)}catch(e){NET.token=null;localStorage.removeItem('bw_t')}})();
 // ---------- الأزرار ----------
 document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel(b.dataset.p));
 $('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر لتحديده ثم استخدم الأسهم للتحريك')};
