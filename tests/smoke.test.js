@@ -132,18 +132,18 @@ test('player-placed objects and placement preview are larger than the avatar sca
 });
 
 
-test('shared building publishes changed local blocks immediately and validates server updates', () => {
+test('shared building snapshots are stored globally without touching personal save data', () => {
   const main = read('public/js/main.js');
   const api = read('api/[...path].js');
   const server = read('server.js');
   assert.match(main, /lastSharedPlacementSignature=null/);
   assert.match(main, /placementSignature=JSON\.stringify\(localPlaced\)/);
-  assert.match(main, /if\(placementSignature!==lastSharedPlacementSignature\)payload\.placed=localPlaced/);
-  assert.match(main, /if\(SH&&payload\.placed\)lastSharedPlacementSignature=placementSignature/);
-  assert.match(api, /const validSharedPlaced = shared && Array\.isArray\(b\.placed\)/);
-  assert.match(api, /jsonb_set\(COALESCE\(save,'\{\}'::jsonb\),'\{placed\}'/);
-  assert.match(server, /const validSharedPlaced=!!on\[k\]\.sh&&Array\.isArray\(b\.placed\)/);
-  assert.match(server, /U\[k\]\.save=\{\.\.\.\(U\[k\]\.save\|\|\{\}\),placed:b\.placed\}/);
+  assert.match(main, /payload\.worldPlaced=localPlaced/);
+  assert.match(main, /if\(SH&&payload\.worldPlaced\)lastSharedPlacementSignature=placementSignature/);
+  assert.match(api, /const validSharedPlaced = shared && Array\.isArray\(b\.worldPlaced\)/);
+  assert.match(api, /UPDATE bw_shared_world SET placed=/);
+  assert.match(server, /const validSharedPlaced=!!on\[k\]\.sh&&Array\.isArray\(b\.worldPlaced\)/);
+  assert.match(server, /U\.__sharedWorld=b\.worldPlaced/);
 });
 
 
