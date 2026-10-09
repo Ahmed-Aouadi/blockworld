@@ -231,3 +231,5 @@ html[data-world-time="night"] #bTime{background:#ffe7a3}
  #dpad button{width:37px;height:37px}
  #jump{width:50px;height:50px}
 }
+
+.quest-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:min(58vh,520px);overflow:auto;padding:2px}.quest-card{background:linear-gradient(145deg,rgba(30,48,68,.92),rgba(17,28,42,.96));border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:12px;min-width:0}.quest-card p{margin:6px 0 10px;color:#c5d0dc;font-size:13px}.quest-card small{display:block;margin:8px 0;color:#d8e2eb}.quest-track{height:6px;background:#263748;border-radius:9px;overflow:hidden}.quest-track span{display:block;height:100%;background:linear-gradient(90deg,#47d7b0,#ffd166);border-radius:9px}.quest-card button{width:100%;font-size:12px;padding:8px}.quest-card button:disabled{opacity:.5;cursor:default}@media(max-width:600px){.quest-list{grid-template-columns:1fr;max-height:55vh}}
