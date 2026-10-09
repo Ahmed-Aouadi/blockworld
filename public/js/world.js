@@ -129,7 +129,7 @@ function frame(dt,t){
  const k=keys;if(!ctl.lock){let ix=(k.right?1:0)-(k.left?1:0),iz=(k.up?1:0)-(k.down?1:0);if(ix||iz){const l=Math.hypot(ix,iz);ix/=l;iz/=l;const sp=(k.shift?7:4.6)*dt,fx=-Math.sin(cy),fz=-Math.cos(cy),rx=Math.cos(cy),rz=-Math.sin(cy),vx=(fx*iz+rx*ix)*sp,vz=(fz*iz+rz*ix)*sp;mv(vx,vz);pl.ry=lerpAng(pl.ry,Math.atan2(vx,vz),.25);pl.walk=1}else pl.walk=0;
   if(k.jump&&pl.jy<=.001){pl.vy=7;k.jump=false}}
  pl.jy+=pl.vy*dt;pl.vy-=22*dt;if(pl.jy<=0){pl.jy=0;pl.vy=0}
- const gy=Math.max(H(pl.x,pl.z),-.3);pl.g.position.set(pl.x,gy+pl.jy,pl.z);pl.g.rotation.y=pl.ry;const sw=pl.walk?Math.sin(t*14)*.08:0;pl.g.userData.f1.position.z=.04+sw;pl.g.userData.f2.position.z=.04-sw;pl.g.position.y+=pl.walk?Math.abs(Math.sin(t*14))*.05:0;
+ const gy=Math.max(H(pl.x,pl.z),-.3);pl.g.position.set(pl.x,gy+pl.jy,pl.z);pl.g.rotation.y=pl.ry;const gait=pl.walk?Math.sin(t*12):0;const sw=gait*.08;pl.g.userData.f1.position.z=sw;pl.g.userData.f2.position.z=-sw;if(pl.g.userData.armL){pl.g.userData.armL.rotation.x=gait*.62;pl.g.userData.armR.rotation.x=-gait*.62;pl.g.userData.legL.rotation.x=-gait*.48;pl.g.userData.legR.rotation.x=gait*.48}pl.g.position.y+=pl.walk?Math.abs(Math.sin(t*12))*.045:0;
  if(ctl.lock)cy=lerpAng(cy,pl.ry+Math.PI,.06);
  const ty=pl.g.position.y+1.1;cam.position.set(pl.x+Math.sin(cy)*cd*Math.cos(cp),ty+Math.sin(cp)*cd,pl.z+Math.cos(cy)*cd*Math.cos(cp));cam.lookAt(pl.x,ty,pl.z);
  for(const id in others){const o=others[id];o.x+=(o.tx-o.x)*Math.min(1,dt*6);o.z+=(o.tz-o.z)*Math.min(1,dt*6);o.ry=lerpAng(o.ry,o.try,.2);o.g.position.set(o.x,Math.max(H(o.x,o.z),-.3),o.z);o.g.rotation.y=o.ry}
