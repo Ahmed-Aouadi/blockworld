@@ -62,7 +62,7 @@ function customModal(){modal(`<h2>➕ بلوك بالكود</h2><small>اكتب 
   S.custom.push({name:n,code:c});bcat=5;dirty();closeModal();if(openP!=='Code')togglePanel('Code');else rCode()}}
 // ---------- برمجة العناصر ----------
 const BEH=[['spin','دوران 🔄'],['swing','فتح وإغلاق 🚪'],['bounce','قفز ⬆️'],['sway','تمايل 🌬️'],['pulse','نبض 💗'],['slide','ذهاب وإياب ↔'],['color','تغيير اللون 🌈']];
-function openScript(po){const d=DEFS[po.k][po.i],p=$('#pScript');p.classList.add('on');
+function openScript(po){PN.forEach(n=>$('#p'+n).classList.remove('on'));openP=null;setTool(null);const d=DEFS[po.k][po.i],p=$('#pScript');p.classList.add('on');
  p.innerHTML=`<h3>🧪 برمجة: ${d.n} <button id="sx">✕</button></h3><small>اختر سلوكًا يتكرر كل مدة زمنية:</small><div class="tabs">${BEH.map(b=>`<button data-t="${b[0]}" class="${po.beh&&po.beh.t===b[0]?'on':''}">${b[1]}</button>`).join('')}</div>
  <label>المدة (ثوانٍ): <b id="pv">${po.beh?po.beh.p:4}</b></label><input type="range" id="pr" min="1" max="20" value="${po.beh?po.beh.p:4}"><button id="pc">إزالة السلوك</button>`;
  const set=t=>{clearBeh(po);po.beh=t?{t,p:+$('#pr').value}:null;dirty();openScript(po)};
