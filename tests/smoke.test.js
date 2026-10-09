@@ -106,20 +106,20 @@ test('mobile build controls stay usable and selected builds can be hidden withou
   assert.match(world, /if\(typeof updateQuickBuild==='function'\)updateQuickBuild\(\)/);
 });
 
-test('shared players receive each active builder world without saving remote objects locally', () => {
+test('shared world is globally persistent and separate from private saves', () => {
   const api = read('api/[...path].js');
   const server = read('server.js');
   const main = read('public/js/main.js');
-  const world = read('public/js/world.js');
-  assert.match(api, /worlds = await sql/);
-  assert.match(api, /worlds:worlds\.map/);
-  assert.match(server, /const worlds=active/);
-  assert.match(server, /return send\(r,200,\{pl,worlds,ms,inbox,last:cid\}\)/);
-  assert.match(main, /syncWorlds\(SH\?\(r\.worlds\|\|\[\]\):\[\]\)/);
-  assert.match(main, /placed\.filter\(p=>!p\.remoteOwner\)/);
+  assert.match(api, /CREATE TABLE IF NOT EXISTS bw_shared_world/);
+  assert.match(api, /UPDATE bw_shared_world SET placed=/);
+  assert.match(api, /sharedWorld, ms:/);
+  assert.match(server, /U\.__sharedWorld=b\.worldPlaced/);
+  assert.match(server, /sharedWorld,ms,inbox,last:cid/);
+  assert.match(main, /privatePlacedCache=placed\.filter/);
+  assert.match(main, /placed:\(SH&&privatePlacedCache\?privatePlacedCache:S\.placed\)/);
+  assert.match(main, /payload\.worldPlaced=localPlaced/);
+  assert.match(main, /Array\.isArray\(r\.sharedWorld\)/);
   assert.match(main, /function syncWorlds\(worlds\)/);
-  assert.match(world, /function placeObj\(po,remoteOwner=null\)/);
-  assert.match(world, /function hitPlaced\(e\)\{pick\(e\);const h=rc\.intersectObjects\(placed\.filter\(p=>!p\.remoteOwner\)/);
 });
 
 
