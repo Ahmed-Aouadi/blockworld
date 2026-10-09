@@ -87,3 +87,28 @@ textarea{min-height:130px;direction:ltr;font-family:monospace;font-size:13px}
 #pBuild .it.no{filter:grayscale(.5);opacity:.55}
 #pBuild>small{flex:0 0 auto;line-height:1.5;color:#687092;padding:2px 3px}
 @media(max-width:640px){#pBuild .grid,#pBag .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}#pBuild .it,#pBag .it{min-height:78px;font-size:11px;padding:8px 3px}#pBuild .it i,#pBag .it i{width:30px;height:30px;flex-basis:30px}}
+
+
+/* Extra creator tools: searchable catalog, project manager and keyboard-friendly controls */
+.code-search{flex:0 0 auto;min-height:38px;padding:7px 12px;border:2px solid #c7cfee;border-radius:12px;background:#fff;font-size:14px;box-shadow:inset 0 2px 4px rgba(43,42,90,.05)}
+.code-search:focus{outline:3px solid rgba(154,107,255,.25);border-color:var(--pu)}
+#pBuild .grid{max-height:48%;flex:1 1 auto;min-height:90px;overflow-y:auto;overscroll-behavior:contain}
+#pCode .program-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto;flex-wrap:wrap;padding:2px 0}
+#pCode .program-tools>span{font-size:12px;font-weight:800;color:#687092}
+#pCode .program-tools .row{gap:6px}
+#pCode .program-tools button{min-width:36px;padding:3px 9px;border-width:2px;border-radius:10px;box-shadow:0 2px 0 var(--ink);font-weight:800}
+#pCode #manageProj{background:#e7e2ff}
+#pCode .empty-blocks{display:block;padding:12px;color:#687092;text-align:center}
+.filepick{display:block;position:relative;padding:12px;border:2px dashed #a9b6ed;border-radius:13px;background:#f4f5ff;font-weight:800;cursor:pointer}
+.filepick input{margin-top:8px;border:0;background:transparent;box-shadow:none;padding:4px}
+#bTime{background:#e7e2ff}
+html[data-world-time="night"] #bTime{background:#ffe7a3}
+@media(max-width:640px){
+ header{gap:5px}
+ header .chip{font-size:11px;padding:3px 8px}
+ #pBuild .grid{max-height:42%;min-height:80px}
+ #pCode .program-tools{gap:4px}
+ #pCode .program-tools>span{font-size:11px}
+ #pCode .program-tools button{padding:2px 7px}
+ #pCode .code-search,#pBuild .code-search{font-size:13px}
+}
