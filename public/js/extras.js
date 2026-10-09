@@ -22,7 +22,7 @@ function applySnapshot(s){
   placed.slice().forEach(p=>removeObj(p));
   S.xp=s.xp;S.inv={...s.inv};S.found={...s.found};S.hue=s.hue;S.avatar={...(s.avatar||{})};S.custom=(s.custom||[]).map(b=>({...b}));prog=(s.prog||[]).map(b=>({...b}));S.prog=prog;
   (s.placed||[]).forEach(a=>{if(Array.isArray(a)&&DEFS[a[0]]&&DEFS[a[0]][a[1]]){const p=placeObj({k:a[0],i:a[1],x:a[2],z:a[3],ry:a[4],e:a[5]});if(a[6])p.beh={t:a[6],p:a[7]||4}}});
-  if(Array.isArray(s.pos)&&s.pos.length===2){pl.x=Number(s.pos[0])||0;pl.z=Number(s.pos[1])||0}
+  if(Array.isArray(s.pos)&&s.pos.length===2){const x=Number(s.pos[0])||0,z=Number(s.pos[1])||0;if(walkable(x,z)){pl.x=x;pl.z=z}else{pl.x=0;pl.z=6}}
   if(typeof setAvatarAppearance==='function')setAvatarAppearance(S.avatar||{});
   if(typeof dirty==='function')dirty();if(typeof refreshPanels==='function')refreshPanels();if(typeof hud==='function')hud();
  }finally{restoring=false}
@@ -31,7 +31,23 @@ function undoWorld(){if(!history.length)return toastSafe('لا توجد تغيي
 function redoWorld(){if(!future.length)return toastSafe('لا توجد تغييرات لإعادتها');const now=snapshot();if(now)history.push(now);applySnapshot(future.pop());toastSafe('↷ تمت إعادة تعديل العالم')}
 function download(name,data){const u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}
 function exportWorld(){const s=snapshot();if(!s)return toastSafe('ابدأ اللعب أولًا');download('blockworld-world.json',{format:'blockworld-world',version:1,createdAt:new Date().toISOString(),save:s});toastSafe('📦 تم تصدير عالمك كاملًا')}
-function restoreBackup(){try{const d=JSON.parse(localStorage.getItem('bw_world_backup')||'null');if(!d||d.format!=='blockworld-world'||!d.save)throw Error('لم نعثر على نسخة احتياطية محلية');if(!confirm('سيتم استبدال العالم الحالي بآخر نسخة محفوظة محليًا. هل تريد المتابعة؟'))return;pushHistory();applySnapshot(d.save);closeTools();toastSafe('♻️ تمت استعادة النسخة المحلية')}catch(e){const el=$('#bwToolError');if(el)el.textContent=e.message||'تعذرت استعادة النسخة'}}
+function restoreBackup(){try{const d=JSON.parse(localStorage.getItem('bw_world_backup')||'null');if(!d||d.format!=='blockworld-world'||!validWorldSave(d.save))throw Error('النسخة الاحتياطية غير صالحة أو تالفة');if(!confirm('سيتم استبدال العالم الحالي بآخر نسخة محفوظة محليًا. هل تريد المتابعة؟'))return;pushHistory();applySnapshot(d.save);closeTools();toastSafe('♻️ تمت استعادة النسخة المحلية')}catch(e){const el=$('#bwToolError');if(el)el.textContent=e.message||'تعذرت استعادة النسخة'}}
+const VALID_PROGRAM_KEYS=new Set(['fwd','back','str','turn','jump','goto','wait','say','color','size','emote','dance','speed','place','house','collect','door','remove','setc','addc','ifc','repeat','forever','ifblocked','ifnear','ifgift','ifrand','stop','end','custom']);
+function validWorldSave(s){
+ if(!s||typeof s!=='object'||Array.isArray(s))return false;
+ if(!Number.isFinite(Number(s.xp))||Number(s.xp)<0||Number(s.xp)>1e9)return false;
+ if(!Array.isArray(s.pos)||s.pos.length!==2||!s.pos.every(v=>Number.isFinite(Number(v))&&Math.abs(Number(v))<=500))return false;
+ if(!Array.isArray(s.placed)||s.placed.length>2000||!Array.isArray(s.prog)||s.prog.length>120)return false;
+ if(!s.inv||typeof s.inv!=='object'||Array.isArray(s.inv)||Object.keys(s.inv).length>200)return false;
+ if(!Object.entries(s.inv).every(([k,v])=>/^e\d{1,3}$/.test(k)&&Number(k.slice(1))<ELS.length&&Number.isInteger(v)&&v>=0&&v<=999))return false;
+ if(!s.placed.every(a=>Array.isArray(a)&&a.length>=4&&a.length<=8&&['e','p'].includes(a[0])&&DEFS[a[0]]&&Number.isInteger(a[1])&&!!DEFS[a[0]][a[1]]&&Number.isFinite(Number(a[2]))&&Number.isFinite(Number(a[3]))&&Math.abs(Number(a[2]))<500&&Math.abs(Number(a[3]))<500&&(a[4]===undefined||Number.isFinite(Number(a[4])))&&(a[5]===undefined||(Number.isFinite(Number(a[5]))&&Number(a[5])>=0&&Number(a[5])<=10))&&(a[6]===undefined||a[6]===0||['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6]))))return false;
+ if(!s.prog.every(b=>b&&typeof b.k==='string'&&VALID_PROGRAM_KEYS.has(b.k)&&Object.prototype.hasOwnProperty.call(b,'p')&&(b.l===undefined||(typeof b.l==='string'&&b.l.length<=120))))return false;
+ const custom=s.custom===undefined?[]:s.custom;
+ if(!Array.isArray(custom)||custom.length>80||!custom.every(b=>b&&typeof b.name==='string'&&b.name.length<=20&&typeof b.code==='string'&&b.code.length<=5000))return false;
+ if(s.avatar!==undefined&&(!s.avatar||typeof s.avatar!=='object'||Array.isArray(s.avatar)||(s.avatar.hat!==undefined&&!['none','cap','crown'].includes(s.avatar.hat))))return false;
+ try{if(JSON.stringify(s).length>1500000)return false}catch(_){return false}
+ return true;
+}
 function saveBackup(){
  const s=snapshot();if(!s)return;
  try{localStorage.setItem('bw_world_backup',JSON.stringify({format:'blockworld-world',version:1,savedAt:new Date().toISOString(),save:s}))}catch(e){toastSafe('مساحة النسخ الاحتياطي ممتلئة؛ صدّر العالم إلى ملف')}
@@ -40,13 +56,7 @@ function importWorld(file){
  const rd=new FileReader();rd.onload=()=>{
   try{
    const d=JSON.parse(String(rd.result||'')),s=d&&d.save;
-   if(!d||d.format!=='blockworld-world'||d.version!==1||!s||!Array.isArray(s.placed)||!Array.isArray(s.pos)||!Array.isArray(s.prog))throw Error('ملف العالم غير صالح أو من إصدار غير مدعوم');
-   if(s.placed.length>2000||s.prog.length>120||(s.custom||[]).length>80||!s.inv||typeof s.inv!=='object')throw Error('الملف يتجاوز الحدود الآمنة');
-   if(!Number.isFinite(+s.xp)||+s.xp<0||+s.xp>1000000000||s.pos.some(v=>!Number.isFinite(+v)||Math.abs(+v)>500))throw Error('قيمة التقدم أو الموقع غير صالحة');
-   if(!Object.entries(s.inv).every(([k,v])=>/^e\\d{1,3}$/.test(k)&&+k.slice(1)<ELS.length&&Number.isInteger(v)&&v>=0&&v<=999))throw Error('الحقيبة تحتوي على قيم غير صالحة');
-   if(!s.prog.every(b=>b&&typeof b.k==='string'&&b.k.length<40&&Object.prototype.hasOwnProperty.call(b,'p'))||(s.custom||[]).some(b=>!b||typeof b.name!=='string'||typeof b.code!=='string'||b.name.length>20||b.code.length>5000))throw Error('توجد بلوكات أو أوامر مخصصة غير صالحة');
-   const valid=s.placed.every(a=>Array.isArray(a)&&DEFS[a[0]]&&DEFS[a[0]][a[1]]&&Number.isFinite(+a[2])&&Number.isFinite(+a[3])&&Math.abs(+a[2])<500&&Math.abs(+a[3])<500);
-   if(!valid)throw Error('يحتوي الملف على عناصر أو إحداثيات غير صالحة');
+   if(!d||d.format!=='blockworld-world'||d.version!==1||!validWorldSave(s))throw Error('ملف العالم غير صالح أو يتجاوز الحدود الآمنة');
    if(!confirm('سيستبدل هذا الملف عالمك الحالي. هل تريد المتابعة؟'))return;
    pushHistory();applySnapshot(s);saveBackup();closeTools();toastSafe('✅ تم استيراد العالم وحفظ نسخة محلية منه');
   }catch(e){const el=$('#bwToolError');if(el)el.textContent=e.message||'تعذر استيراد الملف'}
