@@ -19,7 +19,7 @@ function mkAvatar(hue,name){const g=new T.Group(),col=new T.Color().setHSL(hue/3
  g.userData.f1=M(new T.SphereGeometry(.1,8,6),0x333355,-.12,.08,.04);g.userData.f2=M(new T.SphereGeometry(.1,8,6),0x333355,.12,.08,.04);
  if(name){const cv=document.createElement('canvas');cv.width=256;cv.height=64;const x=cv.getContext('2d');x.font='bold 34px sans-serif';x.textAlign='center';x.fillStyle='rgba(255,255,255,.9)';x.fillRect(0,8,256,48);x.fillStyle='#2b2a5a';x.fillText(name,128,46);const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),depthTest:false}));sp.scale.set(2,.5,1);sp.position.y=2;g.add(sp)}
  return g}
-let R,scene,cam,terrain,pl,placed=[],cols=[],others={},ghost=null,tool=null,elev=0,rot=0,cy=0,cp=.45,cd=8,keys={},ctl={lock:false},gifts=[],clouds=[],curZone=0,gpos={x:0,z:0},rc=new T.Raycaster(),moved=0;
+let R,scene,cam,terrain,pl,placed=[],cols=[],others={},ghost=null,tool=null,elev=0,manualElev=0,rot=0,cy=0,cp=.45,cd=8,keys={},ctl={lock:false},gifts=[],clouds=[],curZone=0,gpos={x:0,z:0},rc=new T.Raycaster(),moved=0;
 const walkable=(x,z)=>Math.abs(x)<HALF-2&&Math.abs(z)<HALF-2&&H(x,z)>-.45;
 function collide(x,z){let ax=x,az=z;for(const c of cols){if(c.door&&c.o.g.userData.open>.5)continue;if((c.o.e||0)>1.2)continue;const dx=ax-c.x,dz=az-c.z,s=Math.sin(c.ry),co=Math.cos(c.ry),lx=dx*co-dz*s,lz=dx*s+dz*co,qx=Math.max(-c.hx,Math.min(c.hx,lx)),qz=Math.max(-c.hz,Math.min(c.hz,lz)),ex=lx-qx,ez=lz-qz,d=Math.hypot(ex,ez);
   if(d<.3){const nx=d>1e-4?ex/d:0,nz=d>1e-4?ez/d:1,pu=.3-d+.002,wx=nx*pu,wz=nz*pu;ax+=wx*co+wz*s;az+=-wx*s+wz*co}}return[ax,az]}
@@ -74,7 +74,7 @@ function initWorld(){
     }
     stacked=true;break;
    }
-   if(!stacked){const h=rc.intersectObject(terrain)[0];if(h){gpos.x=Math.round(h.point.x*2)/2;gpos.z=Math.round(h.point.z*2)/2}}
+   if(!stacked){elev=manualElev;const h=rc.intersectObject(terrain)[0];if(h){gpos.x=Math.round(h.point.x*2)/2;gpos.z=Math.round(h.point.z*2)/2}}
    ghostPlace()
   }});
  cv.addEventListener('pointerup',e=>{if(dn&&moved<=6)onWorldClick(e);dn=null});
