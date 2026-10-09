@@ -27,6 +27,8 @@ async function db() {
     await sql`CREATE TABLE IF NOT EXISTS bw_users (user_key text PRIMARY KEY, name text NOT NULL, salt text NOT NULL, pass_hash text NOT NULL, save jsonb, hue integer NOT NULL, inbox jsonb NOT NULL DEFAULT '[]'::jsonb)`;
     await sql`CREATE TABLE IF NOT EXISTS bw_sessions (token text PRIMARY KEY, user_key text NOT NULL REFERENCES bw_users(user_key) ON DELETE CASCADE, created_at timestamptz NOT NULL DEFAULT now())`;
     await sql`CREATE TABLE IF NOT EXISTS bw_presence (user_key text PRIMARY KEY REFERENCES bw_users(user_key) ON DELETE CASCADE, x double precision NOT NULL DEFAULT 0, z double precision NOT NULL DEFAULT 0, ry double precision NOT NULL DEFAULT 0, shared boolean NOT NULL DEFAULT false, updated_at timestamptz NOT NULL DEFAULT now())`;
+    await sql`CREATE TABLE IF NOT EXISTS bw_shared_world (world_key text PRIMARY KEY, placed jsonb NOT NULL DEFAULT '[]'::jsonb, updated_at timestamptz NOT NULL DEFAULT now())`;
+    await sql`INSERT INTO bw_shared_world(world_key,placed) VALUES ('main','[]'::jsonb) ON CONFLICT(world_key) DO NOTHING`;
     await sql`CREATE TABLE IF NOT EXISTS bw_messages (id bigserial PRIMARY KEY, from_name text NOT NULL, from_key text NOT NULL, to_key text, body text NOT NULL, x double precision NOT NULL DEFAULT 0, z double precision NOT NULL DEFAULT 0, created_at timestamptz NOT NULL DEFAULT now())`;
     await sql`CREATE INDEX IF NOT EXISTS bw_messages_id_idx ON bw_messages(id)`;
   })().catch(e => { schemaReady = null; throw e; });
@@ -82,10 +84,12 @@ module.exports = async function handler(req, res) {
       const x = Number(b.x) || 0, z = Number(b.z) || 0, ry = Number(b.ry) || 0, shared = !!b.sh, since = Math.max(0, Number(b.since) || 0);
       await sql`INSERT INTO bw_presence(user_key,x,z,ry,shared,updated_at) VALUES (${key},${x},${z},${ry},${shared},now()) ON CONFLICT(user_key) DO UPDATE SET x=EXCLUDED.x,z=EXCLUDED.z,ry=EXCLUDED.ry,shared=EXCLUDED.shared,updated_at=now()`;
       // Publish changed blocks immediately, instead of waiting for the periodic full-save request.
-      const validSharedPlaced = shared && Array.isArray(b.placed) && b.placed.length <= 1000 && b.placed.every(a => Array.isArray(a) && a.length >= 4 && a.length <= 8 && ['e','p'].includes(a[0]) && Number.isInteger(a[1]) && a[1] >= 0 && a[1] < 200 && Number.isFinite(Number(a[2])) && Number.isFinite(Number(a[3])) && Math.abs(Number(a[2])) < 500 && Math.abs(Number(a[3])) < 500 && (a[4] === undefined || Number.isFinite(Number(a[4]))) && (a[5] === undefined || (Number.isFinite(Number(a[5])) && Number(a[5]) >= 0 && Number(a[5]) <= 10)) && (a[6] === undefined || a[6] === 0 || ['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6])));
-      if (validSharedPlaced) await sql`UPDATE bw_users SET save=jsonb_set(COALESCE(save,'{}'::jsonb),'{placed}',${JSON.stringify(b.placed)}::jsonb,true) WHERE user_key=${key}`;
-      let pl = [], worlds = [];
+      const validSharedPlaced = shared && Array.isArray(b.worldPlaced) && b.worldPlaced.length <= 1000 && b.worldPlaced.every(a => Array.isArray(a) && a.length >= 4 && a.length <= 8 && ['e','p'].includes(a[0]) && Number.isInteger(a[1]) && a[1] >= 0 && a[1] < 200 && Number.isFinite(Number(a[2])) && Number.isFinite(Number(a[3])) && Math.abs(Number(a[2])) < 500 && Math.abs(Number(a[3])) < 500 && (a[4] === undefined || Number.isFinite(Number(a[4]))) && (a[5] === undefined || (Number.isFinite(Number(a[5])) && Number(a[5]) >= 0 && Number(a[5]) <= 10)) && (a[6] === undefined || a[6] === 0 || ['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6])));
+      if (validSharedPlaced) await sql`UPDATE bw_shared_world SET placed=${JSON.stringify(b.worldPlaced)}::jsonb,updated_at=now() WHERE world_key='main'`;
+      let pl = [], worlds = [], sharedWorld = [];
       if (shared) {
+        const sharedRows = await sql`SELECT placed FROM bw_shared_world WHERE world_key='main' LIMIT 1`;
+        sharedWorld = Array.isArray(sharedRows[0]?.placed) ? sharedRows[0].placed.slice(0,1000) : [];
         pl = await sql`SELECT p.user_key AS id,u.name,p.x,p.z,p.ry,u.hue FROM bw_presence p JOIN bw_users u ON u.user_key=p.user_key WHERE p.user_key <> ${key} AND p.updated_at > now() - interval '6 seconds' AND p.shared=true`;
         // Shared-world builds are read from each active player's saved placed objects.
         worlds = await sql`SELECT p.user_key AS id,u.save->'placed' AS placed FROM bw_presence p JOIN bw_users u ON u.user_key=p.user_key WHERE p.user_key <> ${key} AND p.updated_at > now() - interval '6 seconds' AND p.shared=true AND jsonb_typeof(u.save->'placed')='array' ORDER BY p.updated_at DESC LIMIT 12`;
@@ -94,7 +98,7 @@ module.exports = async function handler(req, res) {
       const inbox = Array.isArray(u.inbox) ? u.inbox : [];
       if (inbox.length) await sql`UPDATE bw_users SET inbox='[]'::jsonb WHERE user_key=${key}`;
       const lastRows = await sql`SELECT COALESCE(MAX(id),0)::bigint AS last FROM bw_messages`;
-      return send(res, 200, { pl: pl.map(p => ({ id:p.id, name:p.name, x:p.x, z:p.z, ry:p.ry, hue:p.hue })), worlds:worlds.map(w => ({ id:w.id, placed:Array.isArray(w.placed)?w.placed.slice(0,1000):[] })), ms:ms.map(m => ({ id:Number(m.id), from:m.from, priv:!!m.to_key, text:m.text })), inbox, last:Number(lastRows[0].last) });
+      return send(res, 200, { pl: pl.map(p => ({ id:p.id, name:p.name, x:p.x, z:p.z, ry:p.ry, hue:p.hue })), worlds:worlds.map(w => ({ id:w.id, placed:Array.isArray(w.placed)?w.placed.slice(0,1000):[] })), sharedWorld, ms:ms.map(m => ({ id:Number(m.id), from:m.from, priv:!!m.to_key, text:m.text })), inbox, last:Number(lastRows[0].last) });
     }
     if (ep === 'chat') {
       const to = b.to ? String(b.to) : '';
