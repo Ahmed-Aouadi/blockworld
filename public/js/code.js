@@ -16,8 +16,8 @@ const BLK=[],ab=(c,l,k,p,o)=>BLK.push({c,l,k,p,o});
  ab(W,'ضع العنصر المحدد أمامك','place','sel');ELS.filter((_,i)=>i%4===0).slice(0,26).forEach(d=>ab(W,'ضع '+d.n,'place',{k:'e',i:d.i}));PTS.filter((_,i)=>i%3===0).slice(0,22).forEach(d=>ab(W,'ابنِ '+d.cat.slice(2)+' '+d.n,'place',{k:'p',i:d.i}));
  ab(W,'ابنِ بيتًا جاهزًا 🏠','house',0);ab(W,'اجمع الهدايا القريبة 🎁','collect',0);ab(W,'افتح أقرب باب 🚪','door',0);ab(W,'احذف ما أمامك 🗑','remove',0);
  ab(N,'العدّاد = 0','setc',0);[1,2,5,10,-1].forEach(n=>ab(N,'العدّاد '+(n>0?'+':'−')+Math.abs(n),'addc',n));[1,2,3,5,8,10,15,20].forEach(n=>ab(N,'إذا العدّاد > '+n,'ifc',n,1))})();
-let prog=[],running=false,stopF=false,curI=-1,V={c:0},speed=1;
-const OPEN=new Set(['repeat','forever','ifblocked','ifnear','ifgift','ifrand','ifc']),frameP=()=>new Promise(r=>requestAnimationFrame(r)),chk=()=>{if(stopF)throw'STOP'};
+let prog=[],running=false,stopF=false,curI=-1,V={c:0},speed=1,runSpeed=1,paused=false,stepBudget=0;
+const OPEN=new Set(['repeat','forever','ifblocked','ifnear','ifgift','ifrand','ifc']),frameP=()=>new Promise(r=>requestAnimationFrame(()=>{const tick=()=>{if(!paused||stepBudget>0||stopF){if(paused&&stepBudget>0)stepBudget--;r()}else setTimeout(tick,40)};tick()})),chk=()=>{if(stopF)throw'STOP'};
 const findDef=q=>typeof q==='number'?ELS[q]:ELS.find(d=>d.n.includes(q)||d.b===q)||PTS.find(d=>(d.cat+d.n).includes(q)||d.b===q);
 function front(n){return{x:Math.round((pl.x+Math.sin(pl.ry)*n)*2)/2,z:Math.round((pl.z+Math.cos(pl.ry)*n)*2)/2}}
 function putDef(d,x,z,ry,e){if(d.k==='e'){const key='e'+d.i;if(!(S.inv[key]>0)){toast('لا تملك «'+d.n+'» في حقيبتك');return false}S.inv[key]--}placeObj({k:d.k,i:d.i,x,z,ry,e:e||0});return true}
@@ -55,7 +55,7 @@ async function runCustom(i){const cb=S.custom[i];if(!cb)return;const src=cb.code
  try{const fn=new AF('forward','back','turn','jump','wait','say','place','dance','color','size','emote','collect','goto','side',src);
   await fn(n=>A.step(0,n),n=>A.step(Math.PI,n),d=>A.turn(d),h=>A.jump(h),s=>A.wait(s),t=>A.say(t),q=>A.placeBy(q),()=>A.dance(),h=>A.color(h),s=>A.size(s),e=>A.emote(e),()=>A.collect(),i2=>A.goto(i2),n=>A.str(n))}
  catch(e){if(e==='STOP')throw e;toast('⚠ خطأ في بلوكك «'+cb.name+'»: '+(e.message||e))}}
-async function runProg(){if(running){stopF=true;return}if(!prog.length)return toast('أضف بلوكات أولًا 🧩');sfx('run');const runSnapshot=prog.map(b=>({...b}));running=true;stopF=false;ctl.lock=true;speed=1;V.c=0;document.getElementById('runb').textContent='⏹ إيقاف';
+async function runProg(){if(running){stopF=true;paused=false;return}if(!prog.length)return toast('أضف بلوكات أولًا 🧩');sfx('run');const runSnapshot=prog.map(b=>({...b}));running=true;stopF=false;paused=false;stepBudget=0;ctl.lock=true;speed=runSpeed;V.c=0;document.getElementById('runb').textContent='⏹ إيقاف';
  try{await execList(parseProg(runSnapshot));S.xp+=runSnapshot.length*2;sfx('done');toast('✓ انتهى البرنامج +'+runSnapshot.length*2+' XP')}catch(e){if(e!=='STOP'){sfx('error');console.error(e)}}
  // تنفيذ البرنامج لا يحذف بلوكاته؛ أعد القائمة الأصلية حتى تبقى جاهزة للتشغيل والتعديل.
- prog=runSnapshot;S.prog=prog;running=false;ctl.lock=false;curI=-1;pl.walk=0;document.getElementById('runb').textContent='▶ تشغيل';drawProg();dirty()}
+ prog=runSnapshot;S.prog=prog;running=false;paused=false;stepBudget=0;ctl.lock=false;curI=-1;pl.walk=0;document.getElementById('runb').textContent='▶ تشغيل';drawProg();dirty()}
