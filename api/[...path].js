@@ -81,6 +81,9 @@ module.exports = async function handler(req, res) {
     if (ep === 'tick') {
       const x = Number(b.x) || 0, z = Number(b.z) || 0, ry = Number(b.ry) || 0, shared = !!b.sh, since = Math.max(0, Number(b.since) || 0);
       await sql`INSERT INTO bw_presence(user_key,x,z,ry,shared,updated_at) VALUES (${key},${x},${z},${ry},${shared},now()) ON CONFLICT(user_key) DO UPDATE SET x=EXCLUDED.x,z=EXCLUDED.z,ry=EXCLUDED.ry,shared=EXCLUDED.shared,updated_at=now()`;
+      // Publish changed blocks immediately, instead of waiting for the periodic full-save request.
+      const validSharedPlaced = shared && Array.isArray(b.placed) && b.placed.length <= 1000 && b.placed.every(a => Array.isArray(a) && a.length >= 4 && a.length <= 8 && ['e','p'].includes(a[0]) && Number.isInteger(a[1]) && a[1] >= 0 && a[1] < 200 && Number.isFinite(Number(a[2])) && Number.isFinite(Number(a[3])) && Math.abs(Number(a[2])) < 500 && Math.abs(Number(a[3])) < 500 && (a[4] === undefined || Number.isFinite(Number(a[4]))) && (a[5] === undefined || (Number.isFinite(Number(a[5])) && Number(a[5]) >= 0 && Number(a[5]) <= 10)) && (a[6] === undefined || a[6] === 0 || ['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6])));
+      if (validSharedPlaced) await sql`UPDATE bw_users SET save=jsonb_set(COALESCE(save,'{}'::jsonb),'{placed}',${JSON.stringify(b.placed)}::jsonb,true) WHERE user_key=${key}`;
       let pl = [], worlds = [];
       if (shared) {
         pl = await sql`SELECT p.user_key AS id,u.name,p.x,p.z,p.ry,u.hue FROM bw_presence p JOIN bw_users u ON u.user_key=p.user_key WHERE p.user_key <> ${key} AND p.updated_at > now() - interval '6 seconds' AND p.shared=true`;
