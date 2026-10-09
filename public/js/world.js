@@ -57,7 +57,26 @@ function initWorld(){
  let dn=null;
  cv.addEventListener('pointerdown',e=>{dn={x:e.clientX,y:e.clientY};moved=0;try{cv.setPointerCapture(e.pointerId)}catch(_){}});
  cv.addEventListener('pointermove',e=>{if(dn){const dx=e.clientX-dn.x,dy=e.clientY-dn.y;moved+=Math.abs(dx)+Math.abs(dy);if(moved>6){cy-=dx*.006;cp=Math.max(.12,Math.min(1.2,cp+dy*.004))}dn.x=e.clientX;dn.y=e.clientY}
-  if(tool&&tool.k){pick(e);const h=rc.intersectObject(terrain)[0];if(h){gpos.x=Math.round(h.point.x*2)/2;gpos.z=Math.round(h.point.z*2)/2;ghostPlace()}}});
+  if(tool&&tool.k){pick(e);
+   // ضع العنصر فوق العناصر الموجودة أو بجانبها، وليس على الأرض فقط.
+   const hits=rc.intersectObjects(placed.map(p=>p.g),true);
+   let stacked=false;
+   for(const hit of hits){let obj=hit.object;while(obj&&!obj.userData.po)obj=obj.parent;const base=obj&&obj.userData.po;if(!base||!hit.face)continue;
+    const normal=hit.face.normal.clone().applyMatrix3(new T.Matrix3().getNormalMatrix(hit.object.matrixWorld)).normalize();
+    if(normal.y>.5){
+     gpos.x=Math.round(hit.point.x*2)/2;gpos.z=Math.round(hit.point.z*2)/2;
+     const d=DEFS[tool.k]&&DEFS[tool.k][tool.i],part=d&&tool.k==='p'?(PART_Y[d.b]||0):0;
+     elev=Math.max(0,hit.point.y-H(gpos.x,gpos.z)-part);
+    }else if(Math.abs(normal.x)>Math.abs(normal.z)){
+     gpos.x=Math.round((base.x+Math.sign(normal.x)*1)*2)/2;gpos.z=Math.round(base.z*2)/2;elev=base.e||0;
+    }else{
+     gpos.x=Math.round(base.x*2)/2;gpos.z=Math.round((base.z+Math.sign(normal.z)*.5)*2)/2;elev=base.e||0;
+    }
+    stacked=true;break;
+   }
+   if(!stacked){const h=rc.intersectObject(terrain)[0];if(h){gpos.x=Math.round(h.point.x*2)/2;gpos.z=Math.round(h.point.z*2)/2}}
+   ghostPlace()
+  }});
  cv.addEventListener('pointerup',e=>{if(dn&&moved<=6)onWorldClick(e);dn=null});
  cv.addEventListener('wheel',e=>{cd=Math.max(4,Math.min(18,cd+e.deltaY*.01))},{passive:true});
  let last=performance.now();const loop=now=>{requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000),t=now/1000;last=now;frame(dt,t)};requestAnimationFrame(loop)}
