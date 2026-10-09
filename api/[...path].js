@@ -66,7 +66,7 @@ module.exports = async function handler(req, res) {
       await sql`INSERT INTO bw_presence(user_key,x,z,ry,shared,updated_at) VALUES (${key},${x},${z},${ry},${shared},now()) ON CONFLICT(user_key) DO UPDATE SET x=EXCLUDED.x,z=EXCLUDED.z,ry=EXCLUDED.ry,shared=EXCLUDED.shared,updated_at=now()`;
       let pl = [];
       if (shared) pl = await sql`SELECT p.user_key AS id,u.name,p.x,p.z,p.ry,u.hue FROM bw_presence p JOIN bw_users u ON u.user_key=p.user_key WHERE p.user_key <> ${key} AND p.updated_at > now() - interval '6 seconds' AND p.shared=true`;
-      const ms = await sql`SELECT id,from_name AS "from",to_key,body AS text FROM bw_messages WHERE id > ${since} AND (to_key=${key} OR (to_key IS NULL AND ${shared}=true AND sqrt(power(x-${x},2)+power(z-${z},2)) < 45)) ORDER BY id LIMIT 200`;
+      const ms = await sql`SELECT id,from_name AS "from",to_key,body AS text FROM bw_messages WHERE id > ${since} AND (to_key=${key} OR (from_key=${key} AND to_key IS NOT NULL) OR (to_key IS NULL AND ${shared}=true AND sqrt(power(x-${x},2)+power(z-${z},2)) < 45)) ORDER BY id LIMIT 200`;
       const inbox = Array.isArray(u.inbox) ? u.inbox : [];
       if (inbox.length) await sql`UPDATE bw_users SET inbox='[]'::jsonb WHERE user_key=${key}`;
       const lastRows = await sql`SELECT COALESCE(MAX(id),0)::bigint AS last FROM bw_messages`;
