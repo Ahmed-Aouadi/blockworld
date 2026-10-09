@@ -130,3 +130,18 @@ test('player-placed objects and placement preview are larger than the avatar sca
   assert.match(world, /ghost\.scale\.setScalar\(BUILD_SCALE\)/);
   assert.match(world, /PART_Y\[d\.b\]\|\|0\)\*BUILD_SCALE/);
 });
+
+
+test('shared building publishes changed local blocks immediately and validates server updates', () => {
+  const main = read('public/js/main.js');
+  const api = read('api/[...path].js');
+  const server = read('server.js');
+  assert.match(main, /lastSharedPlacementSignature=null/);
+  assert.match(main, /placementSignature=JSON\.stringify\(localPlaced\)/);
+  assert.match(main, /if\(placementSignature!==lastSharedPlacementSignature\)payload\.placed=localPlaced/);
+  assert.match(main, /if\(SH&&payload\.placed\)lastSharedPlacementSignature=placementSignature/);
+  assert.match(api, /const validSharedPlaced = shared && Array\.isArray\(b\.placed\)/);
+  assert.match(api, /jsonb_set\(COALESCE\(save,'\{\}'::jsonb\),'\{placed\}'/);
+  assert.match(server, /const validSharedPlaced=!!on\[k\]\.sh&&Array\.isArray\(b\.placed\)/);
+  assert.match(server, /U\[k\]\.save=\{\.\.\.\(U\[k\]\.save\|\|\{\}\),placed:b\.placed\}/);
+});
