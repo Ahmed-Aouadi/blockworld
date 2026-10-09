@@ -68,7 +68,7 @@ document.addEventListener('keydown',()=>{if(musicOn)startMusic()},{once:true});
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.id==='bSound'||b.disabled)return;const id=b.id||'',t=(b.textContent||'').trim();if(id==='runb')return;if(id==='bTime')sfx('night');else if(id==='bAvatar'||id==='bHelp'||id==='bShare'||b.dataset.p)sfx('open');else if(/حفظ|وضع|بناء|نسخ|تأكيد/.test(t))sfx('build');else if(/تشغيل|ابدأ/.test(t))sfx('run');else sfx('ui')},true);
 
 let S={xp:0,inv:{},placed:[],custom:[],found:{},pos:[0,6],hue:200,avatar:{skin:0xffd2ad,hair:0x49334a,outfit:0x3da5ff,trim:0x2674b4,pants:0x34364b,shoes:0x34364b,scarf:0xffca58,hat:'none',hatColor:0x3da5ff},prog:[]},SH=false,since=0,chatTo=null,started=false,isDirty=false,saving=false,saveVersion=0,openP=null;
-let selectedPo=null,selectionBox=null;
+let selectedPo=null,selectionBox=null,privatePlacedCache=null,sharedWorldLoaded=false,lastSharedWorldSignature=null;
 // سحب اللوحات من شريط العنوان لتغيير مكانها ومنع تداخل لوحة البرمجة مع الأدوات.
 (function enablePanelDragging(){
  let drag=null;
@@ -230,15 +230,17 @@ let tickBusy=false,lastSharedPlacementSignature=null;
 async function tick(){if(NET.guest||tickBusy)return;tickBusy=true;try{
  const payload={x:pl.x,z:pl.z,ry:pl.ry,sh:SH?1:0,since};
  let placementSignature=null;
- if(SH){const localPlaced=placed.filter(p=>!p.remoteOwner).map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]).slice(0,1000);placementSignature=JSON.stringify(localPlaced);if(placementSignature!==lastSharedPlacementSignature)payload.placed=localPlaced}
+ if(SH&&sharedWorldLoaded){const localPlaced=placed.filter(p=>!p.remoteOwner).map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]).slice(0,1000);placementSignature=JSON.stringify(localPlaced);if(placementSignature!==lastSharedPlacementSignature)payload.worldPlaced=localPlaced}
  const r=await NET.api('tick',payload);
- if(SH&&payload.placed)lastSharedPlacementSignature=placementSignature;
- since=Math.max(since,r.last||0);syncPlayers(SH?r.pl:[]);syncWorlds(SH?(r.worlds||[]):[]);
+ if(SH&&payload.worldPlaced)lastSharedPlacementSignature=placementSignature;
+ since=Math.max(since,r.last||0);syncPlayers(SH?r.pl:[]);
+ if(SH&&Array.isArray(r.sharedWorld)){const current=placed.filter(p=>!p.remoteOwner).map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]).slice(0,1000),sig=JSON.stringify(r.sharedWorld);if(!sharedWorldLoaded||sig!==JSON.stringify(current)){placed.slice().forEach(removeObj);for(const a of r.sharedWorld){if(!Array.isArray(a)||!DEFS[a[0]]||!DEFS[a[0]][a[1]])continue;const po=placeObj({k:a[0],i:a[1],x:Number(a[2])||0,z:Number(a[3])||0,ry:Number(a[4])||0,e:Number(a[5])||0});if(a[6])po.beh={t:a[6],p:Number(a[7])||4}}}sharedWorldLoaded=true;lastSharedWorldSignature=sig;lastSharedPlacementSignature=sig}
+ else if(!SH)syncWorlds([]);
  r.ms.forEach(addMsg);r.inbox.forEach(g=>{S.inv[g.item]=(S.inv[g.item]||0)+g.n;toast('🎁 '+g.from+' أهداك '+g.n+'× '+(ELS[+g.item.slice(1)]||{n:'عنصر'}).n);dirty()});if(r.inbox.length)refreshPanels();
  $('#onl').textContent='👤 '+(SH?r.pl.length+1:1)+' متصل';if(openP==='Near')rNear()}catch(e){}finally{tickBusy=false}}
 // ---------- الحفظ والدخول ----------
 function serialize(){S.placed=placed.filter(p=>!p.remoteOwner).map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]);S.pos=[pl.x,pl.z];S.prog=prog}
-async function saveNow(){if(!started||!isDirty||saving)return;saving=true;serialize();const version=saveVersion,save={xp:S.xp,inv:{...S.inv},placed:S.placed.map(a=>a.slice()),custom:S.custom.map(a=>({...a})),found:{...S.found},pos:S.pos.slice(),hue:S.hue,avatar:{...(S.avatar||{})},prog:prog.map(a=>({...a}))};
+async function saveNow(){if(!started||!isDirty||saving)return;saving=true;serialize();const version=saveVersion,save={xp:S.xp,inv:{...S.inv},placed:(SH&&privatePlacedCache?privatePlacedCache:S.placed).map(a=>a.slice()),custom:S.custom.map(a=>({...a})),found:{...S.found},pos:S.pos.slice(),hue:S.hue,avatar:{...(S.avatar||{})},prog:prog.map(a=>({...a}))};
  try{if(NET.guest)localStorage.setItem('bw_guest',JSON.stringify(save));else await NET.api('save',{save});if(saveVersion===version)isDirty=false}catch(e){isDirty=true}finally{saving=false}}
 function startGame(save,name,hue){if(started)return;started=true;S={...S,...(save||{})};S.hue=hue||S.hue;S.avatar={skin:0xffd2ad,hair:0x49334a,outfit:0x3da5ff,trim:0x2674b4,pants:0x34364b,shoes:0x34364b,scarf:0xffca58,hat:'none',hatColor:0x3da5ff,...(S.avatar||{})};if(!save||!Object.keys(S.inv||{}).length){S.inv=S.inv||{};[1,7,16,20,30,44,58,70].forEach(i=>{if(ELS[i])S.inv['e'+i]=3})}
  $('#auth').style.display='none';$('#hud').hidden=false;try{initWorld()}catch(e){document.body.innerHTML='<p style="padding:30px;font-size:20px">يحتاج المتصفح إلى WebGL ليعمل بلوك وورلد.</p>';return}
@@ -256,7 +258,7 @@ $('#bSound').onclick=toggleSound;$('#bMusic').onclick=toggleMusic;updateMusicBut
 $('#bSound').textContent=soundOn?'🔊 الصوت':'🔇 الصوت';
 document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel(b.dataset.p));
 $('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر لتحديده ثم استخدم الأسهم للتحريك')};
-$('#bShare').onclick=()=>{SH=!SH;lastSharedPlacementSignature=null;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH){syncPlayers([]);syncWorlds([])}tick();toast(SH?'العالم المشترك: ستظهر عناصر بنائك للاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
+$('#bShare').onclick=()=>{if(NET.guest)return toast('العالم المشترك يتطلب تسجيل الدخول');if(!SH){privatePlacedCache=placed.filter(p=>!p.remoteOwner).map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]);placed.slice().forEach(removeObj);SH=true;sharedWorldLoaded=false;lastSharedWorldSignature=null;lastSharedPlacementSignature=null;syncWorlds([]);$('#bShare').textContent='🌍 مشترك';tick();toast('🌍 دخلت العالم المشترك المستقل؛ عالمك الخاص محفوظ كما هو')}else{placed.slice().forEach(removeObj);SH=false;sharedWorldLoaded=false;lastSharedWorldSignature=null;lastSharedPlacementSignature=null;syncPlayers([]);syncWorlds([]);for(const a of (privatePlacedCache||[])){if(!Array.isArray(a)||!DEFS[a[0]]||!DEFS[a[0]][a[1]])continue;const po=placeObj({k:a[0],i:a[1],x:a[2],z:a[3],ry:a[4],e:a[5]});if(a[6])po.beh={t:a[6],p:a[7]||4}}privatePlacedCache=null;$('#bShare').textContent='🏡 خاص';dirty();saveNow();tick();toast('🏡 عدت إلى عالمك الخاص؛ بناء العالم المشترك محفوظ للجميع')}};
 $('#quickBuild').onclick=()=>{PN.forEach(p=>$('#p'+p).classList.remove('on'));openP='Build';$('#pBuild').classList.add('on');renderPanel('Build');updateQuickBuild()};
 $('#bShare').textContent='🏡 خاص';
 let nightMode=false;$('#bTime').onclick=()=>{nightMode=!nightMode;setWorldTime(nightMode);$('#bTime').textContent=nightMode?'☀️ نهار':'🌙 ليل';if(musicOn&&musicMaster){musicMaster.gain.setTargetAtTime(musicVolume,soundCtx.currentTime,.8);playMusicPhrase()}toast(nightMode?'🌙 تم تفعيل أجواء الليل':'☀️ عادت أجواء النهار')};
