@@ -27,6 +27,8 @@ http.createServer(async(q,r)=>{
   if(ep==='/api/me')return send(r,200,{name:U[k].name,hue:U[k].hue,save:U[k].save});
   if(ep==='/api/save'){if(!validSave(b.save))return send(r,400,{e:'بيانات الحفظ غير صالحة أو تتجاوز الحدود الآمنة؛ لم يتم تغيير عالمك.'});U[k].save=b.save;persist();return send(r,200,{ok:1})}
   if(ep==='/api/tick'){const t=Date.now();on[k]={x:+b.x||0,z:+b.z||0,ry:+b.ry||0,sh:b.sh?1:0,t,name:U[k].name,hue:U[k].hue};
+   const validSharedPlaced=!!on[k].sh&&Array.isArray(b.placed)&&b.placed.length<=1000&&b.placed.every(a=>Array.isArray(a)&&a.length>=4&&a.length<=8&&['e','p'].includes(a[0])&&Number.isInteger(a[1])&&a[1]>=0&&a[1]<200&&Number.isFinite(Number(a[2]))&&Number.isFinite(Number(a[3]))&&Math.abs(Number(a[2]))<500&&Math.abs(Number(a[3]))<500&&(a[4]===undefined||Number.isFinite(Number(a[4])))&&(a[5]===undefined||(Number.isFinite(Number(a[5]))&&Number(a[5])>=0&&Number(a[5])<=10))&&(a[6]===undefined||a[6]===0||['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6])));
+   if(validSharedPlaced){U[k].save={...(U[k].save||{}),placed:b.placed};persist()}
    const active=Object.entries(on).filter(([o,v])=>o!==k&&t-v.t<6000&&v.sh&&on[k].sh);
    const pl=active.map(([o,v])=>({id:o,name:v.name,x:v.x,z:v.z,ry:v.ry,hue:v.hue}));
    const worlds=active.filter(([o])=>Array.isArray(U[o]&&U[o].save&&U[o].save.placed)).slice(0,12).map(([o])=>({id:o,placed:U[o].save.placed.slice(0,1000)}));
