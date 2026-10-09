@@ -30,12 +30,12 @@ http.createServer(async(q,r)=>{
    const ms=chat.filter(m=>m.id>(+b.since||0)&&(m.to?(m.to===k||m.fk===k):on[k].sh&&Math.hypot(m.x-on[k].x,m.z-on[k].z)<45)).map(m=>({id:m.id,from:m.from,priv:!!m.to,text:m.text}));
    const inbox=U[k].inbox||[];if(inbox.length){U[k].inbox=[];persist()}
    return send(r,200,{pl,ms,inbox,last:cid})}
-  if(ep==='/api/chat'){const to=b.to&&U[b.to]?b.to:null,text=String(b.text||'').trim().slice(0,120);if(!text)return send(r,400,{e:'رسالة فارغة'});
-   chat.push({id:++cid,from:U[k].name,fk:k,to,text,x:on[k]?on[k].x:0,z:on[k]?on[k].z:0});if(chat.length>300)chat.shift();return send(r,200,{ok:1})}
-  if(ep==='/api/gift'){const to=String(b.to||''),n=Math.floor(+b.n),item=String(b.item||'');
-   if(!U[to]||to===k||!/^e\d{1,3}$/.test(item)||!(n>=1&&n<=99))return send(r,400,{e:'هدية غير صالحة'});
+  if(ep==='/api/chat'){const targetToken=String(b.to||''),text=String(b.text||'').trim().slice(0,120);if(!text)return send(r,400,{e:'رسالة فارغة'});if(targetToken&&(!tok[targetToken]||tok[targetToken]===k||!U[tok[targetToken]]))return send(r,400,{e:'المستلم غير صالح'});
+   chat.push({id:++cid,from:U[k].name,fk:k,to:targetToken||null,text,x:on[k]?on[k].x:0,z:on[k]?on[k].z:0});if(chat.length>300)chat.shift();return send(r,200,{ok:1})}
+  if(ep==='/api/gift'){const targetToken=String(b.to||''),to=tok[targetToken],n=Math.floor(+b.n),item=String(b.item||'');
+   if(!to||to===k||!U[to]||!/^e\d{1,3}$/.test(item)||!(n>=1&&n<=99))return send(r,400,{e:'هدية غير صالحة'});
    (U[to].inbox=U[to].inbox||[]).push({item,n,from:U[k].name});if(U[to].inbox.length>200)U[to].inbox.shift();
-   chat.push({id:++cid,from:'🎁 هدية',fk:'',to,text:'وصلتك هدية من '+U[k].name+'!',x:0,z:0});persist();return send(r,200,{ok:1})}
+   chat.push({id:++cid,from:'🎁 هدية',fk:'',to:targetToken,text:'وصلتك هدية من '+U[k].name+'!',x:0,z:0});persist();return send(r,200,{ok:1})}
   return send(r,404,{e:'غير موجود'});
  }
  let u=decodeURIComponent(ep);if(u==='/')u='/index.html';
