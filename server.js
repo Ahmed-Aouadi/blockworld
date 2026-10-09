@@ -7,7 +7,7 @@ const tok={},on={},chat=[];let cid=0;
 const hash=(p,s)=>cr.scryptSync(p,s,32).toString('hex');
 const normalizeName=n=>String(n||'').normalize('NFKC').trim().toLocaleLowerCase('ar');
 const validSave=s=>{if(!s||typeof s!=='object'||Array.isArray(s))return false;try{if(JSON.stringify(s).length>1500000)return false}catch(_){return false}if(!Number.isFinite(Number(s.xp))||Number(s.xp)<0||Number(s.xp)>1e9||!Array.isArray(s.pos)||s.pos.length!==2||!s.pos.every(v=>Number.isFinite(Number(v))&&Math.abs(Number(v))<=500)||!Array.isArray(s.placed)||s.placed.length>2000||!Array.isArray(s.prog)||s.prog.length>120||!s.inv||typeof s.inv!=='object'||Array.isArray(s.inv))return false;if(!Object.entries(s.inv).every(([k,v])=>/^e\d{1,3}$/.test(k)&&Number(k.slice(1))<200&&Number.isInteger(v)&&v>=0&&v<=999))return false;if(!s.placed.every(a=>Array.isArray(a)&&a.length>=4&&a.length<=8&&['e','p'].includes(a[0])&&Number.isInteger(a[1])&&a[1]>=0&&a[1]<200&&Number.isFinite(Number(a[2]))&&Number.isFinite(Number(a[3]))&&Math.abs(Number(a[2]))<500&&Math.abs(Number(a[3]))<500))return false;if(!s.prog.every(b=>b&&typeof b.k==='string'&&Object.prototype.hasOwnProperty.call(b,'p')))return false;const c=s.custom===undefined?[]:s.custom;return Array.isArray(c)&&c.length<=80&&c.every(b=>b&&typeof b.name==='string'&&b.name.length<=20&&typeof b.code==='string'&&b.code.length<=5000)};
-const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'};
+const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon'};
 const send=(r,c,o)=>{r.writeHead(c,{'Content-Type':'application/json; charset=utf-8'});r.end(JSON.stringify(o))};
 const body=q=>new Promise(r=>{let b='';q.on('data',d=>{b+=d;if(b.length>4e5)q.destroy()});q.on('end',()=>{try{r(JSON.parse(b||'{}'))}catch(e){r({})}})});
 function login(r,k){const t=cr.randomBytes(16).toString('hex');tok[t]=k;send(r,200,{token:t,name:U[k].name,hue:U[k].hue,save:U[k].save})}
@@ -16,7 +16,7 @@ http.createServer(async(q,r)=>{
  if(ep.startsWith('/api/')){
   const b=q.method==='POST'?await body(q):{},k=tok[(q.headers.authorization||'').slice(7)];
   if(ep==='/api/register'){const n=String(b.name||'').normalize('NFKC').trim().slice(0,16),p=String(b.pass||''),key=normalizeName(n);
-   if(n.length<2||p.length<6)return send(r,400,{e:'اسم اللاعب يجب أن يكون حرفين على الأقل وكلمة المرور 6 أحرف على الأقل'});
+   if(n.length<2||p.length<6||p.length>256)return send(r,400,{e:'اسم اللاعب يجب أن يكون حرفين على الأقل وكلمة المرور 6 أحرف على الأقل'});
       if(U[key])return send(r,409,{e:'هذا الاسم مستخدم بالفعل، جرّب اسمًا مختلفًا'});
    const s=cr.randomBytes(16).toString('hex');U[key]={name:n,salt:s,h:hash(p,s),save:null,hue:Math.random()*360|0,inbox:[]};persist();return login(r,key)}
   if(ep==='/api/login'){const kk=normalizeName(b.name),u=U[kk];
@@ -27,8 +27,13 @@ http.createServer(async(q,r)=>{
   if(ep==='/api/me')return send(r,200,{name:U[k].name,hue:U[k].hue,save:U[k].save});
   if(ep==='/api/save'){if(!validSave(b.save))return send(r,400,{e:'بيانات الحفظ غير صالحة أو تتجاوز الحدود الآمنة؛ لم يتم تغيير عالمك.'});U[k].save=b.save;persist();return send(r,200,{ok:1})}
   if(ep==='/api/tick'){const t=Date.now();on[k]={x:+b.x||0,z:+b.z||0,ry:+b.ry||0,sh:b.sh?1:0,t,name:U[k].name,hue:U[k].hue};
-   const validSharedPlaced=!!on[k].sh&&Array.isArray(b.worldPlaced)&&b.worldPlaced.length<=1000&&b.worldPlaced.every(a=>Array.isArray(a)&&a.length>=4&&a.length<=8&&['e','p'].includes(a[0])&&Number.isInteger(a[1])&&a[1]>=0&&a[1]<200&&Number.isFinite(Number(a[2]))&&Number.isFinite(Number(a[3]))&&Math.abs(Number(a[2]))<500&&Math.abs(Number(a[3]))<500&&(a[4]===undefined||Number.isFinite(Number(a[4])))&&(a[5]===undefined||(Number.isFinite(Number(a[5]))&&Number(a[5])>=0&&Number(a[5])<=10))&&(a[6]===undefined||a[6]===0||['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6])));
-   if(validSharedPlaced){U.__sharedWorld=b.worldPlaced;persist()}
+   const validPlacedList=list=>Array.isArray(list)&&list.length<=1000&&list.every(a=>Array.isArray(a)&&a.length>=4&&a.length<=8&&['e','p'].includes(a[0])&&Number.isInteger(a[1])&&a[1]>=0&&a[1]<200&&Number.isFinite(Number(a[2]))&&Number.isFinite(Number(a[3]))&&Math.abs(Number(a[2]))<500&&Math.abs(Number(a[3]))<500&&(a[4]===undefined||Number.isFinite(Number(a[4])))&&(a[5]===undefined||(Number.isFinite(Number(a[5]))&&Number(a[5])>=0&&Number(a[5])<=10))&&(a[6]===undefined||a[6]===0||['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6]))&&(a[7]===undefined||Number.isFinite(Number(a[7])));
+   const worldAdd=b.worldAdd===undefined?[]:b.worldAdd,worldRemove=b.worldRemove===undefined?[]:b.worldRemove;
+   if(on[k].sh&&validPlacedList(worldAdd)&&validPlacedList(worldRemove)&&(worldAdd.length||worldRemove.length)){
+    const removeKeys=new Set(worldRemove.map(a=>JSON.stringify(a))),current=(Array.isArray(U.__sharedWorld)?U.__sharedWorld:[]).filter(a=>!removeKeys.has(JSON.stringify(a))),keys=new Set(current.map(a=>JSON.stringify(a)));
+    for(const a of worldAdd){const key=JSON.stringify(a);if(!keys.has(key)){current.push(a.slice());keys.add(key)}}
+    if(current.length<=1000){U.__sharedWorld=current;persist()}
+   }
    const active=Object.entries(on).filter(([o,v])=>o!==k&&t-v.t<6000&&v.sh&&on[k].sh);
    const pl=active.map(([o,v])=>({id:o,name:v.name,x:v.x,z:v.z,ry:v.ry,hue:v.hue}));
    const worlds=[];const sharedWorld=Array.isArray(U.__sharedWorld)?U.__sharedWorld.slice(0,1000):[];
@@ -43,7 +48,9 @@ http.createServer(async(q,r)=>{
    chat.push({id:++cid,from:'🎁 هدية',fk:'',to:targetToken,text:'وصلتك هدية من '+U[k].name+'!',x:0,z:0});persist();return send(r,200,{ok:1})}
   return send(r,404,{e:'غير موجود'});
  }
- let u=decodeURIComponent(ep);if(u==='/')u='/index.html';
- const f=path.join(PUB,path.normalize(u));if(!f.startsWith(PUB)){r.writeHead(403);return r.end()}
+ let u;try{u=decodeURIComponent(ep)}catch(_){r.writeHead(400);return r.end('Bad request')}
+ if(u==='/')u='/index.html';
+ const f=path.resolve(PUB,'.'+path.normalize(u));
+ if(f!==PUB&&!f.startsWith(PUB+path.sep)){r.writeHead(403);return r.end()}
  fs.readFile(f,(e,d)=>{if(e){r.writeHead(404);return r.end('404')}r.writeHead(200,{'Content-Type':MIME[path.extname(f)]||'application/octet-stream'});r.end(d)});
 }).listen(PORT,()=>console.log('🧱 BlockWorld يعمل على http://localhost:'+PORT));

@@ -4,6 +4,19 @@ const { neon } = require('@neondatabase/serverless');
 const normalizeName = n => String(n || '').normalize('NFKC').trim().toLocaleLowerCase('ar');
 const hash = (p, s) => crypto.scryptSync(p, s, 32).toString('hex');
 const SAVE_PROGRAM_KEYS = new Set(['fwd','back','str','turn','jump','goto','wait','say','color','size','emote','dance','speed','place','house','collect','door','remove','setc','addc','ifc','repeat','forever','ifblocked','ifnear','ifgift','ifrand','stop','end','custom']);
+function validPlacedList(list, max = 1000) {
+  const allowedBehaviors = new Set(['spin','swing','bounce','sway','pulse','slide','color']);
+  return Array.isArray(list) && list.length <= max && list.every(a =>
+    Array.isArray(a) && a.length >= 4 && a.length <= 8 &&
+    ['e','p'].includes(a[0]) && Number.isInteger(a[1]) && a[1] >= 0 && a[1] < 200 &&
+    Number.isFinite(Number(a[2])) && Number.isFinite(Number(a[3])) &&
+    Math.abs(Number(a[2])) < 500 && Math.abs(Number(a[3])) < 500 &&
+    (a[4] === undefined || Number.isFinite(Number(a[4]))) &&
+    (a[5] === undefined || (Number.isFinite(Number(a[5])) && Number(a[5]) >= 0 && Number(a[5]) <= 10)) &&
+    (a[6] === undefined || a[6] === 0 || allowedBehaviors.has(a[6])) &&
+    (a[7] === undefined || Number.isFinite(Number(a[7]))
+  );
+}
 function validSave(s) {
   if (!s || typeof s !== 'object' || Array.isArray(s)) return false;
   try { if (JSON.stringify(s).length > 1500000) return false; } catch (_) { return false; }
@@ -83,16 +96,54 @@ module.exports = async function handler(req, res) {
     if (ep === 'tick') {
       const x = Number(b.x) || 0, z = Number(b.z) || 0, ry = Number(b.ry) || 0, shared = !!b.sh, since = Math.max(0, Number(b.since) || 0);
       await sql`INSERT INTO bw_presence(user_key,x,z,ry,shared,updated_at) VALUES (${key},${x},${z},${ry},${shared},now()) ON CONFLICT(user_key) DO UPDATE SET x=EXCLUDED.x,z=EXCLUDED.z,ry=EXCLUDED.ry,shared=EXCLUDED.shared,updated_at=now()`;
-      // Publish changed blocks immediately, instead of waiting for the periodic full-save request.
-      const validSharedPlaced = shared && Array.isArray(b.worldPlaced) && b.worldPlaced.length <= 1000 && b.worldPlaced.every(a => Array.isArray(a) && a.length >= 4 && a.length <= 8 && ['e','p'].includes(a[0]) && Number.isInteger(a[1]) && a[1] >= 0 && a[1] < 200 && Number.isFinite(Number(a[2])) && Number.isFinite(Number(a[3])) && Math.abs(Number(a[2])) < 500 && Math.abs(Number(a[3])) < 500 && (a[4] === undefined || Number.isFinite(Number(a[4]))) && (a[5] === undefined || (Number.isFinite(Number(a[5])) && Number(a[5]) >= 0 && Number(a[5]) <= 10)) && (a[6] === undefined || a[6] === 0 || ['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6])));
-      if (validSharedPlaced) await sql`UPDATE bw_shared_world SET placed=${JSON.stringify(b.worldPlaced)}::jsonb,updated_at=now() WHERE world_key='main'`;
+      // Apply explicit changes to the latest database value, avoiding stale full-snapshot overwrites.
+      const worldAdd = b.worldAdd === undefined ? [] : b.worldAdd;
+      const worldRemove = b.worldRemove === undefined ? [] : b.worldRemove;
+      const validSharedChanges = shared && validPlacedList(worldAdd) && validPlacedList(worldRemove);
+      if (validSharedChanges && (worldAdd.length || worldRemove.length)) {
+        const removeJson = JSON.stringify(worldRemove);
+        const addJson = JSON.stringify(worldAdd);
+        await sql `
+          UPDATE bw_shared_world
+          SET placed = (
+            SELECT COALESCE(jsonb_agg(existing.value ORDER BY existing.ordinality), '[]'::jsonb)
+            FROM jsonb_array_elements(bw_shared_world.placed) WITH ORDINALITY AS existing(value, ordinality)
+            WHERE NOT EXISTS (
+              SELECT 1 FROM jsonb_array_elements(`${removeJson}::jsonb) AS gone(value)
+              WHERE gone.value = existing.value
+            )
+          ) || (
+            SELECT COALESCE(jsonb_agg(candidate.value), '[]'::jsonb)
+            FROM jsonb_array_elements(`${addJson}::jsonb) AS candidate(value)
+            WHERE NOT EXISTS (
+              SELECT 1 FROM jsonb_array_elements(bw_shared_world.placed) AS current(value)
+              WHERE current.value = candidate.value
+            )
+          ),
+          updated_at = now()
+          WHERE world_key = 'main'
+          AND jsonb_array_length(placed) - (
+            SELECT COUNT(*) FROM jsonb_array_elements(bw_shared_world.placed) AS existing(value)
+            WHERE EXISTS (
+              SELECT 1 FROM jsonb_array_elements(`${removeJson}::jsonb) AS gone(value)
+              WHERE gone.value = existing.value
+            )
+          ) + (
+            SELECT COUNT(*) FROM jsonb_array_elements(`${addJson}::jsonb) AS candidate(value)
+            WHERE NOT EXISTS (
+              SELECT 1 FROM jsonb_array_elements(bw_shared_world.placed) AS current(value)
+              WHERE current.value = candidate.value
+            )
+          ) <= 1000
+        `;
+      }
       let pl = [], worlds = [], sharedWorld = [];
       if (shared) {
         const sharedRows = await sql`SELECT placed FROM bw_shared_world WHERE world_key='main' LIMIT 1`;
         sharedWorld = Array.isArray(sharedRows[0]?.placed) ? sharedRows[0].placed.slice(0,1000) : [];
         pl = await sql`SELECT p.user_key AS id,u.name,p.x,p.z,p.ry,u.hue FROM bw_presence p JOIN bw_users u ON u.user_key=p.user_key WHERE p.user_key <> ${key} AND p.updated_at > now() - interval '6 seconds' AND p.shared=true`;
-        // Shared-world builds are read from each active player's saved placed objects.
-        worlds = await sql`SELECT p.user_key AS id,u.save->'placed' AS placed FROM bw_presence p JOIN bw_users u ON u.user_key=p.user_key WHERE p.user_key <> ${key} AND p.updated_at > now() - interval '6 seconds' AND p.shared=true AND jsonb_typeof(u.save->'placed')='array' ORDER BY p.updated_at DESC LIMIT 12`;
+        // Shared builds come exclusively from bw_shared_world; never expose personal saves here.
+        worlds = [];
       }
       const ms = await sql`SELECT id,from_name AS "from",to_key,body AS text FROM bw_messages WHERE id > ${since} AND (to_key=${key} OR (from_key=${key} AND to_key IS NOT NULL) OR (to_key IS NULL AND ${shared}=true AND sqrt(power(x-${x},2)+power(z-${z},2)) < 45)) ORDER BY id LIMIT 200`;
       const inbox = Array.isArray(u.inbox) ? u.inbox : [];
