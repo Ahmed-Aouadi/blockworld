@@ -178,3 +178,56 @@ html[data-world-time="night"] #bTime{background:#ffe7a3}
 #pBuild .item-name,#pBag .item-name{display:block;max-width:100%;min-height:2.3em;overflow-wrap:anywhere}
 #pBuild .it,#pBag .it{gap:5px}
 @media(max-width:640px){#pBuild .item-preview,#pBag .item-preview{flex-basis:40px;width:40px;height:40px;border-radius:12px}#pBuild .item-preview span,#pBag .item-preview span{font-size:25px}}
+
+
+/* Mobile playability: reclaim the viewport and keep the world tappable while building. */
+#quickBuild{display:none;position:fixed;right:78px;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);z-index:4;min-height:40px;padding:5px 11px;border:2px solid var(--ink);border-radius:13px;background:#ffe18a;box-shadow:0 3px 0 var(--ink);font-weight:800}
+#quickBuild.on{display:block}
+#hideBuildPanel{flex:0 0 34px;width:34px;height:30px;padding:0;border-width:2px;border-radius:9px;box-shadow:0 2px 0 var(--ink);background:#fff0f1;font-size:15px}
+#pBuild h3{gap:8px}
+@media(max-width:640px){
+ html,body{height:100%;height:100dvh;overscroll-behavior:none}
+ header{top:calc(env(safe-area-inset-top,0px) + 4px);left:5px;right:5px;inset-inline:5px;flex-wrap:nowrap;gap:5px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;padding:2px 2px 7px;scrollbar-width:none}
+ header::-webkit-scrollbar{display:none}
+ header .logo,header .chip:nth-child(2),header .chip:nth-child(3),header .sp{display:none}
+ header .chip{flex:0 0 auto;font-size:11px;min-height:31px;padding:3px 8px;border-width:2px;box-shadow:0 2px 0 var(--ink)}
+ header button{flex:0 0 auto}
+ #toast{top:calc(env(safe-area-inset-top,0px) + 43px);max-width:calc(100vw - 24px);font-size:13px;padding:5px 11px}
+ #dock{left:6px;right:6px;bottom:calc(env(safe-area-inset-bottom,0px) + 5px);transform:none;width:auto;justify-content:space-between;gap:4px;overflow-x:auto;overflow-y:hidden;padding:3px 2px 5px;scrollbar-width:none}
+ #dock::-webkit-scrollbar{display:none}
+ #dock button{flex:0 0 auto;min-width:47px;min-height:48px;padding:4px 6px;font-size:10px;border-width:2px;border-radius:12px;box-shadow:0 2px 0 var(--ink)}
+ #dock i{font-size:19px}
+ #dpad{left:7px;inset-inline-start:7px;bottom:calc(env(safe-area-inset-bottom,0px) + 66px);grid-template-columns:repeat(3,43px);grid-template-rows:repeat(3,43px);gap:3px}
+ #dpad button{width:43px;height:43px;font-size:18px;border-width:2px;box-shadow:0 2px 0 var(--ink);background:rgba(255,255,255,.94)}
+ #jump{width:58px;height:58px;right:8px;inset-inline-end:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 79px);font-size:25px;border-width:2px;box-shadow:0 3px 0 var(--ink)}
+ #bt{top:calc(env(safe-area-inset-top,0px) + 48px);inset-inline-end:5px;gap:4px}
+ #bt button{width:38px;height:38px;padding:0;font-size:17px;border-width:2px;border-radius:11px;box-shadow:0 2px 0 var(--ink)}
+ .panel{left:6px;right:6px;inset-inline:6px;bottom:calc(env(safe-area-inset-bottom,0px) + 62px);width:auto;height:min(43dvh,370px);min-height:140px;max-height:calc(100dvh - 112px);padding:8px;border-width:3px;border-radius:17px;gap:6px;box-shadow:0 4px 0 var(--ink)}
+ .panel h3{font-size:15px;min-height:28px;padding-bottom:4px}
+ .panel h3::after{display:none}
+ #pBuild .tabs{gap:5px;padding:2px 1px 5px}
+ #pBuild .tabs button{font-size:11px;padding:3px 8px;border-width:1.5px}
+ #pBuild .grid,#pBag .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:3px 2px 6px;max-height:none;min-height:0}
+ #pBuild .it,#pBag .it{min-height:68px;font-size:10px;padding:6px 2px;gap:3px;border-width:1.5px;border-radius:11px;box-shadow:0 2px 0 #d7dcef}
+ #pBuild .item-preview,#pBag .item-preview{flex-basis:32px;width:32px;height:32px;border-radius:9px}
+ #pBuild .item-preview span,#pBag .item-preview span{font-size:21px}
+ #pBuild .item-name,#pBag .item-name{min-height:0;line-height:1.2}
+ #pBuild>small{font-size:10px;line-height:1.25}
+ #pCode .grid{max-height:27%;flex-basis:27%;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ #pCode .blk{font-size:11px;min-height:36px;padding:5px 6px}
+ #prog{padding:5px;gap:5px}
+ .pi{min-height:34px;font-size:11px}
+ .pi .pi-actions button{width:23px;height:23px}
+ #pScript{top:calc(env(safe-area-inset-top,0px) + 52px);bottom:auto;left:6px;right:6px;inset-inline:6px;width:auto;max-height:calc(100dvh - 120px);overflow:auto}
+ #quickBuild{right:76px;inset-inline-end:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 72px);min-height:38px;padding:4px 8px;font-size:12px;border-width:2px;box-shadow:0 2px 0 var(--ink)}
+ #modal{padding:8px}
+ #modal .box{max-height:calc(100dvh - 16px);padding:14px;border-width:3px;border-radius:18px}
+ input,select,textarea{font-size:16px}
+}
+@media(max-width:640px) and (max-height:560px){
+ .panel{height:39dvh;bottom:calc(env(safe-area-inset-bottom,0px) + 58px)}
+ #pBuild .grid,#pBag .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ #dpad{grid-template-columns:repeat(3,37px);grid-template-rows:repeat(3,37px)}
+ #dpad button{width:37px;height:37px}
+ #jump{width:50px;height:50px}
+}
