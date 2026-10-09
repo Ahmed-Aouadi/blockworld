@@ -6,6 +6,7 @@ let st=0;const persist=()=>{clearTimeout(st);st=setTimeout(()=>fs.writeFile(DB,J
 const tok={},on={},chat=[];let cid=0;
 const hash=(p,s)=>cr.scryptSync(p,s,32).toString('hex');
 const normalizeName=n=>String(n||'').normalize('NFKC').trim().toLocaleLowerCase('ar');
+const validSave=s=>{if(!s||typeof s!=='object'||Array.isArray(s))return false;try{if(JSON.stringify(s).length>1500000)return false}catch(_){return false}if(!Number.isFinite(Number(s.xp))||Number(s.xp)<0||Number(s.xp)>1e9||!Array.isArray(s.pos)||s.pos.length!==2||!s.pos.every(v=>Number.isFinite(Number(v))&&Math.abs(Number(v))<=500)||!Array.isArray(s.placed)||s.placed.length>2000||!Array.isArray(s.prog)||s.prog.length>120||!s.inv||typeof s.inv!=='object'||Array.isArray(s.inv))return false;if(!Object.entries(s.inv).every(([k,v])=>/^e\d{1,3}$/.test(k)&&Number(k.slice(1))<200&&Number.isInteger(v)&&v>=0&&v<=999))return false;if(!s.placed.every(a=>Array.isArray(a)&&a.length>=4&&a.length<=8&&['e','p'].includes(a[0])&&Number.isInteger(a[1])&&a[1]>=0&&a[1]<200&&Number.isFinite(Number(a[2]))&&Number.isFinite(Number(a[3]))&&Math.abs(Number(a[2]))<500&&Math.abs(Number(a[3]))<500))return false;if(!s.prog.every(b=>b&&typeof b.k==='string'&&Object.prototype.hasOwnProperty.call(b,'p')))return false;const c=s.custom===undefined?[]:s.custom;return Array.isArray(c)&&c.length<=80&&c.every(b=>b&&typeof b.name==='string'&&b.name.length<=20&&typeof b.code==='string'&&b.code.length<=5000)};
 const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'};
 const send=(r,c,o)=>{r.writeHead(c,{'Content-Type':'application/json; charset=utf-8'});r.end(JSON.stringify(o))};
 const body=q=>new Promise(r=>{let b='';q.on('data',d=>{b+=d;if(b.length>4e5)q.destroy()});q.on('end',()=>{try{r(JSON.parse(b||'{}'))}catch(e){r({})}})});
@@ -24,7 +25,7 @@ http.createServer(async(q,r)=>{
    if(!valid)return send(r,401,{e:'اسم اللاعب أو كلمة المرور غير صحيحة'});return login(r,kk)}
   if(!k||!U[k])return send(r,401,{e:'سجّل الدخول أولًا'});
   if(ep==='/api/me')return send(r,200,{name:U[k].name,hue:U[k].hue,save:U[k].save});
-  if(ep==='/api/save'){if(b.save&&typeof b.save==='object'){U[k].save=b.save;persist()}return send(r,200,{ok:1})}
+  if(ep==='/api/save'){if(!validSave(b.save))return send(r,400,{e:'بيانات الحفظ غير صالحة أو تتجاوز الحدود الآمنة؛ لم يتم تغيير عالمك.'});U[k].save=b.save;persist();return send(r,200,{ok:1})}
   if(ep==='/api/tick'){const t=Date.now();on[k]={x:+b.x||0,z:+b.z||0,ry:+b.ry||0,sh:b.sh?1:0,t,name:U[k].name,hue:U[k].hue};
    const pl=Object.entries(on).filter(([o,v])=>o!==k&&t-v.t<6000&&v.sh&&on[k].sh).map(([o,v])=>({id:o,name:v.name,x:v.x,z:v.z,ry:v.ry,hue:v.hue}));
    const ms=chat.filter(m=>m.id>(+b.since||0)&&(m.to?(m.to===k||m.fk===k):on[k].sh&&Math.hypot(m.x-on[k].x,m.z-on[k].z)<45)).map(m=>({id:m.id,from:m.from,priv:!!m.to,text:m.text}));
