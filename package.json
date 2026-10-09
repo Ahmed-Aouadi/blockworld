@@ -1,1 +1,14 @@
-{"name":"blockworld","version":"1.0.0","description":"BlockWorld - عالم البرمجة والبناء للأطفال","scripts":{"start":"node server.js"},"engines":{"node":">=18"}}
+{
+  "name": "blockworld",
+  "version": "1.0.0",
+  "description": "BlockWorld - عالم البرمجة والبناء للأطفال",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2"
+  }
+}
