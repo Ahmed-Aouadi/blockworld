@@ -78,13 +78,13 @@ function buildPlan(kind){
   for(let x=-3;x<=3;x++)for(let z=-3;z<=3;z++)if(Math.abs(x)===3||Math.abs(z)===3)add('fence',x,z);
   for(let x=-2;x<=2;x+=2)for(let z=-2;z<=2;z+=2){const d=ELS.find(v=>/زهرة|وردة|توليب|شجرة|نخلة/.test(v.n));if(d)parts.push({k:'e',i:d.i,x:p.x+x,z:p.z+z,ry:0,e:0})}
  }else if(kind==='bridge'){
-  for(let x=-4;x<=4;x++){add('bridge',x,0);add('fence',x,-1);add('fence',x,1)}
+  for(let x=-4;x<=4;x++){if(x%3===0)add('bridge',x,0);add('fence',x,-1);add('fence',x,1)}
  }else if(kind==='tower'){
   for(let y=0;y<4;y++){add('wall',-1,-1,0,y*.8);add('wall',1,-1,0,y*.8);add('wall',-1,1,0,y*.8);add('wall',1,1,0,y*.8)}
   add('roof',0,0,0,3.5);add('door',0,1);
  }else{
   for(let x=-3;x<=3;x++)for(let z=-3;z<=3;z++)if(Math.abs(x)===3||Math.abs(z)===3)add('fence',x,z);
-  add('bench',0,0);add('lamp',-2,-2);add('lamp',2,2);
+  add('arch',0,-3);add('pillar',-2,0);add('pillar',2,0);add('pillar',0,2);
  }
  return parts;
 }
