@@ -95,20 +95,32 @@ function initWorld(){
  let dn=null;
  cv.addEventListener('pointerdown',e=>{dn={x:e.clientX,y:e.clientY};moved=0;try{cv.setPointerCapture(e.pointerId)}catch(_){}});
  cv.addEventListener('pointermove',e=>{if(dn){const dx=e.clientX-dn.x,dy=e.clientY-dn.y;moved+=Math.abs(dx)+Math.abs(dy);if(moved>6){cy-=dx*.006;cp=Math.max(.12,Math.min(1.2,cp+dy*.004))}dn.x=e.clientX;dn.y=e.clientY}
-  if(tool&&tool.k){pick(e);
-   // ضع العنصر فوق العناصر الموجودة أو بجانبها، وليس على الأرض فقط.
+  if(tool&&tool.k){pick(e);scene.updateMatrixWorld(true);
+   // محاذاة العناصر بحسب حدودها الفعلية، بدل إزاحة ثابتة تسبب تداخلًا أو فراغات.
    const hits=rc.intersectObjects(placed.map(p=>p.g),true);
    let stacked=false;
    for(const hit of hits){let obj=hit.object;while(obj&&!obj.userData.po)obj=obj.parent;const base=obj&&obj.userData.po;if(!base||!hit.face)continue;
     const normal=hit.face.normal.clone().applyMatrix3(new T.Matrix3().getNormalMatrix(hit.object.matrixWorld)).normalize();
+    const d=DEFS[tool.k]&&DEFS[tool.k][tool.i],part=d&&tool.k==='p'?(PART_Y[d.b]||0):0;
     if(normal.y>.5){
      gpos.x=Math.round(hit.point.x*2)/2;gpos.z=Math.round(hit.point.z*2)/2;
-     const d=DEFS[tool.k]&&DEFS[tool.k][tool.i],part=d&&tool.k==='p'?(PART_Y[d.b]||0):0;
      elev=Math.max(0,hit.point.y-H(gpos.x,gpos.z)-part);
-    }else if(Math.abs(normal.x)>Math.abs(normal.z)){
-     gpos.x=Math.round((base.x+Math.sign(normal.x)*1)*2)/2;gpos.z=Math.round(base.z*2)/2;elev=base.e||0;
-    }else{
-     gpos.x=Math.round(base.x*2)/2;gpos.z=Math.round((base.z+Math.sign(normal.z)*.5)*2)/2;elev=base.e||0;
+    }else if(Math.abs(normal.x)>Math.abs(normal.z)||Math.abs(normal.z)>.5){
+     // Use world-space bounding boxes so rotated objects and different sizes line up.
+     const targetBox=new T.Box3().setFromObject(base.g);
+     ghost.position.set(0,0,0);ghost.rotation.y=rot;ghost.updateMatrixWorld(true);
+     const candidateBox=new T.Box3().setFromObject(ghost);
+     const halfX=(candidateBox.max.x-candidateBox.min.x)/2,halfZ=(candidateBox.max.z-candidateBox.min.z)/2;
+     if(Math.abs(normal.x)>=Math.abs(normal.z)){
+      gpos.x=normal.x>=0?targetBox.max.x+halfX:targetBox.min.x-halfX;
+      gpos.z=base.z;
+     }else{
+      gpos.z=normal.z>=0?targetBox.max.z+halfZ:targetBox.min.z-halfZ;
+      gpos.x=base.x;
+     }
+     gpos.x=Math.max(-HALF+2,Math.min(HALF-2,gpos.x));
+     gpos.z=Math.max(-HALF+2,Math.min(HALF-2,gpos.z));
+     elev=base.e||0;
     }
     stacked=true;break;
    }
