@@ -15,11 +15,43 @@ function mk(b,c,ghost){const g=new T.Group();
  if(b==='door'){add(['box',[.1,1.1,.2],0xf5f5f5,-.48,.55,0]);add(['box',[.1,1.1,.2],0xf5f5f5,.48,.55,0]);add(['box',[1,.12,.2],0xf5f5f5,0,1.06,0]);const pv=new T.Group();pv.position.set(-.45,0,0);add(['box',[.86,1,.08],'c',.43,.5,0],pv);add(['sph',[.05],0xffd23f,.78,.5,.06],pv);g.add(pv);g.userData.door=pv;g.userData.open=0}
  else{(B[b]||B.rock).forEach(p=>add(p));if(b==='mill'){const bl=new T.Group();bl.position.set(0,1.3,.38);for(let i=0;i<4;i++){const sg=new T.Group();sg.rotation.z=i*1.5708;add(['box',[.12,.7,.02],0xffffff,0,.35,0],sg);bl.add(sg)}g.add(bl);g.userData.spin=bl}}
  return g}
-function mkAvatar(hue,name){const g=new T.Group(),col=new T.Color().setHSL(hue/360,.75,.58),M=(geo,c,x,y,z,sx,sy,sz)=>{const m=new T.Mesh(geo,new T.MeshStandardMaterial({color:c,roughness:.6}));m.position.set(x,y,z);m.scale.set(sx||1,sy||1,sz||1);g.add(m);return m};
- M(new T.SphereGeometry(.3,14,12),col,0,.5,0,1,1.15,.95);M(new T.SphereGeometry(.26,14,12),0xffe3c4,0,1.05,0);M(new T.SphereGeometry(.04,8,6),0x222222,-.09,1.08,.23);M(new T.SphereGeometry(.04,8,6),0x222222,.09,1.08,.23);
- M(new T.SphereGeometry(.05,8,6),0xff8fb0,-.17,1,.2);M(new T.SphereGeometry(.05,8,6),0xff8fb0,.17,1,.2);M(new T.ConeGeometry(.2,.25,10),col,0,1.4,0);
- g.userData.f1=M(new T.SphereGeometry(.1,8,6),0x333355,-.12,.08,.04);g.userData.f2=M(new T.SphereGeometry(.1,8,6),0x333355,.12,.08,.04);
- if(name){const cv=document.createElement('canvas');cv.width=256;cv.height=64;const x=cv.getContext('2d');x.font='bold 34px sans-serif';x.textAlign='center';x.fillStyle='rgba(255,255,255,.9)';x.fillRect(0,8,256,48);x.fillStyle='#2b2a5a';x.fillText(name,128,46);const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),depthTest:false}));sp.scale.set(2,.5,1);sp.position.y=2;g.add(sp)}
+function mkAvatar(hue,name){
+ const g=new T.Group(),col=new T.Color().setHSL(hue/360,.72,.54),shade=col.clone().multiplyScalar(.72),light=col.clone().lerp(new T.Color(0xffffff),.58);
+ const mat=(color,roughness=.58,metalness=0)=>new T.MeshStandardMaterial({color,roughness,metalness});
+ const skin=mat(0xffd2ad),skinShade=mat(0xeeb28e),cloth=mat(col),clothDark=mat(shade),clothLight=mat(light),white=mat(0xffffff),ink=mat(0x29253b),shoeMat=mat(0x34364b),gold=mat(0xffca58,.35,.18),hair=mat(0x49334a),cheek=mat(0xff9d9e);
+ const add=(geo,material,x,y,z,sx=1,sy=1,sz=1,parent=g)=>{const m=new T.Mesh(geo,material);m.position.set(x,y,z);m.scale.set(sx,sy,sz);parent.add(m);return m};
+ const ball=(material,x,y,z,sx,sy,sz,parent=g)=>add(new T.SphereGeometry(1,16,12),material,x,y,z,sx,sy,sz,parent);
+ // Rounded jacket and compact silhouette.
+ ball(cloth,0,.67,0,.32,.37,.22);ball(clothLight,0,.79,.205,.19,.15,.035);
+ add(new T.CylinderGeometry(.09,.105,.13,12),skin,0,.94,0);
+ // Oversized face, soft hair cap and fringe.
+ ball(skin,0,1.18,0,.285,.30,.26);ball(hair,0,1.385,-.025,.29,.14,.27);
+ ball(hair,-.235,1.27,.005,.07,.15,.105);ball(hair,.235,1.27,.005,.07,.15,.105);
+ ball(hair,-.105,1.37,.19,.12,.07,.09);ball(hair,.035,1.39,.205,.12,.065,.075);
+ ball(skinShade,-.284,1.17,0,.055,.08,.055);ball(skinShade,.284,1.17,0,.055,.08,.055);
+ ball(white,-.105,1.205,.232,.071,.084,.035);ball(white,.105,1.205,.232,.071,.084,.035);
+ ball(ink,-.095,1.2,.262,.033,.048,.018);ball(ink,.115,1.2,.262,.033,.048,.018);
+ ball(white,-.105,1.22,.278,.012,.016,.008);ball(white,.105,1.22,.278,.012,.016,.008);
+ ball(cheek,-.18,1.105,.207,.055,.027,.018);ball(cheek,.18,1.105,.207,.055,.027,.018);
+ const smile=new T.Mesh(new T.TorusGeometry(.067,.012,6,16,Math.PI),ink);smile.position.set(0,1.095,.249);smile.rotation.z=Math.PI;g.add(smile);
+ // Golden explorer scarf and badge.
+ const scarf=add(new T.ConeGeometry(.105,.19,4),gold,0,.91,.22);scarf.rotation.x=.14;scarf.rotation.y=Math.PI/4;
+ // Shoulder pivots let the arms swing naturally while walking.
+ const armL=new T.Group();armL.position.set(-.29,.82,0);g.add(armL);
+ ball(clothDark,0,-.13,0,.095,.19,.105,armL);ball(skin,-.015,-.285,.025,.075,.075,.075,armL);
+ const armR=new T.Group();armR.position.set(.29,.82,0);g.add(armR);
+ ball(clothDark,0,-.13,0,.095,.19,.105,armR);ball(skin,.015,-.285,.025,.075,.075,.075,armR);
+ ball(shoeMat,0,.36,0,.23,.12,.18);
+ const legL=new T.Group();legL.position.set(-.12,.34,0);g.add(legL);
+ ball(clothDark,0,-.105,0,.105,.19,.12,legL);ball(shoeMat,0,-.23,.065,.13,.075,.19,legL);
+ const legR=new T.Group();legR.position.set(.12,.34,0);g.add(legR);
+ ball(clothDark,0,-.105,0,.105,.19,.12,legR);ball(shoeMat,0,-.23,.065,.13,.075,.19,legR);
+ add(new T.CylinderGeometry(.235,.235,.065,16),gold,0,.48,0,1,.6,.78);
+ ball(clothDark,0,.7,-.225,.19,.23,.09);ball(gold,0,.75,.241,.065,.065,.025);
+ g.userData.armL=armL;g.userData.armR=armR;g.userData.legL=legL;g.userData.legR=legR;
+ // Keep the old animation hooks compatible with the game loop.
+ g.userData.f1=legL;g.userData.f2=legR;
+ if(name){const cv=document.createElement('canvas');cv.width=320;cv.height=84;const x=cv.getContext('2d');x.fillStyle='rgba(255,255,255,.94)';x.beginPath();x.roundRect(8,8,304,64,24);x.fill();x.strokeStyle='#d9dcf4';x.lineWidth=3;x.stroke();x.font='bold 32px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#2b2a5a';x.fillText(String(name).slice(0,18),160,42);const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),depthTest:false}));sp.scale.set(2.25,.59,1);sp.position.y=1.83;g.add(sp)}
  return g}
 let R,scene,cam,terrain,pl,placed=[],cols=[],others={},ghost=null,tool=null,elev=0,manualElev=0,rot=0,cy=0,cp=.45,cd=8,keys={},ctl={lock:false},gifts=[],clouds=[],curZone=0,gpos={x:0,z:0},rc=new T.Raycaster(),moved=0;
 const walkable=(x,z)=>Math.abs(x)<HALF-2&&Math.abs(z)<HALF-2&&H(x,z)>-.45;
