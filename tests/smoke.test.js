@@ -223,3 +223,9 @@ test('static file serving blocks sibling-prefix traversal and bounds passwords',
   assert.ok(server.includes('f!==PUB&&!f.startsWith(PUB+path.sep)'));
   assert.ok(server.includes('p.length>256'));
 });
+test('private player position remains isolated while visiting the shared world', () => {
+  const main = read('public/js/main.js');
+  assert.ok(main.includes('privatePosCache=[pl.x,pl.z]'));
+  assert.ok(main.includes('pos:(SH&&privatePosCache?privatePosCache:S.pos).slice()'));
+  assert.ok(main.includes('S.pos=privatePosCache.slice()'));
+});
