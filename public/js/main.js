@@ -1,9 +1,9 @@
 // الواجهة: الحسابات، اللوحات، الدردشة، الهدايا، الحفظ
 const $=s=>document.querySelector(s);
-let S={xp:0,inv:{},placed:[],custom:[],found:{},pos:[0,6],hue:200,prog:[]},SH=false,since=0,chatTo=null,started=false,isDirty=false,openP=null;
+let S={xp:0,inv:{},placed:[],custom:[],found:{},pos:[0,6],hue:200,prog:[]},SH=false,since=0,chatTo=null,started=false,isDirty=false,saving=false,saveVersion=0,openP=null;
 const rnd=n=>Math.floor(Math.random()*n);
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2400)}
-const spark_toast=toast,dirty=()=>{isDirty=true;hud()};
+const spark_toast=toast,dirty=()=>{isDirty=true;saveVersion++;hud()};
 function hud(){const l=Math.floor(S.xp/100)+1;$('#lv').textContent=l;$('#xb').style.width=S.xp%100+'%'}
 function onGift(){const i=rnd(ELS.length),n=1+rnd(3);S.inv['e'+i]=(S.inv['e'+i]||0)+n;S.xp+=5;toast('🎁 حصلت على '+n+'× '+ELS[i].n+'!');dirty();refreshPanels()}
 function onZone(i){const z=ZONES[i];$('#zn').textContent=z.e+' '+z.n;if(!S.found[i]){S.found[i]=1;S.xp+=20;toast('🗺️ اكتشفت «'+z.n+'»! +20 XP ('+Object.keys(S.found).length+'/'+ZONES.length+')');dirty()}}
@@ -63,8 +63,8 @@ async function tick(){if(NET.guest)return;try{const r=await NET.api('tick',{x:pl
  $('#onl').textContent='👤 '+(SH?r.pl.length+1:1)+' متصل';if(openP==='Near')rNear()}catch(e){}}
 // ---------- الحفظ والدخول ----------
 function serialize(){S.placed=placed.map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]);S.pos=[pl.x,pl.z];S.prog=prog}
-async function saveNow(){if(!started||!isDirty)return;isDirty=false;serialize();const save={xp:S.xp,inv:S.inv,placed:S.placed,custom:S.custom,found:S.found,pos:S.pos,hue:S.hue,prog:S.prog||[]};
- try{if(NET.guest)localStorage.setItem('bw_guest',JSON.stringify(save));else await NET.api('save',{save})}catch(e){isDirty=true}}
+async function saveNow(){if(!started||!isDirty||saving)return;saving=true;serialize();const version=saveVersion,save={xp:S.xp,inv:{...S.inv},placed:S.placed.map(a=>a.slice()),custom:S.custom.map(a=>({...a})),found:{...S.found},pos:S.pos.slice(),hue:S.hue,prog:prog.map(a=>({...a}))};
+ try{if(NET.guest)localStorage.setItem('bw_guest',JSON.stringify(save));else await NET.api('save',{save});if(saveVersion===version)isDirty=false}catch(e){isDirty=true}finally{saving=false}}
 function startGame(save,name,hue){if(started)return;started=true;S={...S,...(save||{})};S.hue=hue||S.hue;if(!save||!Object.keys(S.inv||{}).length){S.inv=S.inv||{};[1,7,16,20,30,44,58,70].forEach(i=>{if(ELS[i])S.inv['e'+i]=3})}
  $('#auth').style.display='none';$('#hud').hidden=false;try{initWorld()}catch(e){document.body.innerHTML='<p style="padding:30px;font-size:20px">يحتاج المتصفح إلى WebGL ليعمل بلوك وورلد.</p>';return}
  (S.placed||[]).forEach(a=>{if(DEFS[a[0]]&&DEFS[a[0]][a[1]]){const po=placeObj({k:a[0],i:a[1],x:a[2],z:a[3],ry:a[4],e:a[5]});if(a[6])po.beh={t:a[6],p:a[7]||4}}});
