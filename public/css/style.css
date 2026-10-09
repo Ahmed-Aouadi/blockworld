@@ -72,3 +72,18 @@ textarea{min-height:130px;direction:ltr;font-family:monospace;font-size:13px}
 #pCode #clrp{background:#fff0f1;color:#b52c47}
 #pCode #newb{background:#fff0bd}
 @media(max-width:640px){#pCode .grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:30%;flex-basis:30%}#pCode .blk{font-size:12px;min-height:40px;padding:7px 8px}#prog{padding:7px;gap:6px}.pi{padding:6px;gap:5px}.pi .pi-actions button{width:24px;height:24px}}
+
+/* Build catalog: tactile miniature swatches and clearer selection */
+#pBuild .tabs{flex:0 0 auto;gap:6px;max-width:100%;overflow-x:auto;flex-wrap:nowrap;padding:3px 2px 6px;scrollbar-width:thin}
+#pBuild .tabs button{flex:0 0 auto;white-space:nowrap;background:#f7f7ff;border:2px solid rgba(43,42,90,.15);font-weight:800}
+#pBuild .tabs button.on{background:#ffe18a;border-color:var(--ink);box-shadow:0 3px 0 var(--ink)}
+#pBuild .grid,#pBag .grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:9px;padding:5px 3px 9px}
+#pBuild .it,#pBag .it{position:relative;min-height:86px;justify-content:flex-start;gap:6px;padding:10px 5px 8px;border:2px solid #e0e3f2;border-radius:15px;background:linear-gradient(155deg,#fff,#f3f6ff);box-shadow:0 3px 0 #d7dcef;font-weight:800;line-height:1.25;overflow:hidden}
+#pBuild .it:hover,#pBag .it:hover{border-color:#a9b6ed;transform:translateY(-2px);filter:saturate(1.08)}
+#pBuild .it i,#pBag .it i{position:relative;display:block;flex:0 0 34px;width:34px;height:34px;border:2px solid rgba(43,42,90,.55);border-radius:10px;transform:rotate(-5deg);box-shadow:3px 4px 0 rgba(43,42,90,.14),inset 3px 3px 0 rgba(255,255,255,.45),inset -3px -4px 0 rgba(0,0,0,.12)}
+#pBuild .it i::after,#pBag .it i::after{content:'';position:absolute;inset:4px 5px auto auto;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.7);box-shadow:0 0 7px rgba(255,255,255,.6)}
+#pBuild .it small,#pBag .it small{font-size:11px;font-weight:700;color:#687092}
+#pBuild .it.on{background:linear-gradient(150deg,#fff8d7,#ffe48b);border-color:#c28c10;box-shadow:0 3px 0 #c28c10,0 0 0 2px rgba(255,201,40,.15)}
+#pBuild .it.no{filter:grayscale(.5);opacity:.55}
+#pBuild>small{flex:0 0 auto;line-height:1.5;color:#687092;padding:2px 3px}
+@media(max-width:640px){#pBuild .grid,#pBag .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}#pBuild .it,#pBag .it{min-height:78px;font-size:11px;padding:8px 3px}#pBuild .it i,#pBag .it i{width:30px;height:30px;flex-basis:30px}}
