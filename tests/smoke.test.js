@@ -121,3 +121,12 @@ test('shared players receive each active builder world without saving remote obj
   assert.match(world, /function placeObj\(po,remoteOwner=null\)/);
   assert.match(world, /function hitPlaced\(e\)\{pick\(e\);const h=rc\.intersectObjects\(placed\.filter\(p=>!p\.remoteOwner\)/);
 });
+
+
+test('player-placed objects and placement preview are larger than the avatar scale', () => {
+  const world = read('public/js/world.js');
+  assert.match(world, /HALF=240,BUILD_SCALE=1\.6/);
+  assert.match(world, /g\.scale\.setScalar\(BUILD_SCALE\);g\.position\.set\(po\.x,y,po\.z\)/);
+  assert.match(world, /ghost\.scale\.setScalar\(BUILD_SCALE\)/);
+  assert.match(world, /PART_Y\[d\.b\]\|\|0\)\*BUILD_SCALE/);
+});
