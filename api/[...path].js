@@ -109,15 +109,15 @@ module.exports = async function handler(req, res) {
             SELECT COALESCE(jsonb_agg(existing.value ORDER BY existing.ordinality), '[]'::jsonb)
             FROM jsonb_array_elements(bw_shared_world.placed) WITH ORDINALITY AS existing(value, ordinality)
             WHERE NOT EXISTS (
-              SELECT 1 FROM jsonb_array_elements(`${removeJson}::jsonb) AS gone(value)
+              SELECT 1 FROM jsonb_array_elements(${removeJson}::jsonb) AS gone(value)
               WHERE gone.value = existing.value
             )
           ) || (
             SELECT COALESCE(jsonb_agg(candidate.value), '[]'::jsonb)
-            FROM jsonb_array_elements(`${addJson}::jsonb) AS candidate(value)
+            FROM jsonb_array_elements(${addJson}::jsonb) AS candidate(value)
             WHERE NOT EXISTS (
-              SELECT 1 FROM jsonb_array_elements(bw_shared_world.placed) AS current(value)
-              WHERE current.value = candidate.value
+              SELECT 1 FROM jsonb_array_elements(bw_shared_world.placed) AS existing_now(value)
+              WHERE existing_now.value = candidate.value
             )
           ),
           updated_at = now()
@@ -125,14 +125,14 @@ module.exports = async function handler(req, res) {
           AND jsonb_array_length(placed) - (
             SELECT COUNT(*) FROM jsonb_array_elements(bw_shared_world.placed) AS existing(value)
             WHERE EXISTS (
-              SELECT 1 FROM jsonb_array_elements(`${removeJson}::jsonb) AS gone(value)
+              SELECT 1 FROM jsonb_array_elements(${removeJson}::jsonb) AS gone(value)
               WHERE gone.value = existing.value
             )
           ) + (
-            SELECT COUNT(*) FROM jsonb_array_elements(`${addJson}::jsonb) AS candidate(value)
+            SELECT COUNT(*) FROM jsonb_array_elements(${addJson}::jsonb) AS candidate(value)
             WHERE NOT EXISTS (
-              SELECT 1 FROM jsonb_array_elements(bw_shared_world.placed) AS current(value)
-              WHERE current.value = candidate.value
+              SELECT 1 FROM jsonb_array_elements(bw_shared_world.placed) AS existing_now(value)
+              WHERE existing_now.value = candidate.value
             )
           ) <= 1000
         `;

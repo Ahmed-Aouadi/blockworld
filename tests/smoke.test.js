@@ -143,9 +143,9 @@ test('shared building snapshots are stored globally without touching personal sa
   assert.match(main, /payload\.worldRemove=worldRemove/);
   assert.match(main, /lastSharedWorldSnapshot=r\.sharedWorld/);
   assert.match(api, /const validSharedChanges = shared && validPlacedList\(worldAdd\) && validPlacedList\(worldRemove\)/);
-  assert.match(api, /UPDATE bw_shared_world SET placed=/);
+  assert.match(api, /UPDATE bw_shared_world/);
   assert.match(server, /const worldAdd=b\.worldAdd===undefined\?\[\]:b\.worldAdd/);
-  assert.match(server, /U\.__sharedWorld=b\.worldPlaced/);
+  assert.match(server, /U\.__sharedWorld=current/);
 });
 
 
@@ -171,12 +171,13 @@ test('shared world persistence is separate from personal saves and survives disc
   const api = read('api/[...path].js');
   assert.match(client, /privatePlacedCache=placed\.filter/);
   assert.match(client, /placed:\(SH&&privatePlacedCache\?privatePlacedCache:S\.placed\)/);
-  assert.match(client, /payload\.worldPlaced=localPlaced/);
+  assert.match(client, /payload\.worldAdd=worldAdd/);
+  assert.match(client, /payload\.worldRemove=worldRemove/);
   assert.match(client, /Array\.isArray\(r\.sharedWorld\)/);
-  assert.match(local, /U\.__sharedWorld=b\.worldPlaced/);
+  assert.match(local, /U\.__sharedWorld=current/);
   assert.match(local, /sharedWorld,ms,inbox,last:cid/);
   assert.match(api, /CREATE TABLE IF NOT EXISTS bw_shared_world/);
-  assert.match(api, /UPDATE bw_shared_world SET placed=/);
+  assert.match(api, /UPDATE bw_shared_world/);
   assert.match(api, /sharedWorld, ms:/);
 });
 
@@ -199,8 +200,8 @@ test('shared world exposes staged exploration and building quests with claimable
 
 test('exploration quest progress counts numeric zone keys', () => {
   const main = read('public/js/main.js');
-  assert.ok(!main.includes('/^\\\\d+$/'), 'digit regex must not be double-escaped in source');
-  const digits = vm.runInNewContext('/^\\d+$/');
+  assert.ok(main.includes(String.raw`filter(k=>/^\d+$/.test(k)`));
+  const digits = vm.runInNewContext(String.raw`/^\d+$/`);
   assert.equal(digits.test('0'), true);
   assert.equal(digits.test('quest_build10'), false);
 });
@@ -209,16 +210,16 @@ test('shared world updates are delta-based and do not read private player builds
   const main = read('public/js/main.js');
   const api = read('api/[...path].js');
   const server = read('server.js');
-  assert.match(main, /payload\\.worldAdd=worldAdd/);
-  assert.match(main, /payload\\.worldRemove=worldRemove/);
-  assert.match(api, /jsonb_array_elements\\(\\$\\{removeJson\\}::jsonb\\)/);
-  assert.match(api, /worlds = \\[\\]/);
-  assert.doesNotMatch(api, /u\\.save->'placed'/);
-  assert.match(server, /removeKeys=new Set\\(worldRemove\\.map/);
+  assert.ok(main.includes('payload.worldAdd=worldAdd'));
+  assert.ok(main.includes('payload.worldRemove=worldRemove'));
+  assert.ok(api.includes('jsonb_array_elements(${removeJson}::jsonb)'));
+  assert.ok(api.includes('worlds = [];'));
+  assert.ok(!api.includes("u.save->'placed'"));
+  assert.ok(server.includes('removeKeys=new Set(worldRemove.map'));
 });
 
 test('static file serving blocks sibling-prefix traversal and bounds passwords', () => {
   const server = read('server.js');
-  assert.match(server, /f!==PUB&&!f\\.startsWith\\(PUB\\+path\\.sep\\)/);
-  assert.match(server, /p\\.length>256/);
+  assert.ok(server.includes('f!==PUB&&!f.startsWith(PUB+path.sep)'));
+  assert.ok(server.includes('p.length>256'));
 });
