@@ -16,8 +16,7 @@ http.createServer(async(q,r)=>{
   const b=q.method==='POST'?await body(q):{},k=tok[(q.headers.authorization||'').slice(7)];
   if(ep==='/api/register'){const n=String(b.name||'').normalize('NFKC').trim().slice(0,16),p=String(b.pass||''),key=normalizeName(n);
    if(n.length<2||p.length<6)return send(r,400,{e:'اسم اللاعب يجب أن يكون حرفين على الأقل وكلمة المرور 6 أحرف على الأقل'});
-   if(/[\\u0000-\\u001f\\u007f]/.test(n))return send(r,400,{e:'اسم اللاعب يحتوي على رموز غير مسموحة'});
-   if(U[key])return send(r,409,{e:'هذا الاسم مستخدم بالفعل، جرّب اسمًا مختلفًا'});
+      if(U[key])return send(r,409,{e:'هذا الاسم مستخدم بالفعل، جرّب اسمًا مختلفًا'});
    const s=cr.randomBytes(16).toString('hex');U[key]={name:n,salt:s,h:hash(p,s),save:null,hue:Math.random()*360|0,inbox:[]};persist();return login(r,key)}
   if(ep==='/api/login'){const kk=normalizeName(b.name),u=U[kk];
    if(!u||!u.salt||!u.h||String(b.pass||'').length>256)return send(r,401,{e:'اسم اللاعب أو كلمة المرور غير صحيحة'});
