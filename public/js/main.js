@@ -43,10 +43,11 @@ const PN=['Build','Code','Bag','Chat','Near'];
 function togglePanel(n){const was=openP===n;PN.forEach(p=>$('#p'+p).classList.remove('on'));if(openP==='Build'&&was)setTool(null);openP=was?null:n;if(!was){$('#p'+n).classList.add('on');renderPanel(n)}else if(n==='Build')setTool(null)}
 function renderPanel(n){({Build:rBuild,Code:rCode,Bag:rBag,Chat:rChat,Near:rNear})[n]()}
 function refreshPanels(){if(openP&&openP!=='Code'&&openP!=='Chat')renderPanel(openP)}
-let bk='e',bc=0;
-function rBuild(){const cats=bk==='e'?ELC:PTC,L=bk==='e'?ELS:PTS,cat=cats[bc]||cats[0];
+let bk='e',bc=0,buildSearch='';
+function rBuild(){const cats=bk==='e'?ELC:PTC,L=bk==='e'?ELS:PTS,cat=cats[bc]||cats[0],q=buildSearch.trim().toLocaleLowerCase(),shown=L.filter(d=>d.cat===cat&&(!q||d.n.toLocaleLowerCase().includes(q)||d.cat.toLocaleLowerCase().includes(q)));
  $('#pBuild').innerHTML=`<h3>🔨 البناء <small>${ELS.length} عنصر · ${PTS.length} أداة بناء</small></h3><div class="tabs"><button class="${bk==='e'?'on':''}" data-bk="e">🌸 العناصر (${ELS.length})</button><button class="${bk==='p'?'on':''}" data-bk="p">🧱 أدوات البناء (${PTS.length})</button></div><div class="tabs">${cats.map((c,i)=>`<button class="${i===bc?'on':''}" data-bc="${i}">${c}</button>`).join('')}</div>
- <div class="grid">${L.filter(d=>d.cat===cat).map(d=>{const n=S.inv['e'+d.i]||0,no=bk==='e'&&!n,on=tool&&tool.k===bk&&tool.i===d.i;return`<button class="it ${no?'no':''} ${on?'on':''}" data-i="${d.i}"><i style="background:#${d.c.toString(16).padStart(6,'0')}"></i>${d.n}${bk==='e'?'<small>× '+n+'</small>':''}</button>`}).join('')}</div>
+ <input id="buildSearch" class="code-search" value="${esc(buildSearch)}" placeholder="🔎 ابحث عن عنصر أو أداة..." aria-label="البحث في كتالوج البناء">
+ <div class="grid">${shown.map(d=>{const n=S.inv['e'+d.i]||0,no=bk==='e'&&!n,on=tool&&tool.k===bk&&tool.i===d.i;return`<button class="it ${no?'no':''} ${on?'on':''}" data-i="${d.i}"><i style="background:#${d.c.toString(16).padStart(6,'0')}"></i>${d.n}${bk==='e'?'<small>× '+n+'</small>':''}</button>`}).join('')}</div>
  <small>🗑 احذف · 👆 برمج عنصرًا · ⟳ دوّر · ⬆⬇ ارتفاع. انقر على الأرض للوضع.</small>`;
  const p=$('#pBuild');p.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{bk=b.dataset.bk;bc=0;rBuild()});p.querySelectorAll('[data-bc]').forEach(b=>b.onclick=()=>{bc=+b.dataset.bc;rBuild()});
  p.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{setTool({k:bk,i:+b.dataset.i});rBuild()})}
@@ -121,6 +122,7 @@ document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel
 $('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر لتحديده ثم استخدم الأسهم للتحريك')};
 $('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH)syncPlayers([]);toast(SH?'العالم المشترك: سترى اللاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
 $('#bShare').textContent='🏡 خاص';
+let nightMode=false;$('#bTime').onclick=()=>{nightMode=!nightMode;setWorldTime(nightMode);$('#bTime').textContent=nightMode?'☀️ نهار':'🌙 ليل';toast(nightMode?'🌙 تم تفعيل أجواء الليل':'☀️ عادت أجواء النهار')};
  $('#bHelp').onclick=()=>{modal('<h2>❔ دليل التحكم في BlockWorld</h2><p><b>الحركة:</b> WASD أو الأسهم، والمسافة للقفز. حرّك الكاميرا بسحب الشاشة، وقرّب أو أبعد بعجلة الفأرة.</p><p><b>البناء:</b> افتح 🔨 بناء واختر عنصرًا، ثم انقر على العالم لوضعه. وجّه المؤشر إلى عنصر موجود للبناء فوقه أو بجانبه. اضغط R لتدوير معاينة البناء، واستخدم ⬆ و⬇ لضبط ارتفاعه.</p><p><b>تعديل عنصر موجود:</b> اختر ⌨️ تحريك ثم انقر العنصر. الأسهم أو WASD لتحريكه، Shift لحركة أكبر، Q/E للتدوير، PageUp/PageDown للارتفاع، Delete للحذف، وCtrl+D للنسخ.</p><p><b>برمجة عنصر:</b> اضغط 🧩 برمجة ثم انقر عنصرًا، أو استخدم لوحة البرمجة لبناء تسلسل أوامر وتشغيله.</p><p><b>الحفظ والحسابات:</b> يُحفظ التقدم تلقائيًا كل عدة ثوانٍ. حفظ الحسابات عبر الإنترنت يتطلب إعداد قاعدة البيانات DATABASE_URL في الاستضافة؛ اللعب كضيف يحفظ على هذا المتصفح فقط.</p><div class="row"><button class="b1" id="bHelpClose">فهمت</button></div>');$('#bHelpClose').onclick=closeModal};
 $('#tDel').onclick=()=>{clearPlacedSelection();setTool('del');toast('🗑 انقر على العنصر الذي تريد حذفه')};$('#tMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر ثم حرّكه بالأسهم أو WASD')};$('#tSel').onclick=()=>{clearPlacedSelection();setTool('sel');toast('🧩 انقر على عنصر لفتح إعدادات برمجته')};$('#tCopy').onclick=()=>{setTool('copy');toast('📋 انقر على عنصر لنسخه — يلزم توفره في الحقيبة')};$('#tOff').onclick=()=>{setTool(null);if(openP==='Build')rBuild()};
 $('#tRot').onclick=()=>{if(selectedPo&&tool==='move'){rotateSelected(1);toast('⟳ تم تدوير العنصر المحدد')}else{rot=(rot+Math.PI/4)%(Math.PI*2);if(ghost)ghostPlace();toast('⟳ تدوير معاينة البناء')}};$('#tUp').onclick=()=>{if(selectedPo&&tool==='move'){changeSelectedHeight(1);toast('⬆ تم رفع العنصر المحدد')}else{manualElev=Math.min(4.4,manualElev+.55);elev=manualElev;toast('ارتفاع البناء: '+Math.round(elev/.55));if(ghost)ghostPlace()}};$('#tDn').onclick=()=>{if(selectedPo&&tool==='move'){changeSelectedHeight(-1);toast('⬇ تم خفض العنصر المحدد')}else{manualElev=Math.max(0,manualElev-.55);elev=manualElev;toast('ارتفاع البناء: '+Math.round(elev/.55));if(ghost)ghostPlace()}};
@@ -128,6 +130,7 @@ document.querySelectorAll('#dpad [data-k]').forEach(b=>{const k=b.dataset.k;b.ad
 $('#jump').addEventListener('pointerdown',e=>{e.preventDefault();keys.jump=true});
 const KM={KeyW:'up',ArrowUp:'up',KeyS:'down',ArrowDown:'down',KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right'};
 addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select'))return;
+ if(e.ctrlKey&&e.code==='KeyZ'){undoProg();e.preventDefault();return}if(e.ctrlKey&&e.code==='KeyY'){redoProg();e.preventDefault();return}
  if(tool==='move'&&selectedPo){
   const step=e.shiftKey?1:.5;
   if(KM[e.code]){const k=KM[e.code];moveSelected(k==='left'?-step:k==='right'?step:0,k==='up'?-step:k==='down'?step:0);e.preventDefault();return}
