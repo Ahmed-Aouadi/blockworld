@@ -5,6 +5,7 @@ let U={};try{U=JSON.parse(fs.readFileSync(DB,'utf8'))}catch(e){}
 let st=0;const persist=()=>{clearTimeout(st);st=setTimeout(()=>fs.writeFile(DB,JSON.stringify(U),()=>{}),500)};
 const tok={},on={},chat=[];let cid=0;
 const hash=(p,s)=>cr.scryptSync(p,s,32).toString('hex');
+const normalizeName=n=>String(n||'').normalize('NFKC').trim().replace(/\\s+/g,' ').toLocaleLowerCase('ar');
 const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'};
 const send=(r,c,o)=>{r.writeHead(c,{'Content-Type':'application/json; charset=utf-8'});r.end(JSON.stringify(o))};
 const body=q=>new Promise(r=>{let b='';q.on('data',d=>{b+=d;if(b.length>4e5)q.destroy()});q.on('end',()=>{try{r(JSON.parse(b||'{}'))}catch(e){r({})}})});
@@ -13,12 +14,15 @@ http.createServer(async(q,r)=>{
  const ep=q.url.split('?')[0];
  if(ep.startsWith('/api/')){
   const b=q.method==='POST'?await body(q):{},k=tok[(q.headers.authorization||'').slice(7)];
-  if(ep==='/api/register'){const n=String(b.name||'').trim().slice(0,16),p=String(b.pass||'');
-   if(n.length<2||p.length<4)return send(r,400,{e:'الاسم حرفان على الأقل وكلمة المرور 4 أحرف على الأقل'});
-   if(U[n.toLowerCase()])return send(r,409,{e:'هذا الاسم مستخدم، اختر اسمًا آخر'});
-   const s=cr.randomBytes(8).toString('hex');U[n.toLowerCase()]={name:n,salt:s,h:hash(p,s),save:null,hue:Math.random()*360|0,inbox:[]};persist();return login(r,n.toLowerCase())}
-  if(ep==='/api/login'){const kk=String(b.name||'').trim().toLowerCase(),u=U[kk];
-   if(!u||u.h!==hash(String(b.pass||''),u.salt))return send(r,401,{e:'الاسم أو كلمة المرور غير صحيحة'});return login(r,kk)}
+  if(ep==='/api/register'){const n=String(b.name||'').normalize('NFKC').trim().replace(/\\s+/g,' ').slice(0,16),p=String(b.pass||''),key=normalizeName(n);
+   if(n.length<2||p.length<6)return send(r,400,{e:'اسم اللاعب يجب أن يكون حرفين على الأقل وكلمة المرور 6 أحرف على الأقل'});
+   if(/[\\u0000-\\u001f\\u007f]/.test(n))return send(r,400,{e:'اسم اللاعب يحتوي على رموز غير مسموحة'});
+   if(U[key])return send(r,409,{e:'هذا الاسم مستخدم بالفعل، جرّب اسمًا مختلفًا'});
+   const s=cr.randomBytes(16).toString('hex');U[key]={name:n,salt:s,h:hash(p,s),save:null,hue:Math.random()*360|0,inbox:[]};persist();return login(r,key)}
+  if(ep==='/api/login'){const kk=normalizeName(b.name),u=U[kk];
+   if(!u||!u.salt||!u.h||String(b.pass||'').length>256)return send(r,401,{e:'اسم اللاعب أو كلمة المرور غير صحيحة'});
+   let valid=false;try{const a=Buffer.from(u.h,'hex'),c=Buffer.from(hash(String(b.pass||''),u.salt),'hex');valid=a.length===c.length&&cr.timingSafeEqual(a,c)}catch(e){}
+   if(!valid)return send(r,401,{e:'اسم اللاعب أو كلمة المرور غير صحيحة'});return login(r,kk)}
   if(!k||!U[k])return send(r,401,{e:'سجّل الدخول أولًا'});
   if(ep==='/api/me')return send(r,200,{name:U[k].name,hue:U[k].hue,save:U[k].save});
   if(ep==='/api/save'){if(b.save&&typeof b.save==='object'){U[k].save=b.save;persist()}return send(r,200,{ok:1})}
