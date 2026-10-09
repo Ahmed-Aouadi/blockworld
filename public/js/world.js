@@ -65,7 +65,7 @@ function mv(dx,dz){const nx=pl.x+dx,nz=pl.z+dz;if(!walkable(nx,nz))return false;
 const PART_Y={roof:1.1,balcony:.55,chimney:1.1};
 function placeObj(po){const d=DEFS[po.k][po.i],g=mk(d.b,d.c),y=Math.max(H(po.x,po.z),-.3)+(po.e||0)+(po.k==='p'&&PART_Y[d.b]||0);g.position.set(po.x,y,po.z);g.rotation.y=po.ry||0;Object.assign(g.userData,{po,x0:po.x,y0:y,z0:po.z,ry0:po.ry||0});po.g=g;scene.add(g);placed.push(po);
  const s=SOLID[d.b];if(po.k==='p'&&s)cols.push({o:po,x:po.x,z:po.z,ry:po.ry||0,hx:s[0],hz:s[1],door:d.b==='door'});return po}
-function removeObj(po){scene.remove(po.g);placed.splice(placed.indexOf(po),1);const i=cols.findIndex(c=>c.o===po);if(i>=0)cols.splice(i,1)}
+function removeObj(po){const at=placed.indexOf(po);if(at<0||!po?.g)return;scene.remove(po.g);const geometries=new Set(),materials=new Set();po.g.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>materials.add(m))});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());placed.splice(at,1);const i=cols.findIndex(c=>c.o===po);if(i>=0)cols.splice(i,1)}
 function behave(po,dt,t){const b=po.beh,g=po.g,u=g.userData;if(!b)return;const p=b.p||4,w=(t+u.x0)%1000;
  if(b.t==='spin')g.rotation.y=u.ry0+w*6.283/p;else if(b.t==='bounce')g.position.y=u.y0+Math.abs(Math.sin(w*3.14159/p*2))*.7;else if(b.t==='sway')g.rotation.z=Math.sin(w*6.283/p)*.25;
  else if(b.t==='pulse')g.scale.setScalar(1+Math.sin(w*6.283/p)*.25);else if(b.t==='slide'){const a=Math.sin(w*6.283/p)*2;g.position.x=u.x0+Math.cos(u.ry0)*a;g.position.z=u.z0-Math.sin(u.ry0)*a}
