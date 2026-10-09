@@ -92,7 +92,7 @@ let selectedPo=null,selectionBox=null;
  document.addEventListener('pointerup',stop);document.addEventListener('pointercancel',stop);
 })();
 const rnd=n=>Math.floor(Math.random()*n);
-function clearPlacedSelection(){if(selectionBox&&typeof scene!=='undefined')scene.remove(selectionBox);selectionBox=null;selectedPo=null}
+function clearPlacedSelection(){if(selectionBox&&typeof scene!=='undefined'){scene.remove(selectionBox);selectionBox.geometry?.dispose();if(Array.isArray(selectionBox.material))selectionBox.material.forEach(m=>m.dispose());else selectionBox.material?.dispose()}selectionBox=null;selectedPo=null}
 function selectPlaced(po){clearPlacedSelection();selectedPo=po;selectionBox=new THREE.BoxHelper(po.g,0xffc928);scene.add(selectionBox);toast('تم تحديد العنصر — الأسهم للتحريك، Q/E للتدوير، Delete للحذف');}
 function moveSelected(dx,dz){if(!selectedPo)return;const po=selectedPo,x=Math.max(-HALF+2,Math.min(HALF-2,Math.round((po.x+dx)*2)/2)),z=Math.max(-HALF+2,Math.min(HALF-2,Math.round((po.z+dz)*2)/2));if(!walkable(x,z))return;po.x=x;po.z=z;po.g.position.x=x;po.g.position.z=z;po.g.userData.x0=x;po.g.userData.z0=z;po.g.userData.y0=Math.max(H(x,z),-.3)+(po.e||0)+(po.k==='p'&&PART_Y[DEFS[po.k][po.i].b]||0);po.g.position.y=po.g.userData.y0;const c=cols.find(v=>v.o===po);if(c){c.x=x;c.z=z}if(selectionBox)selectionBox.update();dirty()}
 function rotateSelected(dir){if(!selectedPo)return;const po=selectedPo;po.ry=((po.ry||0)+dir*Math.PI/4)%(Math.PI*2);po.g.rotation.y=po.ry;po.g.userData.ry0=po.ry;const c=cols.find(v=>v.o===po);if(c)c.ry=po.ry;if(selectionBox)selectionBox.update();dirty()}
@@ -207,9 +207,10 @@ function rNear(){const L=nearList();$('#pNear').innerHTML=`<h3>👫 اللاعب
 function giftModal(id){const o=others[id];if(!o)return;const items=Object.keys(S.inv).filter(k=>S.inv[k]>0&&ELS[+k.slice(1)]);
  modal(`<h2>🎁 أرسل هدية إلى ${esc(o.name)}</h2>${items.length?`<select id="gi">${items.map(k=>`<option value="${k}">${ELS[+k.slice(1)].n} (× ${S.inv[k]})</option>`).join('')}</select><input id="gn" type="number" min="1" value="1"><div class="err" id="ge"></div><div class="row"><button class="b1" id="gs">إرسال</button><button id="gx">إلغاء</button></div>`:'<p>حقيبتك فارغة — اجمع الهدايا أولًا.</p>'}`);
  const x=$('#gx');if(x)x.onclick=closeModal;const s=$('#gs');if(s)s.onclick=async()=>{const k=$('#gi').value,n=Math.floor(+$('#gn').value);if(!(n>=1&&n<=S.inv[k]))return $('#ge').textContent='الكمية غير صحيحة';try{await NET.api('gift',{to:id,item:k,n});S.inv[k]-=n;dirty();closeModal();toast('🎁 أُرسلت الهدية!');refreshPanels()}catch(e){$('#ge').textContent=e.message}}}
-async function tick(){if(NET.guest)return;try{const r=await NET.api('tick',{x:pl.x,z:pl.z,ry:pl.ry,sh:SH?1:0,since});since=Math.max(since,r.last||0);syncPlayers(SH?r.pl:[]);
+let tickBusy=false;
+async function tick(){if(NET.guest||tickBusy)return;tickBusy=true;try{const r=await NET.api('tick',{x:pl.x,z:pl.z,ry:pl.ry,sh:SH?1:0,since});since=Math.max(since,r.last||0);syncPlayers(SH?r.pl:[]);
  r.ms.forEach(addMsg);r.inbox.forEach(g=>{S.inv[g.item]=(S.inv[g.item]||0)+g.n;toast('🎁 '+g.from+' أهداك '+g.n+'× '+(ELS[+g.item.slice(1)]||{n:'عنصر'}).n);dirty()});if(r.inbox.length)refreshPanels();
- $('#onl').textContent='👤 '+(SH?r.pl.length+1:1)+' متصل';if(openP==='Near')rNear()}catch(e){}}
+ $('#onl').textContent='👤 '+(SH?r.pl.length+1:1)+' متصل';if(openP==='Near')rNear()}catch(e){}finally{tickBusy=false}}
 // ---------- الحفظ والدخول ----------
 function serialize(){S.placed=placed.map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]);S.pos=[pl.x,pl.z];S.prog=prog}
 async function saveNow(){if(!started||!isDirty||saving)return;saving=true;serialize();const version=saveVersion,save={xp:S.xp,inv:{...S.inv},placed:S.placed.map(a=>a.slice()),custom:S.custom.map(a=>({...a})),found:{...S.found},pos:S.pos.slice(),hue:S.hue,avatar:{...(S.avatar||{})},prog:prog.map(a=>({...a}))};
