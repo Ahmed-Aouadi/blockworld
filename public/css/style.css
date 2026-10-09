@@ -126,3 +126,8 @@ html[data-world-time="night"] #bTime{background:#ffe7a3}
 
 /* Sound toggle follows the existing playful chip style */
 #bSound{white-space:nowrap}
+
+/* Separate low-volume ambient music control */
+#bMusic{white-space:nowrap;background:#e5f8ed}
+#bMusic[aria-pressed="false"]{background:#f1f1f5;opacity:.85}
+@media(max-width:640px){#bMusic{font-size:10px;padding:3px 7px}}
