@@ -232,7 +232,7 @@ let tickBusy=false,lastSharedPlacementSignature=null;
 const placementKey=a=>JSON.stringify(a);
 function snapshotSharedPlacements(){return placed.filter(p=>!p.remoteOwner).map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]).slice(0,1000)}
 async function tick(){if(NET.guest||tickBusy)return;tickBusy=true;try{
- const payload={x:pl.x,z:pl.z,ry:pl.ry,sh:SH?1:0,since};
+ const payload={x:pl.x,z:pl.z,ry:pl.ry,sh:SH?1:0,since,avatar:S.avatar||{}};
  if(SH&&sharedWorldLoaded){
   const localPlaced=snapshotSharedPlacements();
   const baseline=Array.isArray(lastSharedWorldSnapshot)?lastSharedWorldSnapshot:[];
@@ -288,8 +288,11 @@ let nightMode=false;$('#bTime').onclick=()=>{nightMode=!nightMode;setWorldTime(n
  $('#bHelp').onclick=()=>{modal('<h2>❔ دليل التحكم في BlockWorld</h2><p><b>الحركة:</b> WASD أو الأسهم، والمسافة للقفز. حرّك الكاميرا بسحب الشاشة، وقرّب أو أبعد بعجلة الفأرة.</p><p><b>البناء:</b> افتح 🔨 بناء واختر عنصرًا، ثم انقر على العالم لوضعه. وجّه المؤشر إلى عنصر موجود للبناء فوقه أو بجانبه. اضغط R لتدوير معاينة البناء، واستخدم ⬆ و⬇ لضبط ارتفاعه.</p><p><b>تعديل عنصر موجود:</b> اختر ⌨️ تحريك ثم انقر العنصر. الأسهم أو WASD لتحريكه، Shift لحركة أكبر، Q/E للتدوير، PageUp/PageDown للارتفاع، Delete للحذف، وCtrl+D للنسخ.</p><p><b>برمجة عنصر:</b> اضغط 🧩 برمجة ثم انقر عنصرًا، أو استخدم لوحة البرمجة لبناء تسلسل أوامر وتشغيله.</p><p><b>الحفظ والحسابات:</b> يُحفظ التقدم تلقائيًا كل عدة ثوانٍ. حفظ الحسابات عبر الإنترنت يتطلب إعداد قاعدة البيانات DATABASE_URL في الاستضافة؛ اللعب كضيف يحفظ على هذا المتصفح فقط.</p><div class="row"><button class="b1" id="bHelpClose">فهمت</button></div>');$('#bHelpClose').onclick=closeModal};
 $('#tDel').onclick=()=>{clearPlacedSelection();setTool('del');toast('🗑 انقر على العنصر الذي تريد حذفه')};$('#tMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر ثم حرّكه بالأسهم أو WASD')};$('#tSel').onclick=()=>{clearPlacedSelection();setTool('sel');toast('🧩 انقر على عنصر لفتح إعدادات برمجته')};$('#tCopy').onclick=()=>{setTool('copy');toast('📋 انقر على عنصر لنسخه — يلزم توفره في الحقيبة')};$('#tOff').onclick=()=>{setTool(null);if(openP==='Build')rBuild()};
 $('#tRot').onclick=()=>{if(selectedPo&&tool==='move'){rotateSelected(1);toast('⟳ تم تدوير العنصر المحدد')}else{rot=(rot+Math.PI/4)%(Math.PI*2);if(ghost)ghostPlace();toast('⟳ تدوير معاينة البناء')}};$('#tUp').onclick=()=>{if(selectedPo&&tool==='move'){changeSelectedHeight(1);toast('⬆ تم رفع العنصر المحدد')}else{manualElev=Math.min(4.4,manualElev+.55);elev=manualElev;toast('ارتفاع البناء: '+Math.round(elev/.55));if(ghost)ghostPlace()}};$('#tDn').onclick=()=>{if(selectedPo&&tool==='move'){changeSelectedHeight(-1);toast('⬇ تم خفض العنصر المحدد')}else{manualElev=Math.max(0,manualElev-.55);elev=manualElev;toast('ارتفاع البناء: '+Math.round(elev/.55));if(ghost)ghostPlace()}};
-document.querySelectorAll('#dpad [data-k]').forEach(b=>{const k=b.dataset.k;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointercancel','pointerleave'].forEach(v=>b.addEventListener(v,()=>keys[k]=false))});
-$('#jump').addEventListener('pointerdown',e=>{e.preventDefault();keys.jump=true});
+document.querySelectorAll('#dpad [data-k]').forEach(b=>{const k=b.dataset.k;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true;try{b.setPointerCapture(e.pointerId)}catch(_){}});['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(v=>b.addEventListener(v,()=>{keys[k]=false}))});
+$('#jump').addEventListener('pointerdown',e=>{e.preventDefault();keys.jump=true;$('#jump').classList.add('on')});
+$('#jump').addEventListener('pointerup',()=>$('#jump').classList.remove('on'));
+$('#jump').addEventListener('pointercancel',()=>$('#jump').classList.remove('on'));
+const sprintButton=$('#sprint');if(sprintButton){const sprintOn=e=>{e.preventDefault();keys.shift=true;sprintButton.classList.add('on')},sprintOff=()=>{keys.shift=false;sprintButton.classList.remove('on')};sprintButton.addEventListener('pointerdown',sprintOn);['pointerup','pointercancel','pointerleave','lostpointercapture'].forEach(v=>sprintButton.addEventListener(v,sprintOff))}
 const KM={KeyW:'up',ArrowUp:'up',KeyS:'down',ArrowDown:'down',KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right'};
 addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select'))return;
  if(e.ctrlKey&&e.code==='KeyZ'){undoProg();e.preventDefault();return}if(e.ctrlKey&&e.code==='KeyY'){redoProg();e.preventDefault();return}

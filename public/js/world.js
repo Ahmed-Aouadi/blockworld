@@ -91,7 +91,7 @@ function initWorld(){
   const ok=ELS.filter(e=>sets[zi].includes(e.b)&&(zi!==4||e.c>0xe0e0e0||e.b==='rock'||e.b==='snowman'));if(!ok.length)continue;const d=ok[(hs(n,3)*ok.length)|0],g=mk(d.b,d.c);g.position.set(x,H(x,z),z);g.rotation.y=hs(n,5)*6.28;const s=.8+hs(n,9)*.6;g.scale.setScalar(d.b==='house'?1.3:s);scene.add(g)}
  // صناديق الهدايا
  for(let n=0;n<34;n++){const x=(hs(n,21)-.5)*(HALF*1.7),z=(hs(n,23)-.5)*(HALF*1.7);if(H(x,z)<0||Math.hypot(x,z)<4)continue;const g=new T.Group(),c=new T.Color().setHSL(hs(n,2),.8,.6);const b=new T.Mesh(new T.BoxGeometry(.5,.5,.5),new T.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.3}));b.position.y=.4;const r=new T.Mesh(new T.BoxGeometry(.54,.1,.1),new T.MeshStandardMaterial({color:0xffffff}));r.position.y=.4;const r2=r.clone();r2.rotation.y=1.57;g.add(b,r,r2);g.position.set(x,H(x,z),z);scene.add(g);gifts.push({g,x,z,alive:true,t:0})}
- pl={g:mkAvatar(S.hue||200,'',S.avatar||{}),x:0,z:6,ry:3.14,vy:0,jy:0,walk:0};scene.add(pl.g);
+ pl={g:mkAvatar(S.hue||200,'',S.avatar||{}),x:0,z:6,ry:3.14,vy:0,jy:0,vx:0,vz:0,walk:0};scene.add(pl.g);
  const rs=()=>{R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()};addEventListener('resize',rs);rs();
  let dn=null;
  cv.addEventListener('pointerdown',e=>{dn={x:e.clientX,y:e.clientY};moved=0;try{cv.setPointerCapture(e.pointerId)}catch(_){}});
@@ -142,14 +142,22 @@ function onWorldClick(e){if(!tool)return;
   placeObj({k:tool.k,i:tool.i,x:gpos.x,z:gpos.z,ry:rot,e:elev});S.xp+=1;dirty();saveNow();refreshPanels()}}
 const lerpAng=(a,b,t)=>{let d=((b-a+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI;return a+d*t};
 function syncPlayers(list){const ids=new Set(list.map(p=>p.id));for(const id in others)if(!ids.has(id)){scene.remove(others[id].g);delete others[id]}
- list.forEach(p=>{let o=others[p.id];if(!o){o={g:mkAvatar(p.hue,p.name),x:p.x,z:p.z,ry:p.ry,name:p.name,phase:0,walk:0};scene.add(o.g);others[p.id]=o}o.tx=Number(p.x)||0;o.tz=Number(p.z)||0;o.try=Number(p.ry)||0})}
+ list.forEach(p=>{let o=others[p.id];const appearance=p.avatar&&typeof p.avatar==='object'?p.avatar:{};if(!o){o={g:mkAvatar(p.hue,p.name,appearance),x:p.x,z:p.z,ry:p.ry,name:p.name,phase:0,walk:0,appearanceKey:JSON.stringify(appearance)};scene.add(o.g);others[p.id]=o}else{const key=JSON.stringify(appearance);if(o.appearanceKey!==key){applyAvatarAppearanceTo(o.g,appearance);o.appearanceKey=key}}o.tx=Number(p.x)||0;o.tz=Number(p.z)||0;o.try=Number(p.ry)||0})}
 function frame(dt,t){
- const k=keys;if(!ctl.lock){let ix=(k.right?1:0)-(k.left?1:0),iz=(k.up?1:0)-(k.down?1:0);if(ix||iz){const l=Math.hypot(ix,iz);ix/=l;iz/=l;const sp=(k.shift?7:4.6)*dt,fx=-Math.sin(cy),fz=-Math.cos(cy),rx=Math.cos(cy),rz=-Math.sin(cy),vx=(fx*iz+rx*ix)*sp,vz=(fz*iz+rz*ix)*sp;mv(vx,vz);pl.ry=lerpAng(pl.ry,Math.atan2(vx,vz),.25);pl.walk=1}else pl.walk=0;
-  if(k.jump&&pl.jy<=.001){pl.vy=7;k.jump=false}}
+ const k=keys;
+ let ix=ctl.lock?0:(Number(!!k.right)-Number(!!k.left)),iz=ctl.lock?0:(Number(!!k.up)-Number(!!k.down));
+ let targetX=0,targetZ=0;
+ if(ix||iz){const l=Math.hypot(ix,iz);ix/=l;iz/=l;const speed=k.shift?7.2:4.6,fx=-Math.sin(cy),fz=-Math.cos(cy),rx=Math.cos(cy),rz=-Math.sin(cy);targetX=(fx*iz+rx*ix)*speed;targetZ=(fz*iz+rz*ix)*speed}
+ const accel=1-Math.exp(-dt*((ix||iz)?15:19));pl.vx+=(targetX-pl.vx)*accel;pl.vz+=(targetZ-pl.vz)*accel;
+ const dx=pl.vx*dt,dz=pl.vz*dt;if((Math.abs(dx)+Math.abs(dz))>.00001&&!mv(dx,dz)){pl.vx*=.22;pl.vz*=.22}
+ pl.walk=Math.hypot(pl.vx,pl.vz)>.28?1:0;if(pl.walk)pl.ry=lerpAng(pl.ry,Math.atan2(pl.vx,pl.vz),1-Math.exp(-dt*13));
+ if(k.jump&&pl.jy<=.001){pl.vy=7.5;k.jump=false}
  pl.jy+=pl.vy*dt;pl.vy-=22*dt;if(pl.jy<=0){pl.jy=0;pl.vy=0}
- const gy=Math.max(H(pl.x,pl.z),-.3);pl.g.position.set(pl.x,gy+pl.jy,pl.z);pl.g.rotation.y=pl.ry;const gait=pl.walk?Math.sin(t*12):0;const sw=gait*.08;pl.g.userData.f1.position.z=sw;pl.g.userData.f2.position.z=-sw;if(pl.g.userData.armL){pl.g.userData.armL.rotation.x=gait*.62;pl.g.userData.armR.rotation.x=-gait*.62;pl.g.userData.legL.rotation.x=-gait*.48;pl.g.userData.legR.rotation.x=gait*.48}pl.g.position.y+=pl.walk?Math.abs(Math.sin(t*12))*.045:0;
+ const gy=Math.max(H(pl.x,pl.z),-.3);pl.g.position.set(pl.x,gy+pl.jy,pl.z);pl.g.rotation.y=pl.ry;const gait=pl.walk?Math.sin(t*12):0;
+ if(pl.g.userData.armL){pl.g.userData.armL.rotation.x=gait*.62;pl.g.userData.armR.rotation.x=-gait*.62;pl.g.userData.legL.rotation.x=-gait*.62;pl.g.userData.legR.rotation.x=gait*.62}
+ pl.g.position.y+=pl.walk?Math.abs(Math.sin(t*12))*.045:0;
  if(ctl.lock)cy=lerpAng(cy,pl.ry+Math.PI,.06);
- const ty=pl.g.position.y+1.1;cam.position.set(pl.x+Math.sin(cy)*cd*Math.cos(cp),ty+Math.sin(cp)*cd,pl.z+Math.cos(cy)*cd*Math.cos(cp));cam.lookAt(pl.x,ty,pl.z);
+ const ty=pl.g.position.y+1.1,targetCam=new T.Vector3(pl.x+Math.sin(cy)*cd*Math.cos(cp),ty+Math.sin(cp)*cd,pl.z+Math.cos(cy)*cd*Math.cos(cp));cam.position.lerp(targetCam,1-Math.exp(-dt*9));cam.lookAt(pl.x,ty,pl.z);
  for(const id in others){const o=others[id],oldX=o.x,oldZ=o.z,blend=1-Math.exp(-dt*14);o.x+=(o.tx-o.x)*blend;o.z+=(o.tz-o.z)*blend;o.ry=lerpAng(o.ry,o.try,blend);const speed=Math.hypot(o.x-oldX,o.z-oldZ)/Math.max(dt,.001);o.walk=speed>.18?1:0;if(o.walk)o.phase+=dt*Math.min(14,7+speed*1.4);const gait=o.walk?Math.sin(o.phase):0;o.g.position.set(o.x,Math.max(H(o.x,o.z),-.3)+(o.walk?Math.abs(Math.sin(o.phase))*.035:0),o.z);o.g.rotation.y=o.ry;const u=o.g.userData,sw=gait*.08;if(u.f1)u.f1.position.z=sw;if(u.f2)u.f2.position.z=-sw;if(u.armL){u.armL.rotation.x=gait*.62;u.armR.rotation.x=-gait*.62;u.legL.rotation.x=-gait*.48;u.legR.rotation.x=gait*.48}}
  for(const po of placed){const u=po.g.userData;behave(po,dt,t);if(po.k==='e'&&ELS[po.i]){const kind=ELS[po.i].b,phase=(po.i%9)*.7;if(kind==='animal'){po.g.position.y=u.y0+Math.abs(Math.sin(t*2+phase))*.045;po.g.rotation.y=(u.ry0||0)+Math.sin(t*.55+phase)*.16}else if(['pine','round','palm','bamboo'].includes(kind)){po.g.rotation.z=Math.sin(t*.42+(u.x0||0)*.1)*.012;po.g.rotation.x=Math.cos(t*.38+(u.z0||0)*.1)*.01}}if(u.door){const near=Math.hypot(pl.x-po.x,pl.z-po.z)<2.4||u.force;u.open+=((near?1:0)-u.open)*Math.min(1,dt*6);u.door.rotation.y=-u.open*1.7}if(u.spin)u.spin.rotation.z+=dt*1.5}
  scene.traverse&&0;for(const g of gifts){if(!g.alive){if(t>g.t){g.alive=true;g.g.visible=true}continue}g.g.rotation.y+=dt*1.5;g.g.position.y=H(g.x,g.z)+Math.sin(t*3+g.x)*.12;if(Math.hypot(pl.x-g.x,pl.z-g.z)<1){g.alive=false;g.g.visible=false;g.t=t+45;onGift()}}

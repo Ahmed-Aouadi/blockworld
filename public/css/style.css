@@ -233,3 +233,10 @@ html[data-world-time="night"] #bTime{background:#ffe7a3}
 }
 
 .quest-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:min(58vh,520px);overflow:auto;padding:2px}.quest-card{background:linear-gradient(145deg,rgba(30,48,68,.92),rgba(17,28,42,.96));border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:12px;min-width:0}.quest-card p{margin:6px 0 10px;color:#c5d0dc;font-size:13px}.quest-card small{display:block;margin:8px 0;color:#d8e2eb}.quest-track{height:6px;background:#263748;border-radius:9px;overflow:hidden}.quest-track span{display:block;height:100%;background:linear-gradient(90deg,#47d7b0,#ffd166);border-radius:9px}.quest-card button{width:100%;font-size:12px;padding:8px}.quest-card button:disabled{opacity:.5;cursor:default}@media(max-width:600px){.quest-list{grid-template-columns:1fr;max-height:55vh}}
+
+
+/* Improved touch controls: dedicated sprint and visible pressed states. */
+#dpad button,#jump,#sprint{touch-action:none;-webkit-user-select:none;user-select:none;transition:transform .08s,filter .12s,background .12s}
+#dpad button:active,#jump:active,#sprint:active,#sprint.on{filter:saturate(1.25) brightness(.96);transform:translateY(2px) scale(.97)}
+#sprint{display:none}
+@media(max-width:640px){#sprint{display:block;position:fixed;right:calc(env(safe-area-inset-right,0px) + 76px);inset-inline-end:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 82px);width:52px;height:52px;padding:0;border-radius:50%;font-size:23px;z-index:3;background:#b7f4cf;border-width:2px;box-shadow:0 3px 0 var(--ink)}#sprint.on{background:#ffc928;box-shadow:0 1px 0 var(--ink)}#dpad button{min-width:44px;min-height:44px}}

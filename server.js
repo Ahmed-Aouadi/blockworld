@@ -5,6 +5,7 @@ let U={};try{U=JSON.parse(fs.readFileSync(DB,'utf8'))}catch(e){}
 let st=0;const persist=()=>{clearTimeout(st);st=setTimeout(()=>fs.writeFile(DB,JSON.stringify(U),()=>{}),500)};
 const tok={},on={},chat=[];let cid=0;
 const hash=(p,s)=>cr.scryptSync(p,s,32).toString('hex');
+const safeAvatar=a=>{const d={skin:0xffd2ad,hair:0x49334a,outfit:0x3da5ff,trim:0x2674b4,pants:0x34364b,shoes:0x34364b,scarf:0xffca58,hat:'none',hatColor:0x3da5ff};if(!a||typeof a!=='object'||Array.isArray(a))return d;for(const k of ['skin','hair','outfit','trim','pants','shoes','scarf','hatColor']){const v=Number(a[k]);if(Number.isInteger(v)&&v>=0&&v<=0xffffff)d[k]=v}if(['none','cap','crown'].includes(a.hat))d.hat=a.hat;return d};
 const normalizeName=n=>String(n||'').normalize('NFKC').trim().toLocaleLowerCase('ar');
 const validSave=s=>{if(!s||typeof s!=='object'||Array.isArray(s))return false;try{if(JSON.stringify(s).length>1500000)return false}catch(_){return false}if(!Number.isFinite(Number(s.xp))||Number(s.xp)<0||Number(s.xp)>1e9||!Array.isArray(s.pos)||s.pos.length!==2||!s.pos.every(v=>Number.isFinite(Number(v))&&Math.abs(Number(v))<=500)||!Array.isArray(s.placed)||s.placed.length>2000||!Array.isArray(s.prog)||s.prog.length>120||!s.inv||typeof s.inv!=='object'||Array.isArray(s.inv))return false;if(!Object.entries(s.inv).every(([k,v])=>/^e\d{1,3}$/.test(k)&&Number(k.slice(1))<200&&Number.isInteger(v)&&v>=0&&v<=999))return false;if(!s.placed.every(a=>Array.isArray(a)&&a.length>=4&&a.length<=8&&['e','p'].includes(a[0])&&Number.isInteger(a[1])&&a[1]>=0&&a[1]<200&&Number.isFinite(Number(a[2]))&&Number.isFinite(Number(a[3]))&&Math.abs(Number(a[2]))<500&&Math.abs(Number(a[3]))<500))return false;if(!s.prog.every(b=>b&&typeof b.k==='string'&&Object.prototype.hasOwnProperty.call(b,'p')))return false;const c=s.custom===undefined?[]:s.custom;return Array.isArray(c)&&c.length<=80&&c.every(b=>b&&typeof b.name==='string'&&b.name.length<=20&&typeof b.code==='string'&&b.code.length<=5000)};
 const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ico':'image/x-icon'};
@@ -26,7 +27,7 @@ http.createServer(async(q,r)=>{
   if(!k||!U[k])return send(r,401,{e:'سجّل الدخول أولًا'});
   if(ep==='/api/me')return send(r,200,{name:U[k].name,hue:U[k].hue,save:U[k].save});
   if(ep==='/api/save'){if(!validSave(b.save))return send(r,400,{e:'بيانات الحفظ غير صالحة أو تتجاوز الحدود الآمنة؛ لم يتم تغيير عالمك.'});U[k].save=b.save;persist();return send(r,200,{ok:1})}
-  if(ep==='/api/tick'){const t=Date.now();on[k]={x:+b.x||0,z:+b.z||0,ry:+b.ry||0,sh:b.sh?1:0,t,name:U[k].name,hue:U[k].hue};
+  if(ep==='/api/tick'){const t=Date.now();on[k]={x:+b.x||0,z:+b.z||0,ry:+b.ry||0,sh:b.sh?1:0,t,name:U[k].name,hue:U[k].hue,avatar:safeAvatar(b.avatar)};
    const validPlacedList=list=>Array.isArray(list)&&list.length<=1000&&list.every(a=>Array.isArray(a)&&a.length>=4&&a.length<=8&&['e','p'].includes(a[0])&&Number.isInteger(a[1])&&a[1]>=0&&a[1]<200&&Number.isFinite(Number(a[2]))&&Number.isFinite(Number(a[3]))&&Math.abs(Number(a[2]))<500&&Math.abs(Number(a[3]))<500&&(a[4]===undefined||Number.isFinite(Number(a[4])))&&(a[5]===undefined||(Number.isFinite(Number(a[5]))&&Number(a[5])>=0&&Number(a[5])<=10))&&(a[6]===undefined||a[6]===0||['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6]))&&(a[7]===undefined||Number.isFinite(Number(a[7]))));
    const worldAdd=b.worldAdd===undefined?[]:b.worldAdd,worldRemove=b.worldRemove===undefined?[]:b.worldRemove;
    if(on[k].sh&&validPlacedList(worldAdd)&&validPlacedList(worldRemove)&&(worldAdd.length||worldRemove.length)){
@@ -35,7 +36,7 @@ http.createServer(async(q,r)=>{
     if(current.length<=1000){U.__sharedWorld=current;persist()}
    }
    const active=Object.entries(on).filter(([o,v])=>o!==k&&t-v.t<6000&&v.sh&&on[k].sh);
-   const pl=active.map(([o,v])=>({id:o,name:v.name,x:v.x,z:v.z,ry:v.ry,hue:v.hue}));
+   const pl=active.map(([o,v])=>({id:o,name:v.name,x:v.x,z:v.z,ry:v.ry,hue:v.hue,avatar:v.avatar}));
    const worlds=[];const sharedWorld=Array.isArray(U.__sharedWorld)?U.__sharedWorld.slice(0,1000):[];
    const ms=chat.filter(m=>m.id>(+b.since||0)&&(m.to?(m.to===k||m.fk===k):on[k].sh&&Math.hypot(m.x-on[k].x,m.z-on[k].z)<45)).map(m=>({id:m.id,from:m.from,priv:!!m.to,text:m.text}));
    const inbox=U[k].inbox||[];if(inbox.length){U[k].inbox=[];persist()}
