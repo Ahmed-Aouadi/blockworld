@@ -5,7 +5,7 @@ let U={};try{U=JSON.parse(fs.readFileSync(DB,'utf8'))}catch(e){}
 let st=0;const persist=()=>{clearTimeout(st);st=setTimeout(()=>fs.writeFile(DB,JSON.stringify(U),()=>{}),500)};
 const tok={},on={},chat=[];let cid=0;
 const hash=(p,s)=>cr.scryptSync(p,s,32).toString('hex');
-const normalizeName=n=>String(n||'').normalize('NFKC').trim().replace(/\\s+/g,' ').toLocaleLowerCase('ar');
+const normalizeName=n=>String(n||'').normalize('NFKC').trim().toLocaleLowerCase('ar');
 const MIME={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'};
 const send=(r,c,o)=>{r.writeHead(c,{'Content-Type':'application/json; charset=utf-8'});r.end(JSON.stringify(o))};
 const body=q=>new Promise(r=>{let b='';q.on('data',d=>{b+=d;if(b.length>4e5)q.destroy()});q.on('end',()=>{try{r(JSON.parse(b||'{}'))}catch(e){r({})}})});
@@ -14,7 +14,7 @@ http.createServer(async(q,r)=>{
  const ep=q.url.split('?')[0];
  if(ep.startsWith('/api/')){
   const b=q.method==='POST'?await body(q):{},k=tok[(q.headers.authorization||'').slice(7)];
-  if(ep==='/api/register'){const n=String(b.name||'').normalize('NFKC').trim().replace(/\\s+/g,' ').slice(0,16),p=String(b.pass||''),key=normalizeName(n);
+  if(ep==='/api/register'){const n=String(b.name||'').normalize('NFKC').trim().slice(0,16),p=String(b.pass||''),key=normalizeName(n);
    if(n.length<2||p.length<6)return send(r,400,{e:'اسم اللاعب يجب أن يكون حرفين على الأقل وكلمة المرور 6 أحرف على الأقل'});
    if(/[\\u0000-\\u001f\\u007f]/.test(n))return send(r,400,{e:'اسم اللاعب يحتوي على رموز غير مسموحة'});
    if(U[key])return send(r,409,{e:'هذا الاسم مستخدم بالفعل، جرّب اسمًا مختلفًا'});
