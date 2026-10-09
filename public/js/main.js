@@ -2,8 +2,8 @@
 const $=s=>document.querySelector(s);
 
 // مؤثرات صوتية مولّدة داخل المتصفح، بلا ملفات خارجية.
-let soundOn=true,soundCtx=null,soundLast=0;
-try{soundOn=localStorage.getItem('bw_sound')!=='off'}catch(_){}
+let soundOn=true,soundCtx=null,soundLast=0,sfxVolume=.8,musicVolume=.58;
+try{soundOn=localStorage.getItem('bw_sound')!=='off';sfxVolume=Math.max(0,Math.min(1,Number(localStorage.getItem('bw_sfx_volume')??.8)));musicVolume=Math.max(0,Math.min(1,Number(localStorage.getItem('bw_music_volume')??.58)))}catch(_){}
 function sfx(kind='ui'){
  if(!soundOn)return;
  try{
@@ -11,7 +11,7 @@ function sfx(kind='ui'){
   if(!soundCtx)soundCtx=new AC();if(soundCtx.state==='suspended')soundCtx.resume();
   const now=soundCtx.currentTime;
   const seq={ui:[[520,.045,'sine']],open:[[440,.06,'sine'],[660,.08,'sine']],step:[[250,.045,'triangle'],[340,.05,'triangle']],jump:[[330,.07,'sine'],[520,.12,'sine'],[680,.1,'sine']],build:[[390,.06,'triangle'],[520,.07,'triangle'],[760,.11,'sine']],collect:[[620,.06,'sine'],[830,.08,'sine'],[1040,.13,'sine']],turn:[[420,.05,'sine']],run:[[440,.07,'triangle'],[660,.08,'triangle']],done:[[523,.09,'sine'],[659,.09,'sine'],[784,.16,'sine']],error:[[240,.13,'sawtooth'],[180,.15,'sawtooth']],night:[[360,.1,'sine'],[290,.14,'sine']],say:[[560,.055,'sine']]};
-  const notes=seq[kind]||seq.ui;notes.forEach((n,i)=>{const o=soundCtx.createOscillator(),g=soundCtx.createGain();o.type=n[2];o.frequency.setValueAtTime(n[0],now+i*.075);g.gain.setValueAtTime(.0001,now+i*.075);g.gain.exponentialRampToValueAtTime(.055,now+i*.075+.012);g.gain.exponentialRampToValueAtTime(.0001,now+i*.075+n[1]);o.connect(g);g.connect(soundCtx.destination);o.start(now+i*.075);o.stop(now+i*.075+n[1]+.015)});
+  const notes=seq[kind]||seq.ui;notes.forEach((n,i)=>{const o=soundCtx.createOscillator(),g=soundCtx.createGain();o.type=n[2];o.frequency.setValueAtTime(n[0],now+i*.075);g.gain.setValueAtTime(.0001,now+i*.075);g.gain.exponentialRampToValueAtTime(.055*sfxVolume,now+i*.075+.012);g.gain.exponentialRampToValueAtTime(.0001,now+i*.075+n[1]);o.connect(g);g.connect(soundCtx.destination);o.start(now+i*.075);o.stop(now+i*.075+n[1]+.015)});
  }catch(_){}
 }
 function toggleSound(){soundOn=!soundOn;try{localStorage.setItem('bw_sound',soundOn?'on':'off')}catch(_){}const b=$('#bSound');if(b){b.textContent=soundOn?'🔊 الصوت':'🔇 الصوت';b.title=soundOn?'إيقاف المؤثرات الصوتية':'تشغيل المؤثرات الصوتية'}if(soundOn)sfx('open');toast(soundOn?'🔊 تم تشغيل المؤثرات الصوتية':'🔇 تم كتم المؤثرات الصوتية')}
@@ -19,7 +19,7 @@ function toggleSound(){soundOn=!soundOn;try{localStorage.setItem('bw_sound',soun
 /* موسيقى خلفية هادئة مولّدة محليًا؛ تبدأ بعد أول تفاعل احترامًا لسياسة تشغيل الصوت بالمتصفح. */
 let musicOn=true,musicMaster=null,musicTimer=null,musicStep=0,musicReady=false;
 try{musicOn=localStorage.getItem('bw_music')!=='off'}catch(_){}
-const musicChords=[[261.63,329.63,392.00],[220.00,261.63,329.63],[174.61,220.00,261.63],[196.00,246.94,293.66]];
+const musicChords=[[261.63,329.63,392.00],[220.00,261.63,329.63],[174.61,220.00,261.63],[196.00,246.94,293.66]],musicNightChords=[[196,233.08,293.66],[174.61,220,261.63],[146.83,185,220],[164.81,196,246.94]];
 function musicNote(freq,when,duration,volume){
  if(!soundCtx||!musicMaster)return;
  const o=soundCtx.createOscillator(),g=soundCtx.createGain(),filter=soundCtx.createBiquadFilter();
@@ -34,7 +34,7 @@ function musicNote(freq,when,duration,volume){
 }
 function playMusicPhrase(){
  if(!musicOn||!soundCtx||!musicMaster)return;
- const now=soundCtx.currentTime+0.12,chord=musicChords[musicStep%musicChords.length];
+ const now=soundCtx.currentTime+0.12,night=typeof nightMode!=='undefined'&&nightMode,chords=night?musicNightChords:musicChords,chord=chords[musicStep%chords.length];
  chord.forEach((f,i)=>musicNote(f,now+i*.18,5.6,.012));
  // نغمة علوية خفيفة تمنح الخلفية إحساسًا هادئًا دون أن تطغى على اللعب.
  musicNote(chord[2]*2,now+1.2,3.8,.0045);
@@ -46,7 +46,7 @@ function startMusic(){
   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
   if(!soundCtx)soundCtx=new AC();
   if(soundCtx.state==='suspended')soundCtx.resume();
-  musicMaster=soundCtx.createGain();musicMaster.gain.value=.58;musicMaster.connect(soundCtx.destination);
+  musicMaster=soundCtx.createGain();musicMaster.gain.value=musicVolume;musicMaster.connect(soundCtx.destination);
   musicReady=true;playMusicPhrase();musicTimer=setInterval(playMusicPhrase,5600);
   updateMusicButton();
  }catch(_){}
@@ -228,7 +228,7 @@ document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel
 $('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر لتحديده ثم استخدم الأسهم للتحريك')};
 $('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH)syncPlayers([]);toast(SH?'العالم المشترك: سترى اللاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
 $('#bShare').textContent='🏡 خاص';
-let nightMode=false;$('#bTime').onclick=()=>{nightMode=!nightMode;setWorldTime(nightMode);$('#bTime').textContent=nightMode?'☀️ نهار':'🌙 ليل';toast(nightMode?'🌙 تم تفعيل أجواء الليل':'☀️ عادت أجواء النهار')};
+let nightMode=false;$('#bTime').onclick=()=>{nightMode=!nightMode;setWorldTime(nightMode);$('#bTime').textContent=nightMode?'☀️ نهار':'🌙 ليل';if(musicOn&&musicMaster){musicMaster.gain.setTargetAtTime(musicVolume,soundCtx.currentTime,.8);playMusicPhrase()}toast(nightMode?'🌙 تم تفعيل أجواء الليل':'☀️ عادت أجواء النهار')};
  $('#bHelp').onclick=()=>{modal('<h2>❔ دليل التحكم في BlockWorld</h2><p><b>الحركة:</b> WASD أو الأسهم، والمسافة للقفز. حرّك الكاميرا بسحب الشاشة، وقرّب أو أبعد بعجلة الفأرة.</p><p><b>البناء:</b> افتح 🔨 بناء واختر عنصرًا، ثم انقر على العالم لوضعه. وجّه المؤشر إلى عنصر موجود للبناء فوقه أو بجانبه. اضغط R لتدوير معاينة البناء، واستخدم ⬆ و⬇ لضبط ارتفاعه.</p><p><b>تعديل عنصر موجود:</b> اختر ⌨️ تحريك ثم انقر العنصر. الأسهم أو WASD لتحريكه، Shift لحركة أكبر، Q/E للتدوير، PageUp/PageDown للارتفاع، Delete للحذف، وCtrl+D للنسخ.</p><p><b>برمجة عنصر:</b> اضغط 🧩 برمجة ثم انقر عنصرًا، أو استخدم لوحة البرمجة لبناء تسلسل أوامر وتشغيله.</p><p><b>الحفظ والحسابات:</b> يُحفظ التقدم تلقائيًا كل عدة ثوانٍ. حفظ الحسابات عبر الإنترنت يتطلب إعداد قاعدة البيانات DATABASE_URL في الاستضافة؛ اللعب كضيف يحفظ على هذا المتصفح فقط.</p><div class="row"><button class="b1" id="bHelpClose">فهمت</button></div>');$('#bHelpClose').onclick=closeModal};
 $('#tDel').onclick=()=>{clearPlacedSelection();setTool('del');toast('🗑 انقر على العنصر الذي تريد حذفه')};$('#tMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر ثم حرّكه بالأسهم أو WASD')};$('#tSel').onclick=()=>{clearPlacedSelection();setTool('sel');toast('🧩 انقر على عنصر لفتح إعدادات برمجته')};$('#tCopy').onclick=()=>{setTool('copy');toast('📋 انقر على عنصر لنسخه — يلزم توفره في الحقيبة')};$('#tOff').onclick=()=>{setTool(null);if(openP==='Build')rBuild()};
 $('#tRot').onclick=()=>{if(selectedPo&&tool==='move'){rotateSelected(1);toast('⟳ تم تدوير العنصر المحدد')}else{rot=(rot+Math.PI/4)%(Math.PI*2);if(ghost)ghostPlace();toast('⟳ تدوير معاينة البناء')}};$('#tUp').onclick=()=>{if(selectedPo&&tool==='move'){changeSelectedHeight(1);toast('⬆ تم رفع العنصر المحدد')}else{manualElev=Math.min(4.4,manualElev+.55);elev=manualElev;toast('ارتفاع البناء: '+Math.round(elev/.55));if(ghost)ghostPlace()}};$('#tDn').onclick=()=>{if(selectedPo&&tool==='move'){changeSelectedHeight(-1);toast('⬇ تم خفض العنصر المحدد')}else{manualElev=Math.max(0,manualElev-.55);elev=manualElev;toast('ارتفاع البناء: '+Math.round(elev/.55));if(ghost)ghostPlace()}};
