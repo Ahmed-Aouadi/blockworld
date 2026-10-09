@@ -15,6 +15,56 @@ function sfx(kind='ui'){
  }catch(_){}
 }
 function toggleSound(){soundOn=!soundOn;try{localStorage.setItem('bw_sound',soundOn?'on':'off')}catch(_){}const b=$('#bSound');if(b){b.textContent=soundOn?'🔊 الصوت':'🔇 الصوت';b.title=soundOn?'إيقاف المؤثرات الصوتية':'تشغيل المؤثرات الصوتية'}if(soundOn)sfx('open');toast(soundOn?'🔊 تم تشغيل المؤثرات الصوتية':'🔇 تم كتم المؤثرات الصوتية')}
+
+/* موسيقى خلفية هادئة مولّدة محليًا؛ تبدأ بعد أول تفاعل احترامًا لسياسة تشغيل الصوت بالمتصفح. */
+let musicOn=true,musicMaster=null,musicTimer=null,musicStep=0,musicReady=false;
+try{musicOn=localStorage.getItem('bw_music')!=='off'}catch(_){}
+const musicChords=[[261.63,329.63,392.00],[220.00,261.63,329.63],[174.61,220.00,261.63],[196.00,246.94,293.66]];
+function musicNote(freq,when,duration,volume){
+ if(!soundCtx||!musicMaster)return;
+ const o=soundCtx.createOscillator(),g=soundCtx.createGain(),filter=soundCtx.createBiquadFilter();
+ o.type='sine';o.frequency.setValueAtTime(freq,when);
+ filter.type='lowpass';filter.frequency.setValueAtTime(950,when);filter.Q.value=.4;
+ g.gain.setValueAtTime(.0001,when);
+ g.gain.linearRampToValueAtTime(volume,when+1.1);
+ g.gain.setValueAtTime(volume,when+Math.max(1.2,duration-1.1));
+ g.gain.exponentialRampToValueAtTime(.0001,when+duration);
+ o.connect(filter);filter.connect(g);g.connect(musicMaster);
+ o.start(when);o.stop(when+duration+.08);
+}
+function playMusicPhrase(){
+ if(!musicOn||!soundCtx||!musicMaster)return;
+ const now=soundCtx.currentTime+0.12,chord=musicChords[musicStep%musicChords.length];
+ chord.forEach((f,i)=>musicNote(f,now+i*.18,5.6,.012));
+ // نغمة علوية خفيفة تمنح الخلفية إحساسًا هادئًا دون أن تطغى على اللعب.
+ musicNote(chord[2]*2,now+1.2,3.8,.0045);
+ musicStep++;
+}
+function startMusic(){
+ if(!musicOn||musicTimer)return;
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  if(!soundCtx)soundCtx=new AC();
+  if(soundCtx.state==='suspended')soundCtx.resume();
+  musicMaster=soundCtx.createGain();musicMaster.gain.value=.58;musicMaster.connect(soundCtx.destination);
+  musicReady=true;playMusicPhrase();musicTimer=setInterval(playMusicPhrase,5600);
+  updateMusicButton();
+ }catch(_){}
+}
+function stopMusic(){
+ if(musicTimer){clearInterval(musicTimer);musicTimer=null}
+ if(musicMaster){try{musicMaster.gain.setTargetAtTime(.0001,soundCtx.currentTime,.18);const old=musicMaster;setTimeout(()=>{try{old.disconnect()}catch(_){}},900)}catch(_){}musicMaster=null}
+ updateMusicButton();
+}
+function toggleMusic(){
+ musicOn=!musicOn;try{localStorage.setItem('bw_music',musicOn?'on':'off')}catch(_){}
+ if(musicOn){if(!musicReady)startMusic();else startMusic()}else stopMusic();
+ updateMusicButton();toast(musicOn?'🎵 تم تشغيل الموسيقى الهادئة':'🔇 تم إيقاف الموسيقى الخلفية');
+}
+function updateMusicButton(){const b=$('#bMusic');if(b){b.textContent=musicOn?'🎵 الموسيقى':'♫ الموسيقى';b.title=musicOn?'إيقاف الموسيقى الخلفية':'تشغيل الموسيقى الخلفية';b.setAttribute('aria-pressed',String(musicOn))}}
+document.addEventListener('pointerdown',()=>{if(musicOn)startMusic()},{once:true,passive:true});
+document.addEventListener('keydown',()=>{if(musicOn)startMusic()},{once:true});
+
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.id==='bSound'||b.disabled)return;const id=b.id||'',t=(b.textContent||'').trim();if(id==='runb')return;if(id==='bTime')sfx('night');else if(id==='bAvatar'||id==='bHelp'||id==='bShare'||b.dataset.p)sfx('open');else if(/حفظ|وضع|بناء|نسخ|تأكيد/.test(t))sfx('build');else if(/تشغيل|ابدأ/.test(t))sfx('run');else sfx('ui')},true);
 
 let S={xp:0,inv:{},placed:[],custom:[],found:{},pos:[0,6],hue:200,avatar:{skin:0xffd2ad,hair:0x49334a,outfit:0x3da5ff,trim:0x2674b4,pants:0x34364b,shoes:0x34364b,scarf:0xffca58,hat:'none',hatColor:0x3da5ff},prog:[]},SH=false,since=0,chatTo=null,started=false,isDirty=false,saving=false,saveVersion=0,openP=null;
@@ -172,7 +222,7 @@ $('#bGuest').onclick=()=>{let s=null;try{s=JSON.parse(localStorage.getItem('bw_g
 (async()=>{const t=localStorage.getItem('bw_t');if(!t)return;NET.token=t;try{const r=await NET.api('me');NET.guest=false;startGame(r.save,r.name,r.hue)}catch(e){NET.token=null;localStorage.removeItem('bw_t')}})();
 // ---------- الأزرار ----------
 $('#bAvatar').onclick=avatarModal;
-$('#bSound').onclick=toggleSound;
+$('#bSound').onclick=toggleSound;$('#bMusic').onclick=toggleMusic;updateMusicButton();
 $('#bSound').textContent=soundOn?'🔊 الصوت':'🔇 الصوت';
 document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel(b.dataset.p));
 $('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر لتحديده ثم استخدم الأسهم للتحريك')};
