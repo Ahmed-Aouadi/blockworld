@@ -166,3 +166,7 @@ html[data-world-time="night"] #bTime{background:#ffe7a3}
 .exec-tools label{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:800}
 .exec-tools select{width:auto;min-width:76px;padding:3px 7px;border-width:2px;border-radius:9px}
 @media(max-width:640px){.exec-tools{gap:5px}.exec-tools button{font-size:11px;padding:3px 7px}.exec-tools label{font-size:11px}}
+
+.bw-volume{display:grid;grid-template-columns:1fr;gap:5px;padding:9px;background:#f0f7ff;border:2px solid #dce5fa;border-radius:12px}
+.bw-volume label{display:flex;justify-content:space-between;gap:10px;font-size:13px;font-weight:800}
+.bw-volume input[type=range]{width:100%;padding:0;margin:0;accent-color:var(--pu);cursor:pointer}
