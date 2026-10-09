@@ -111,15 +111,19 @@ function togglePanel(n){const was=openP===n;PN.forEach(p=>$('#p'+p).classList.re
 function renderPanel(n){({Build:rBuild,Code:rCode,Bag:rBag,Chat:rChat,Near:rNear})[n]()}
 function refreshPanels(){if(openP&&openP!=='Code'&&openP!=='Chat')renderPanel(openP)}
 let bk='e',bc=0,buildSearch='';
+const ITEM_GLYPHS={pine:'🌲',round:'🌳',palm:'🌴',bamboo:'🎋',flower:'🌷',tulip:'🌷',sun:'🌻',bouquet:'💐',crystal:'💎',grass:'🌱',bush:'🌿',fern:'🌿',mushroom:'🍄',cactus:'🌵',pumpkin:'🎃',rock:'🪨',animal:'🐾',lamp:'💡',bench:'🪑',sign:'🪧',flag:'🚩',mailbox:'📫',fire:'🔥',tent:'⛺',well:'🪣',fountain:'⛲',swing:'🎠',balloon:'🎈',chest:'🧰',barrel:'🛢️',crate:'📦',snowman:'⛄',scarecrow:'🧑‍🌾',mill:'🌬️',ball:'⚽',boat:'⛵',car:'🚙',rocket:'🚀',ufo:'🛸',portal:'🌀',star:'⭐',rainbow:'🌈',house:'🏠',wall:'🧱',door:'🚪',window:'🪟',roof:'🏡',floor:'🟫',fence:'🚧',pillar:'🏛️',stair:'🪜',bridge:'🌉',arch:'🏛️',chimney:'🏭',balcony:'🏠',tower:'🗼'};
+function itemGlyph(d){return ITEM_GLYPHS[d.b]||'🧊'}
+function itemThumb(d){return '<span class="item-preview" style="--item-color:#'+d.c.toString(16).padStart(6,'0')+'" aria-hidden="true"><span>'+itemGlyph(d)+'</span></span>'}
+
 function rBuild(){const cats=bk==='e'?ELC:PTC,L=bk==='e'?ELS:PTS,cat=cats[bc]||cats[0],q=buildSearch.trim().toLocaleLowerCase(),shown=L.filter(d=>d.cat===cat&&(!q||d.n.toLocaleLowerCase().includes(q)||d.cat.toLocaleLowerCase().includes(q)));
  $('#pBuild').innerHTML=`<h3>🔨 البناء <small>${ELS.length} عنصر · ${PTS.length} أداة بناء</small></h3><div class="tabs"><button class="${bk==='e'?'on':''}" data-bk="e">🌸 العناصر (${ELS.length})</button><button class="${bk==='p'?'on':''}" data-bk="p">🧱 أدوات البناء (${PTS.length})</button></div><div class="tabs">${cats.map((c,i)=>`<button class="${i===bc?'on':''}" data-bc="${i}">${c}</button>`).join('')}</div>
  <input id="buildSearch" class="code-search" value="${esc(buildSearch)}" placeholder="🔎 ابحث عن عنصر أو أداة..." aria-label="البحث في كتالوج البناء">
- <div class="grid">${shown.map(d=>{const n=S.inv['e'+d.i]||0,no=bk==='e'&&!n,on=tool&&tool.k===bk&&tool.i===d.i;return`<button class="it ${no?'no':''} ${on?'on':''}" data-i="${d.i}"><i style="background:#${d.c.toString(16).padStart(6,'0')}"></i>${d.n}${bk==='e'?'<small>× '+n+'</small>':''}</button>`}).join('')}</div>
+ <div class="grid">${shown.map(d=>{const n=S.inv['e'+d.i]||0,no=bk==='e'&&!n,on=tool&&tool.k===bk&&tool.i===d.i;return`<button class="it ${no?'no':''} ${on?'on':''}" data-i="${d.i}">${itemThumb(d)}<span class="item-name">${esc(d.n)}</span>${bk==='e'?'<small>× '+n+'</small>':''}</button>`}).join('')}</div>
  <small>🗑 احذف · 👆 برمج عنصرًا · ⟳ دوّر · ⬆⬇ ارتفاع. انقر على الأرض للوضع.</small>`;
  const p=$('#pBuild');$('#buildSearch').oninput=e=>{buildSearch=e.target.value;const pos=e.target.selectionStart;rBuild();const s=$('#buildSearch');s.focus();s.setSelectionRange(pos,pos)};p.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{bk=b.dataset.bk;bc=0;rBuild()});p.querySelectorAll('[data-bc]').forEach(b=>b.onclick=()=>{bc=+b.dataset.bc;rBuild()});
  p.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{setTool({k:bk,i:+b.dataset.i});rBuild()})}
 function rBag(){const items=Object.keys(S.inv).filter(k=>S.inv[k]>0).map(k=>({d:ELS[+k.slice(1)],n:S.inv[k]})).filter(x=>x.d);
- $('#pBag').innerHTML=`<h3>🎒 حقيبتي <small>${items.reduce((a,b)=>a+b.n,0)} قطعة</small></h3><small>اجمع الهدايا 🎁 المنتشرة في العالم للحصول على عناصر جديدة، وشاركها مع أصدقائك.</small><div class="grid">${items.map(x=>`<button class="it" data-i="${x.d.i}"><i style="background:#${x.d.c.toString(16).padStart(6,'0')}"></i>${x.d.n}<small>× ${x.n}</small></button>`).join('')||'<p>حقيبتك فارغة!</p>'}</div>`;
+ $('#pBag').innerHTML=`<h3>🎒 حقيبتي <small>${items.reduce((a,b)=>a+b.n,0)} قطعة</small></h3><small>اجمع الهدايا 🎁 المنتشرة في العالم للحصول على عناصر جديدة، وشاركها مع أصدقائك.</small><div class="grid">${items.map(x=>`<button class="it" data-i="${x.d.i}">${itemThumb(x.d)}<span class="item-name">${esc(x.d.n)}</span><small>× ${x.n}</small></button>`).join('')||'<p>حقيبتك فارغة!</p>'}</div>`;
  $('#pBag').querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{bk='e';bc=ELC.indexOf(ELS[+b.dataset.i].cat);setTool({k:'e',i:+b.dataset.i});togglePanel('Build')})}
 // ---------- البرمجة ----------
 let bcat=0,progHistory=[],progFuture=[],codeSearch='';
