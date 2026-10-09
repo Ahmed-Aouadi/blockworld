@@ -3,6 +3,22 @@ const crypto = require('node:crypto');
 const { neon } = require('@neondatabase/serverless');
 const normalizeName = n => String(n || '').normalize('NFKC').trim().toLocaleLowerCase('ar');
 const hash = (p, s) => crypto.scryptSync(p, s, 32).toString('hex');
+const SAVE_PROGRAM_KEYS = new Set(['fwd','back','str','turn','jump','goto','wait','say','color','size','emote','dance','speed','place','house','collect','door','remove','setc','addc','ifc','repeat','forever','ifblocked','ifnear','ifgift','ifrand','stop','end','custom']);
+function validSave(s) {
+  if (!s || typeof s !== 'object' || Array.isArray(s)) return false;
+  try { if (JSON.stringify(s).length > 1500000) return false; } catch (_) { return false; }
+  if (!Number.isFinite(Number(s.xp)) || Number(s.xp) < 0 || Number(s.xp) > 1e9) return false;
+  if (!Array.isArray(s.pos) || s.pos.length !== 2 || !s.pos.every(v => Number.isFinite(Number(v)) && Math.abs(Number(v)) <= 500)) return false;
+  if (!Array.isArray(s.placed) || s.placed.length > 2000 || !Array.isArray(s.prog) || s.prog.length > 120) return false;
+  if (!s.inv || typeof s.inv !== 'object' || Array.isArray(s.inv) || Object.keys(s.inv).length > 200) return false;
+  if (!Object.entries(s.inv).every(([k,v]) => /^e\d{1,3}$/.test(k) && Number(k.slice(1)) < 200 && Number.isInteger(v) && v >= 0 && v <= 999)) return false;
+  if (!s.placed.every(a => Array.isArray(a) && a.length >= 4 && a.length <= 8 && ['e','p'].includes(a[0]) && Number.isInteger(a[1]) && a[1] >= 0 && a[1] < 200 && Number.isFinite(Number(a[2])) && Number.isFinite(Number(a[3])) && Math.abs(Number(a[2])) < 500 && Math.abs(Number(a[3])) < 500 && (a[4] === undefined || Number.isFinite(Number(a[4]))) && (a[5] === undefined || (Number.isFinite(Number(a[5])) && Number(a[5]) >= 0 && Number(a[5]) <= 10)) && (a[6] === undefined || a[6] === 0 || ['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6])))) return false;
+  if (!s.prog.every(b => b && typeof b.k === 'string' && SAVE_PROGRAM_KEYS.has(b.k) && Object.prototype.hasOwnProperty.call(b,'p') && (b.l === undefined || (typeof b.l === 'string' && b.l.length <= 120)))) return false;
+  const custom = s.custom === undefined ? [] : s.custom;
+  if (!Array.isArray(custom) || custom.length > 80 || !custom.every(b => b && typeof b.name === 'string' && b.name.length <= 20 && typeof b.code === 'string' && b.code.length <= 5000)) return false;
+  if (s.avatar !== undefined && (!s.avatar || typeof s.avatar !== 'object' || Array.isArray(s.avatar) || (s.avatar.hat !== undefined && !['none','cap','crown'].includes(s.avatar.hat)))) return false;
+  return true;
+}
 let schemaReady;
 async function db() {
   if (!process.env.DATABASE_URL) throw Object.assign(new Error('قاعدة البيانات غير مهيأة. أضف DATABASE_URL في إعدادات الاستضافة.'), { status: 503 });
@@ -58,7 +74,8 @@ module.exports = async function handler(req, res) {
     const key = u.user_key;
     if (ep === 'me') return send(res, 200, { name: u.name, hue: u.hue, save: u.save });
     if (ep === 'save') {
-      if (b.save && typeof b.save === 'object' && !Array.isArray(b.save)) await sql`UPDATE bw_users SET save=${JSON.stringify(b.save)}::jsonb WHERE user_key=${key}`;
+      if (!validSave(b.save)) return send(res, 400, { e: 'بيانات الحفظ غير صالحة أو تتجاوز الحدود الآمنة؛ لم يتم تغيير عالمك.' });
+      await sql`UPDATE bw_users SET save=${JSON.stringify(b.save)}::jsonb WHERE user_key=${key}`;
       return send(res, 200, { ok: 1 });
     }
     if (ep === 'tick') {
