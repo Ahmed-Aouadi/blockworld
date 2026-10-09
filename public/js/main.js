@@ -1,6 +1,28 @@
 // الواجهة: الحسابات، اللوحات، الدردشة، الهدايا، الحفظ
 const $=s=>document.querySelector(s);
 let S={xp:0,inv:{},placed:[],custom:[],found:{},pos:[0,6],hue:200,prog:[]},SH=false,since=0,chatTo=null,started=false,isDirty=false,saving=false,saveVersion=0,openP=null;
+// سحب اللوحات من شريط العنوان لتغيير مكانها ومنع تداخل لوحة البرمجة مع الأدوات.
+(function enablePanelDragging(){
+ let drag=null;
+ const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+ document.addEventListener('pointerdown',e=>{
+  const head=e.target.closest('.panel h3');
+  if(!head||e.target.closest('button,input,select,textarea'))return;
+  const panel=head.closest('.panel');if(!panel||!panel.classList.contains('on'))return;
+  const r=panel.getBoundingClientRect();
+  panel.style.left=r.left+'px';panel.style.top=r.top+'px';panel.style.right='auto';panel.style.bottom='auto';
+  panel.style.insetInlineStart='auto';panel.style.insetInlineEnd='auto';
+  panel.classList.add('dragging');drag={panel,x:e.clientX,y:e.clientY,left:r.left,top:r.top};
+  try{head.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault();
+ });
+ document.addEventListener('pointermove',e=>{if(!drag)return;const p=drag.panel,r=p.getBoundingClientRect();
+  const left=clamp(drag.left+e.clientX-drag.x,8,Math.max(8,innerWidth-r.width-8));
+  const top=clamp(drag.top+e.clientY-drag.y,8,Math.max(8,innerHeight-Math.min(r.height,70)));
+  p.style.left=left+'px';p.style.top=top+'px';
+ });
+ const stop=()=>{if(drag){drag.panel.classList.remove('dragging');drag=null}};
+ document.addEventListener('pointerup',stop);document.addEventListener('pointercancel',stop);
+})();
 const rnd=n=>Math.floor(Math.random()*n);
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2400)}
 const spark_toast=toast,dirty=()=>{isDirty=true;saveVersion++;hud()};
