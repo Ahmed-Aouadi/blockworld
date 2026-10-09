@@ -112,7 +112,7 @@ $('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر 
 $('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH)syncPlayers([]);toast(SH?'العالم المشترك: سترى اللاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
 $('#bShare').textContent='🏡 خاص';
 $('#tDel').onclick=()=>{clearPlacedSelection();setTool('del');toast('🗑 انقر على العنصر الذي تريد حذفه')};$('#tMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر ثم حرّكه بالأسهم أو WASD')};$('#tSel').onclick=()=>{clearPlacedSelection();setTool('sel');toast('🧩 انقر على عنصر لفتح إعدادات برمجته')};$('#tCopy').onclick=()=>{setTool('copy');toast('📋 انقر على عنصر لنسخه — يلزم توفره في الحقيبة')};$('#tOff').onclick=()=>{setTool(null);if(openP==='Build')rBuild()};
-$('#tRot').onclick=()=>{rot+=Math.PI/4;if(ghost)ghostPlace()};$('#tUp').onclick=()=>{manualElev=Math.min(4.4,manualElev+.55);elev=manualElev;toast('الارتفاع: '+Math.round(elev/.55));if(ghost)ghostPlace()};$('#tDn').onclick=()=>{manualElev=Math.max(0,manualElev-.55);elev=manualElev;toast('الارتفاع: '+Math.round(elev/.55));if(ghost)ghostPlace()};
+$('#tRot').onclick=()=>{if(selectedPo&&tool==='move'){rotateSelected(1);toast('⟳ تم تدوير العنصر المحدد')}else{rot=(rot+Math.PI/4)%(Math.PI*2);if(ghost)ghostPlace();toast('⟳ تدوير معاينة البناء')}};$('#tUp').onclick=()=>{if(selectedPo&&tool==='move'){changeSelectedHeight(1);toast('⬆ تم رفع العنصر المحدد')}else{manualElev=Math.min(4.4,manualElev+.55);elev=manualElev;toast('ارتفاع البناء: '+Math.round(elev/.55));if(ghost)ghostPlace()}};$('#tDn').onclick=()=>{if(selectedPo&&tool==='move'){changeSelectedHeight(-1);toast('⬇ تم خفض العنصر المحدد')}else{manualElev=Math.max(0,manualElev-.55);elev=manualElev;toast('ارتفاع البناء: '+Math.round(elev/.55));if(ghost)ghostPlace()}};
 document.querySelectorAll('#dpad [data-k]').forEach(b=>{const k=b.dataset.k;b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointercancel','pointerleave'].forEach(v=>b.addEventListener(v,()=>keys[k]=false))});
 $('#jump').addEventListener('pointerdown',e=>{e.preventDefault();keys.jump=true});
 const KM={KeyW:'up',ArrowUp:'up',KeyS:'down',ArrowDown:'down',KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right'};
@@ -128,5 +128,5 @@ addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select'))retu
   if(e.ctrlKey&&e.code==='KeyD'){duplicateSelected();e.preventDefault();return}
  }
  if(KM[e.code]){keys[KM[e.code]]=true;e.preventDefault()}if(e.code==='Space'){keys.jump=true;e.preventDefault()}if(e.key==='Shift')keys.shift=true;
- if(e.code==='KeyR'&&tool&&tool.k){rot+=Math.PI/4;ghostPlace()}if(e.code==='Escape'){if(openP)togglePanel(openP);clearPlacedSelection();setTool(null);closeModal()}});
+ if(e.code==='KeyR'&&tool==='move'&&selectedPo){rotateSelected(1);e.preventDefault()}else if(e.code==='KeyR'&&tool&&tool.k){rot=(rot+Math.PI/4)%(Math.PI*2);ghostPlace()}if(e.code==='Escape'){if(openP)togglePanel(openP);clearPlacedSelection();setTool(null);closeModal()}});
 addEventListener('keyup',e=>{if(KM[e.code])keys[KM[e.code]]=false;if(e.key==='Shift')keys.shift=false});
