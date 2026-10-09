@@ -108,6 +108,7 @@ $('#bGuest').onclick=()=>{let s=null;try{s=JSON.parse(localStorage.getItem('bw_g
 (async()=>{const t=localStorage.getItem('bw_t');if(!t)return;NET.token=t;try{const r=await NET.api('me');NET.guest=false;startGame(r.save,r.name,r.hue)}catch(e){NET.token=null}})();
 // ---------- الأزرار ----------
 document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel(b.dataset.p));
+$('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر لتحديده ثم استخدم الأسهم للتحريك')};
 $('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH)syncPlayers([]);toast(SH?'العالم المشترك: سترى اللاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
 $('#bShare').textContent='🏡 خاص';
 $('#tDel').onclick=()=>{clearPlacedSelection();setTool('del');toast('🗑 انقر على العنصر الذي تريد حذفه')};$('#tMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر ثم حرّكه بالأسهم أو WASD')};$('#tSel').onclick=()=>{clearPlacedSelection();setTool('sel');toast('🧩 انقر على عنصر لفتح إعدادات برمجته')};$('#tCopy').onclick=()=>{setTool('copy');toast('📋 انقر على عنصر لنسخه — يلزم توفره في الحقيبة')};$('#tOff').onclick=()=>{setTool(null);if(openP==='Build')rBuild()};
