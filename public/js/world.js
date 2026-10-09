@@ -63,8 +63,8 @@ function collide(x,z){let ax=x,az=z;for(const c of cols){if(c.door&&c.o.g.userDa
   if(d<.3){const nx=d>1e-4?ex/d:0,nz=d>1e-4?ez/d:1,pu=.3-d+.002,wx=nx*pu,wz=nz*pu;ax+=wx*co+wz*s;az+=-wx*s+wz*co}}return[ax,az]}
 function mv(dx,dz){const nx=pl.x+dx,nz=pl.z+dz;if(!walkable(nx,nz))return false;const[a,b]=collide(nx,nz);if(!walkable(a,b))return false;pl.x=a;pl.z=b;return true}
 const PART_Y={roof:1.1,balcony:.55,chimney:1.1};
-function placeObj(po){const d=DEFS[po.k][po.i],g=mk(d.b,d.c),y=Math.max(H(po.x,po.z),-.3)+(po.e||0)+(po.k==='p'&&PART_Y[d.b]||0);g.position.set(po.x,y,po.z);g.rotation.y=po.ry||0;Object.assign(g.userData,{po,x0:po.x,y0:y,z0:po.z,ry0:po.ry||0});po.g=g;scene.add(g);placed.push(po);
- const s=SOLID[d.b];if(po.k==='p'&&s)cols.push({o:po,x:po.x,z:po.z,ry:po.ry||0,hx:s[0],hz:s[1],door:d.b==='door'});return po}
+function placeObj(po,remoteOwner=null){const d=DEFS[po.k][po.i],g=mk(d.b,d.c),y=Math.max(H(po.x,po.z),-.3)+(po.e||0)+(po.k==='p'&&PART_Y[d.b]||0);g.position.set(po.x,y,po.z);g.rotation.y=po.ry||0;Object.assign(g.userData,{po,x0:po.x,y0:y,z0:po.z,ry0:po.ry||0});po.g=g;if(remoteOwner)po.remoteOwner=remoteOwner;scene.add(g);placed.push(po);
+ const s=SOLID[d.b];if(!remoteOwner&&po.k==='p'&&s)cols.push({o:po,x:po.x,z:po.z,ry:po.ry||0,hx:s[0],hz:s[1],door:d.b==='door'});return po}
 function removeObj(po){const at=placed.indexOf(po);if(at<0||!po?.g)return;scene.remove(po.g);const geometries=new Set(),materials=new Set();po.g.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>materials.add(m))});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());placed.splice(at,1);const i=cols.findIndex(c=>c.o===po);if(i>=0)cols.splice(i,1)}
 function behave(po,dt,t){const b=po.beh,g=po.g,u=g.userData;if(!b)return;const p=b.p||4,w=(t+u.x0)%1000;
  if(b.t==='spin')g.rotation.y=u.ry0+w*6.283/p;else if(b.t==='bounce')g.position.y=u.y0+Math.abs(Math.sin(w*3.14159/p*2))*.7;else if(b.t==='sway')g.rotation.z=Math.sin(w*6.283/p)*.25;
@@ -131,7 +131,7 @@ function initWorld(){
  cv.addEventListener('pointerup',e=>{if(dn&&moved<=6)onWorldClick(e);dn=null});
  cv.addEventListener('wheel',e=>{cd=Math.max(4,Math.min(18,cd+e.deltaY*.01))},{passive:true});
  let last=performance.now();const loop=now=>{requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000),t=now/1000;last=now;frame(dt,t)};requestAnimationFrame(loop)}
-function hitPlaced(e){pick(e);const h=rc.intersectObjects(placed.map(p=>p.g),true)[0];if(!h)return null;let o=h.object;while(o&&!o.userData.po)o=o.parent;return o?o.userData.po:null}
+function hitPlaced(e){pick(e);const h=rc.intersectObjects(placed.filter(p=>!p.remoteOwner).map(p=>p.g),true)[0];if(!h)return null;let o=h.object;while(o&&!o.userData.po)o=o.parent;return o?o.userData.po:null}
 function onWorldClick(e){if(!tool)return;
  if(tool==='move'){const po=hitPlaced(e);if(po){selectPlaced(po)}else{clearPlacedSelection();toast('انقر على عنصر لتحديده')}}
  else if(tool==='del'){const po=hitPlaced(e);if(po){removeObj(po);if(po.k==='e')S.inv['e'+po.i]=(S.inv['e'+po.i]||0)+1;dirty();refreshPanels();spark_toast('🗑 تم الحذف')}}
