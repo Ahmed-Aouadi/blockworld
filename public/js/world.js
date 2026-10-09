@@ -72,7 +72,7 @@ function behave(po,dt,t){const b=po.beh,g=po.g,u=g.userData;if(!b)return;const p
  else if(b.t==='color'){const h=(w/p)%1;g.traverse(m=>{if(m.isMesh&&m.userData.tint)m.material.color.setHSL(h,.8,.6)})}
  else if(b.t==='swing'){u.force=Math.floor(w/p)%2===0?1:0;if(!u.door)g.rotation.z+=((u.force?1.1:0)-g.rotation.z)*Math.min(1,dt*3)}}
 function clearBeh(po){const g=po.g,u=g.userData;g.rotation.set(0,u.ry0,0);g.scale.setScalar(1);g.position.set(u.x0,u.y0,u.z0);u.force=0;g.traverse(m=>{if(m.isMesh&&m.userData.tint){const d=DEFS[po.k][po.i];m.material.color.setHex(d.c)}})}
-function setTool(t){tool=t;if(ghost){scene.remove(ghost);ghost=null}if(t&&t.k){const d=DEFS[t.k][t.i];ghost=mk(d.b,d.c,true);ghost.visible=false;scene.add(ghost)}document.getElementById('bt').classList.toggle('on',!!t)}
+function setTool(t){tool=t;if(ghost){scene.remove(ghost);ghost=null}if(t&&t.k){const d=DEFS[t.k][t.i];ghost=mk(d.b,d.c,true);ghost.visible=false;scene.add(ghost)}document.getElementById('bt').classList.toggle('on',!!t);if(typeof updateQuickBuild==='function')updateQuickBuild()}
 function ghostPlace(){if(!ghost)return;const d=DEFS[tool.k][tool.i];ghost.position.set(gpos.x,Math.max(H(gpos.x,gpos.z),-.3)+elev+(tool.k==='p'&&PART_Y[d.b]||0),gpos.z);ghost.rotation.y=rot;ghost.visible=true}
 function pick(e){const r=R.domElement.getBoundingClientRect();rc.setFromCamera(new T.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),cam)}
 function initWorld(){
@@ -134,11 +134,11 @@ function initWorld(){
 function hitPlaced(e){pick(e);const h=rc.intersectObjects(placed.filter(p=>!p.remoteOwner).map(p=>p.g),true)[0];if(!h)return null;let o=h.object;while(o&&!o.userData.po)o=o.parent;return o?o.userData.po:null}
 function onWorldClick(e){if(!tool)return;
  if(tool==='move'){const po=hitPlaced(e);if(po){selectPlaced(po)}else{clearPlacedSelection();toast('انقر على عنصر لتحديده')}}
- else if(tool==='del'){const po=hitPlaced(e);if(po){removeObj(po);if(po.k==='e')S.inv['e'+po.i]=(S.inv['e'+po.i]||0)+1;dirty();refreshPanels();spark_toast('🗑 تم الحذف')}}
+ else if(tool==='del'){const po=hitPlaced(e);if(po&&!po.remoteOwner){removeObj(po);if(po.k==='e')S.inv['e'+po.i]=(S.inv['e'+po.i]||0)+1;dirty();saveNow();refreshPanels();spark_toast('🗑 تم الحذف')}}
  else if(tool==='sel'){const po=hitPlaced(e);if(po)openScript(po)}
- else if(tool==='copy'){const po=hitPlaced(e);if(po){const d=DEFS[po.k]&&DEFS[po.k][po.i];if(!d)return;const key='e'+po.i;if(po.k==='e'&&!(S.inv[key]>0))return toast('لا توجد نسخة في الحقيبة — اجمع هدية أولًا');if(po.k==='e')S.inv[key]--;const x=Math.round((po.x+1.4*Math.cos(po.ry||0))*2)/2,z=Math.round((po.z-1.4*Math.sin(po.ry||0))*2)/2;const copy=placeObj({k:po.k,i:po.i,x,z,ry:po.ry||0,e:po.e||0});if(po.beh)copy.beh={...po.beh};S.xp+=1;dirty();refreshPanels();toast('📋 تم نسخ العنصر')}}
+ else if(tool==='copy'){const po=hitPlaced(e);if(po){const d=DEFS[po.k]&&DEFS[po.k][po.i];if(!d)return;const key='e'+po.i;if(po.k==='e'&&!(S.inv[key]>0))return toast('لا توجد نسخة في الحقيبة — اجمع هدية أولًا');if(po.k==='e')S.inv[key]--;const x=Math.round((po.x+1.4*Math.cos(po.ry||0))*2)/2,z=Math.round((po.z-1.4*Math.sin(po.ry||0))*2)/2;const copy=placeObj({k:po.k,i:po.i,x,z,ry:po.ry||0,e:po.e||0});if(po.beh)copy.beh={...po.beh};S.xp+=1;dirty();saveNow();refreshPanels();toast('📋 تم نسخ العنصر')}}
  else if(tool.k){if(tool.k==='e'){const key='e'+tool.i;if(!(S.inv[key]>0))return toast('لا تملك هذا العنصر — اجمع الهدايا 🎁 أو اطلبه من صديق');S.inv[key]--}
-  placeObj({k:tool.k,i:tool.i,x:gpos.x,z:gpos.z,ry:rot,e:elev});S.xp+=1;dirty();refreshPanels()}}
+  placeObj({k:tool.k,i:tool.i,x:gpos.x,z:gpos.z,ry:rot,e:elev});S.xp+=1;dirty();saveNow();refreshPanels()}}
 const lerpAng=(a,b,t)=>{let d=((b-a+Math.PI)%(Math.PI*2)+Math.PI*2)%(Math.PI*2)-Math.PI;return a+d*t};
 function syncPlayers(list){const ids=new Set(list.map(p=>p.id));for(const id in others)if(!ids.has(id)){scene.remove(others[id].g);delete others[id]}
  list.forEach(p=>{let o=others[p.id];if(!o){o={g:mkAvatar(p.hue,p.name),x:p.x,z:p.z,ry:p.ry,name:p.name};scene.add(o.g);others[p.id]=o}o.tx=p.x;o.tz=p.z;o.try=p.ry})}
