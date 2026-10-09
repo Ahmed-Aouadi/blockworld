@@ -1,6 +1,6 @@
 // الواجهة: الحسابات، اللوحات، الدردشة، الهدايا، الحفظ
 const $=s=>document.querySelector(s);
-let S={xp:0,inv:{},placed:[],custom:[],found:{},pos:[0,6],hue:200,prog:[]},SH=false,since=0,chatTo=null,started=false,isDirty=false,saving=false,saveVersion=0,openP=null;
+let S={xp:0,inv:{},placed:[],custom:[],found:{},pos:[0,6],hue:200,avatar:{skin:0xffd2ad,hair:0x49334a,outfit:0x3da5ff,trim:0x2674b4,pants:0x34364b,shoes:0x34364b,scarf:0xffca58,hat:'none',hatColor:0x3da5ff},prog:[]},SH=false,since=0,chatTo=null,started=false,isDirty=false,saving=false,saveVersion=0,openP=null;
 let selectedPo=null,selectionBox=null;
 // سحب اللوحات من شريط العنوان لتغيير مكانها ومنع تداخل لوحة البرمجة مع الأدوات.
 (function enablePanelDragging(){
@@ -61,7 +61,33 @@ function undoProg(){if(running||!progHistory.length)return toast('لا توجد 
 function redoProg(){if(running||!progFuture.length)return toast('لا توجد خطوة للإعادة');progHistory.push(JSON.stringify(prog));prog=JSON.parse(progFuture.pop());S.prog=prog;dirty();drawProg();toast('↷ تمت إعادة الخطوة')}
 function exportProject(){const data={format:'blockworld-project',version:1,program:prog,custom:S.custom||[],exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='blockworld-project.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('📦 تم تصدير مشروع البرمجة')}
 function importProject(file){const reader=new FileReader();reader.onload=()=>{try{const d=JSON.parse(reader.result);if(!d||d.format!=='blockworld-project'||!Array.isArray(d.program)||!Array.isArray(d.custom||[]))throw Error('صيغة الملف غير صحيحة');if(d.program.length>120||d.custom.length>80)throw Error('المشروع أكبر من الحد المسموح');const valid=d.program.every(b=>b&&typeof b.k==='string'&&('p'in b));if(!valid)throw Error('توجد بلوكات غير صالحة');rememberProg();prog=d.program.map(b=>({k:b.k,p:b.p,l:String(b.l||b.k).slice(0,120),c:Number.isInteger(b.c)?Math.max(0,Math.min(5,b.c)):0}));S.custom=d.custom.filter(b=>b&&typeof b.name==='string'&&typeof b.code==='string').slice(0,80).map(b=>({name:b.name.slice(0,20),code:b.code.slice(0,5000)}));S.prog=prog;dirty();closeModal();rCode();toast('✅ تم استيراد المشروع بنجاح')}catch(e){const err=$('#importErr');if(err)err.textContent=e.message||'تعذر قراءة المشروع'}};reader.readAsText(file)}
-function projectModal(){modal('<h2>📦 إدارة المشروع</h2><p>احفظ برنامجك في ملف، أو استورد مشروعًا سابقًا لمتابعة العمل عليه.</p><button class="b1" id="exportProj">⬇️ تصدير المشروع JSON</button><label class="filepick">⬆️ استيراد مشروع من ملف JSON<input id="importProj" type="file" accept=".json,application/json"></label><div id="importErr" class="err"></div><div class="row"><button id="undoProj">↶ تراجع</button><button id="redoProj">↷ إعادة</button><button id="closeProj">إغلاق</button></div>');$('#exportProj').onclick=exportProject;$('#importProj').onchange=e=>{if(e.target.files&&e.target.files[0])importProject(e.target.files[0])};$('#undoProj').onclick=undoProg;$('#redoProj').onclick=redoProg;$('#closeProj').onclick=closeModal}
+
+function avatarModal(){
+ const defaults={skin:0xffd2ad,hair:0x49334a,outfit:0x3da5ff,trim:0x2674b4,pants:0x34364b,shoes:0x34364b,scarf:0xffca58,hat:'none',hatColor:0x3da5ff};
+ const a={...defaults,...(S.avatar||{})};
+ const skinOpts=[[0xffd2ad,'فاتحة'],[0xeeb28e,'قمحية'],[0x9b6347,'بنية'],[0x6a4032,'داكنة']].map(x=>'<option value="'+x[0]+'" '+(Number(a.skin)===x[0]?'selected':'')+'>'+x[1]+'</option>').join('');
+ const hairOpts=[[0x49334a,'بنفسجي داكن'],[0x211b20,'أسود'],[0x8a5635,'بني'],[0xf0c56a,'أشقر'],[0xff557f,'وردي'],[0x3b79b8,'أزرق']].map(x=>'<option value="'+x[0]+'" '+(Number(a.hair)===x[0]?'selected':'')+'>'+x[1]+'</option>').join('');
+ const hex=v=>'#'+Number(v).toString(16).padStart(6,'0');
+ modal('<h2>🧑‍🎨 تخصيص الشخصية</h2><p>غيّر ملامح الشخصية وملابسها. التعديلات تظهر مباشرة وتُحفظ مع تقدمك.</p><div class="avatar-form">'+
+ '<label>لون البشرة<select id="avSkin">'+skinOpts+'</select></label>'+
+ '<label>لون الشعر<select id="avHair">'+hairOpts+'</select></label>'+
+ '<label>السترة / القميص<input id="avOutfit" type="color" value="'+hex(a.outfit)+'"></label>'+
+ '<label>تفاصيل الملابس<input id="avTrim" type="color" value="'+hex(a.trim)+'"></label>'+
+ '<label>البنطال<input id="avPants" type="color" value="'+hex(a.pants)+'"></label>'+
+ '<label>الحذاء<input id="avShoes" type="color" value="'+hex(a.shoes)+'"></label>'+
+ '<label>الوشاح<input id="avScarf" type="color" value="'+hex(a.scarf)+'"></label>'+
+ '<label>غطاء الرأس<select id="avHat"><option value="none">بدون</option><option value="cap">قبعة مغامر</option><option value="crown">تاج</option></select></label>'+
+ '<label>لون غطاء الرأس<input id="avHatColor" type="color" value="'+hex(a.hatColor)+'"></label></div>'+
+ '<div class="row"><button class="b1" id="avSave">حفظ المظهر</button><button id="avReset">إعادة الافتراضي</button><button id="avClose">إغلاق</button></div>');
+ const el=id=>$('#'+id);el('avHat').value=a.hat;
+ const read=()=>({skin:+el('avSkin').value,hair:+el('avHair').value,outfit:parseInt(el('avOutfit').value.slice(1),16),trim:parseInt(el('avTrim').value.slice(1),16),pants:parseInt(el('avPants').value.slice(1),16),shoes:parseInt(el('avShoes').value.slice(1),16),scarf:parseInt(el('avScarf').value.slice(1),16),hat:el('avHat').value,hatColor:parseInt(el('avHatColor').value.slice(1),16)});
+ const update=()=>{S.avatar=read();if(typeof setAvatarAppearance==='function')setAvatarAppearance(S.avatar);dirty()};
+ ['avSkin','avHair','avOutfit','avTrim','avPants','avShoes','avScarf','avHat','avHatColor'].forEach(id=>el(id).onchange=update);
+ el('avSave').onclick=()=>{update();closeModal();toast('✨ تم حفظ مظهر الشخصية')};
+ el('avReset').onclick=()=>{S.avatar={...defaults};if(typeof setAvatarAppearance==='function')setAvatarAppearance(S.avatar);dirty();closeModal();avatarModal()};
+ el('avClose').onclick=closeModal;
+}
+\nfunction projectModal(){modal('<h2>📦 إدارة المشروع</h2><p>احفظ برنامجك في ملف، أو استورد مشروعًا سابقًا لمتابعة العمل عليه.</p><button class="b1" id="exportProj">⬇️ تصدير المشروع JSON</button><label class="filepick">⬆️ استيراد مشروع من ملف JSON<input id="importProj" type="file" accept=".json,application/json"></label><div id="importErr" class="err"></div><div class="row"><button id="undoProj">↶ تراجع</button><button id="redoProj">↷ إعادة</button><button id="closeProj">إغلاق</button></div>');$('#exportProj').onclick=exportProject;$('#importProj').onchange=e=>{if(e.target.files&&e.target.files[0])importProject(e.target.files[0])};$('#undoProj').onclick=undoProg;$('#redoProj').onclick=redoProg;$('#closeProj').onclick=closeModal}
 const PROGRAM_TEMPLATES=[
  {name:'🏠 بناء بيت',desc:'ابنِ بيتًا صغيرًا أمامك.',blocks:[['house',0]]},
  {name:'⬜ ارسم مربعًا',desc:'تحرّك ودر حول نفسك لرسم مربع.',blocks:[['repeat',4],['fwd',4],['turn',90],['end',0]]},
@@ -114,12 +140,12 @@ async function tick(){if(NET.guest)return;try{const r=await NET.api('tick',{x:pl
  $('#onl').textContent='👤 '+(SH?r.pl.length+1:1)+' متصل';if(openP==='Near')rNear()}catch(e){}}
 // ---------- الحفظ والدخول ----------
 function serialize(){S.placed=placed.map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]);S.pos=[pl.x,pl.z];S.prog=prog}
-async function saveNow(){if(!started||!isDirty||saving)return;saving=true;serialize();const version=saveVersion,save={xp:S.xp,inv:{...S.inv},placed:S.placed.map(a=>a.slice()),custom:S.custom.map(a=>({...a})),found:{...S.found},pos:S.pos.slice(),hue:S.hue,prog:prog.map(a=>({...a}))};
+async function saveNow(){if(!started||!isDirty||saving)return;saving=true;serialize();const version=saveVersion,save={xp:S.xp,inv:{...S.inv},placed:S.placed.map(a=>a.slice()),custom:S.custom.map(a=>({...a})),found:{...S.found},pos:S.pos.slice(),hue:S.hue,avatar:{...(S.avatar||{})},prog:prog.map(a=>({...a}))};
  try{if(NET.guest)localStorage.setItem('bw_guest',JSON.stringify(save));else await NET.api('save',{save});if(saveVersion===version)isDirty=false}catch(e){isDirty=true}finally{saving=false}}
-function startGame(save,name,hue){if(started)return;started=true;S={...S,...(save||{})};S.hue=hue||S.hue;if(!save||!Object.keys(S.inv||{}).length){S.inv=S.inv||{};[1,7,16,20,30,44,58,70].forEach(i=>{if(ELS[i])S.inv['e'+i]=3})}
+function startGame(save,name,hue){if(started)return;started=true;S={...S,...(save||{})};S.hue=hue||S.hue;S.avatar={skin:0xffd2ad,hair:0x49334a,outfit:0x3da5ff,trim:0x2674b4,pants:0x34364b,shoes:0x34364b,scarf:0xffca58,hat:'none',hatColor:0x3da5ff,...(S.avatar||{})};if(!save||!Object.keys(S.inv||{}).length){S.inv=S.inv||{};[1,7,16,20,30,44,58,70].forEach(i=>{if(ELS[i])S.inv['e'+i]=3})}
  $('#auth').style.display='none';$('#hud').hidden=false;try{initWorld()}catch(e){document.body.innerHTML='<p style="padding:30px;font-size:20px">يحتاج المتصفح إلى WebGL ليعمل بلوك وورلد.</p>';return}
  (S.placed||[]).forEach(a=>{if(DEFS[a[0]]&&DEFS[a[0]][a[1]]){const po=placeObj({k:a[0],i:a[1],x:a[2],z:a[3],ry:a[4],e:a[5]});if(a[6])po.beh={t:a[6],p:a[7]||4}}});
- if(S.pos){pl.x=S.pos[0];pl.z=S.pos[1];if(!walkable(pl.x,pl.z)){pl.x=0;pl.z=6}}prog=S.prog||[];hud();$('#onl').textContent=NET.guest?'🎮 ضيف':'👤 1 متصل';$('#bShare').style.display=NET.guest?'none':'';
+ if(S.pos){pl.x=S.pos[0];pl.z=S.pos[1];if(!walkable(pl.x,pl.z)){pl.x=0;pl.z=6}}prog=S.prog||[];if(typeof setAvatarAppearance==='function')setAvatarAppearance(S.avatar||{});hud();$('#onl').textContent=NET.guest?'🎮 ضيف':'👤 1 متصل';$('#bShare').style.display=NET.guest?'none':'';
  setInterval(tick,500);setInterval(saveNow,6000);addEventListener('beforeunload',saveNow);
  toast(name?'أهلًا '+name+'! 🎉 استكشف، ابنِ، وبرمج':'أهلًا بك! 🎉');setTimeout(()=>{onZone(0)},600)}
 async function auth(kind){const n=$('#un').value.trim(),p=$('#pw').value;$('#aerr').textContent='';try{const r=await NET.api(kind,{name:n,pass:p});NET.token=r.token;NET.guest=false;localStorage.setItem('bw_t',r.token);startGame(r.save,r.name,r.hue)}catch(e){$('#aerr').textContent=e.message==='Failed to fetch'?'الخادم غير متصل — شغّل node server.js أو العب كضيف':e.message}}
@@ -127,6 +153,7 @@ $('#bLogin').onclick=()=>auth('login');$('#bReg').onclick=()=>auth('register');$
 $('#bGuest').onclick=()=>{let s=null;try{s=JSON.parse(localStorage.getItem('bw_guest')||'null')}catch(e){}NET.guest=true;startGame(s,'',200)};
 (async()=>{const t=localStorage.getItem('bw_t');if(!t)return;NET.token=t;try{const r=await NET.api('me');NET.guest=false;startGame(r.save,r.name,r.hue)}catch(e){NET.token=null;localStorage.removeItem('bw_t')}})();
 // ---------- الأزرار ----------
+$('#bAvatar').onclick=avatarModal;
 document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel(b.dataset.p));
 $('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر لتحديده ثم استخدم الأسهم للتحريك')};
 $('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH)syncPlayers([]);toast(SH?'العالم المشترك: سترى اللاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
