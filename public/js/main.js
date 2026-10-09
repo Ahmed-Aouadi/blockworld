@@ -87,7 +87,8 @@ function avatarModal(){
  el('avReset').onclick=()=>{S.avatar={...defaults};if(typeof setAvatarAppearance==='function')setAvatarAppearance(S.avatar);dirty();closeModal();avatarModal()};
  el('avClose').onclick=closeModal;
 }
-\nfunction projectModal(){modal('<h2>📦 إدارة المشروع</h2><p>احفظ برنامجك في ملف، أو استورد مشروعًا سابقًا لمتابعة العمل عليه.</p><button class="b1" id="exportProj">⬇️ تصدير المشروع JSON</button><label class="filepick">⬆️ استيراد مشروع من ملف JSON<input id="importProj" type="file" accept=".json,application/json"></label><div id="importErr" class="err"></div><div class="row"><button id="undoProj">↶ تراجع</button><button id="redoProj">↷ إعادة</button><button id="closeProj">إغلاق</button></div>');$('#exportProj').onclick=exportProject;$('#importProj').onchange=e=>{if(e.target.files&&e.target.files[0])importProject(e.target.files[0])};$('#undoProj').onclick=undoProg;$('#redoProj').onclick=redoProg;$('#closeProj').onclick=closeModal}
+
+function projectModal(){modal('<h2>📦 إدارة المشروع</h2><p>احفظ برنامجك في ملف، أو استورد مشروعًا سابقًا لمتابعة العمل عليه.</p><button class="b1" id="exportProj">⬇️ تصدير المشروع JSON</button><label class="filepick">⬆️ استيراد مشروع من ملف JSON<input id="importProj" type="file" accept=".json,application/json"></label><div id="importErr" class="err"></div><div class="row"><button id="undoProj">↶ تراجع</button><button id="redoProj">↷ إعادة</button><button id="closeProj">إغلاق</button></div>');$('#exportProj').onclick=exportProject;$('#importProj').onchange=e=>{if(e.target.files&&e.target.files[0])importProject(e.target.files[0])};$('#undoProj').onclick=undoProg;$('#redoProj').onclick=redoProg;$('#closeProj').onclick=closeModal}
 const PROGRAM_TEMPLATES=[
  {name:'🏠 بناء بيت',desc:'ابنِ بيتًا صغيرًا أمامك.',blocks:[['house',0]]},
  {name:'⬜ ارسم مربعًا',desc:'تحرّك ودر حول نفسك لرسم مربع.',blocks:[['repeat',4],['fwd',4],['turn',90],['end',0]]},
