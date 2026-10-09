@@ -94,11 +94,11 @@ let selectedPo=null,selectionBox=null;
 const rnd=n=>Math.floor(Math.random()*n);
 function clearPlacedSelection(){if(selectionBox&&typeof scene!=='undefined'){scene.remove(selectionBox);selectionBox.geometry?.dispose();if(Array.isArray(selectionBox.material))selectionBox.material.forEach(m=>m.dispose());else selectionBox.material?.dispose()}selectionBox=null;selectedPo=null}
 function selectPlaced(po){clearPlacedSelection();selectedPo=po;selectionBox=new THREE.BoxHelper(po.g,0xffc928);scene.add(selectionBox);toast('تم تحديد العنصر — الأسهم للتحريك، Q/E للتدوير، Delete للحذف');}
-function moveSelected(dx,dz){if(!selectedPo)return;const po=selectedPo,x=Math.max(-HALF+2,Math.min(HALF-2,Math.round((po.x+dx)*2)/2)),z=Math.max(-HALF+2,Math.min(HALF-2,Math.round((po.z+dz)*2)/2));if(!walkable(x,z))return;po.x=x;po.z=z;po.g.position.x=x;po.g.position.z=z;po.g.userData.x0=x;po.g.userData.z0=z;po.g.userData.y0=Math.max(H(x,z),-.3)+(po.e||0)+(po.k==='p'&&PART_Y[DEFS[po.k][po.i].b]||0);po.g.position.y=po.g.userData.y0;const c=cols.find(v=>v.o===po);if(c){c.x=x;c.z=z}if(selectionBox)selectionBox.update();dirty()}
-function rotateSelected(dir){if(!selectedPo)return;const po=selectedPo;po.ry=((po.ry||0)+dir*Math.PI/4)%(Math.PI*2);po.g.rotation.y=po.ry;po.g.userData.ry0=po.ry;const c=cols.find(v=>v.o===po);if(c)c.ry=po.ry;if(selectionBox)selectionBox.update();dirty()}
-function changeSelectedHeight(dir){if(!selectedPo)return;selectedPo.e=Math.max(0,Math.min(4.4,Math.round(((selectedPo.e||0)+dir*.55)*100)/100));const po=selectedPo;po.g.position.y=Math.max(H(po.x,po.z),-.3)+(po.e||0)+(po.k==='p'&&PART_Y[DEFS[po.k][po.i].b]||0);po.g.userData.y0=po.g.position.y;if(selectionBox)selectionBox.update();dirty()}
-function deleteSelected(){if(!selectedPo)return;const po=selectedPo;removeObj(po);if(po.k==='e')S.inv['e'+po.i]=(S.inv['e'+po.i]||0)+1;clearPlacedSelection();dirty();refreshPanels();toast('تم حذف العنصر المحدد')}
-function duplicateSelected(){if(!selectedPo)return;const po=selectedPo;if(po.k==='e'&&!(S.inv['e'+po.i]>0))return toast('لا توجد نسخة في الحقيبة');if(po.k==='e')S.inv['e'+po.i]--;const copy=placeObj({k:po.k,i:po.i,x:Math.min(HALF-2,po.x+1),z:po.z,ry:po.ry||0,e:po.e||0});if(po.beh)copy.beh={...po.beh};selectPlaced(copy);dirty();refreshPanels();toast('تم نسخ العنصر')}
+function moveSelected(dx,dz){if(!selectedPo||selectedPo.remoteOwner)return;const po=selectedPo,x=Math.max(-HALF+2,Math.min(HALF-2,Math.round((po.x+dx)*2)/2)),z=Math.max(-HALF+2,Math.min(HALF-2,Math.round((po.z+dz)*2)/2));if(!walkable(x,z))return;po.x=x;po.z=z;po.g.position.x=x;po.g.position.z=z;po.g.userData.x0=x;po.g.userData.z0=z;po.g.userData.y0=Math.max(H(x,z),-.3)+(po.e||0)+(po.k==='p'&&PART_Y[DEFS[po.k][po.i].b]||0);po.g.position.y=po.g.userData.y0;const c=cols.find(v=>v.o===po);if(c){c.x=x;c.z=z}if(selectionBox)selectionBox.update();dirty();saveNow()}
+function rotateSelected(dir){if(!selectedPo)return;const po=selectedPo;po.ry=((po.ry||0)+dir*Math.PI/4)%(Math.PI*2);po.g.rotation.y=po.ry;po.g.userData.ry0=po.ry;const c=cols.find(v=>v.o===po);if(c)c.ry=po.ry;if(selectionBox)selectionBox.update();dirty();saveNow()}
+function changeSelectedHeight(dir){if(!selectedPo)return;selectedPo.e=Math.max(0,Math.min(4.4,Math.round(((selectedPo.e||0)+dir*.55)*100)/100));const po=selectedPo;po.g.position.y=Math.max(H(po.x,po.z),-.3)+(po.e||0)+(po.k==='p'&&PART_Y[DEFS[po.k][po.i].b]||0);po.g.userData.y0=po.g.position.y;if(selectionBox)selectionBox.update();dirty();saveNow()}
+function deleteSelected(){if(!selectedPo||selectedPo.remoteOwner)return;const po=selectedPo;removeObj(po);if(po.k==='e')S.inv['e'+po.i]=(S.inv['e'+po.i]||0)+1;clearPlacedSelection();dirty();saveNow();refreshPanels();toast('تم حذف العنصر المحدد')}
+function duplicateSelected(){if(!selectedPo)return;const po=selectedPo;if(po.k==='e'&&!(S.inv['e'+po.i]>0))return toast('لا توجد نسخة في الحقيبة');if(po.k==='e')S.inv['e'+po.i]--;const copy=placeObj({k:po.k,i:po.i,x:Math.min(HALF-2,po.x+1),z:po.z,ry:po.ry||0,e:po.e||0});if(po.beh)copy.beh={...po.beh};selectPlaced(copy);dirty();saveNow();refreshPanels();toast('تم نسخ العنصر')}
 
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2400)}
 const spark_toast=toast,dirty=()=>{isDirty=true;saveVersion++;hud()};
@@ -107,7 +107,9 @@ function onGift(){const i=rnd(ELS.length),n=1+rnd(3);S.inv['e'+i]=(S.inv['e'+i]|
 function onZone(i){const z=ZONES[i];$('#zn').textContent=z.e+' '+z.n;if(!S.found[i]){S.found[i]=1;S.xp+=20;toast('🗺️ اكتشفت «'+z.n+'»! +20 XP ('+Object.keys(S.found).length+'/'+ZONES.length+')');dirty()}}
 // ---------- اللوحات ----------
 const PN=['Build','Code','Bag','Chat','Near'];
-function togglePanel(n){const was=openP===n;PN.forEach(p=>$('#p'+p).classList.remove('on'));if(openP==='Build'&&was)setTool(null);openP=was?null:n;if(!was){$('#p'+n).classList.add('on');renderPanel(n)}else if(n==='Build')setTool(null)}
+function updateQuickBuild(){const b=$('#quickBuild');if(b)b.classList.toggle('on',!!(tool&&tool.k&&openP!=='Build'&&started))}
+function hideBuildPanel(){if(openP==='Build')openP=null;$('#pBuild').classList.remove('on');updateQuickBuild()}
+function togglePanel(n){const was=openP===n;PN.forEach(p=>$('#p'+p).classList.remove('on'));if(openP==='Build'&&was)setTool(null);openP=was?null:n;if(!was){$('#p'+n).classList.add('on');renderPanel(n)}else if(n==='Build')setTool(null);updateQuickBuild()}
 function renderPanel(n){({Build:rBuild,Code:rCode,Bag:rBag,Chat:rChat,Near:rNear})[n]()}
 function refreshPanels(){if(openP&&openP!=='Code'&&openP!=='Chat')renderPanel(openP)}
 let bk='e',bc=0,buildSearch='';
@@ -120,7 +122,7 @@ function rBuild(){const cats=bk==='e'?ELC:PTC,L=bk==='e'?ELS:PTS,cat=cats[bc]||c
  <input id="buildSearch" class="code-search" value="${esc(buildSearch)}" placeholder="🔎 ابحث عن عنصر أو أداة..." aria-label="البحث في كتالوج البناء">
  <div class="grid">${shown.map(d=>{const n=S.inv['e'+d.i]||0,no=bk==='e'&&!n,on=tool&&tool.k===bk&&tool.i===d.i;return`<button class="it ${no?'no':''} ${on?'on':''}" data-i="${d.i}">${itemThumb(d)}<span class="item-name">${esc(d.n)}</span>${bk==='e'?'<small>× '+n+'</small>':''}</button>`}).join('')}</div>
  <small>🗑 احذف · 👆 برمج عنصرًا · ⟳ دوّر · ⬆⬇ ارتفاع. انقر على الأرض للوضع.</small>`;
- const p=$('#pBuild');$('#buildSearch').oninput=e=>{buildSearch=e.target.value;const pos=e.target.selectionStart;rBuild();const s=$('#buildSearch');s.focus();s.setSelectionRange(pos,pos)};p.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{bk=b.dataset.bk;bc=0;rBuild()});p.querySelectorAll('[data-bc]').forEach(b=>b.onclick=()=>{bc=+b.dataset.bc;rBuild()});
+ const p=$('#pBuild');const hide=document.createElement('button');hide.id='hideBuildPanel';hide.type='button';hide.textContent='✕';hide.title='إخفاء قائمة البناء مع استمرار وضع العناصر';$('#pBuild h3').appendChild(hide);hide.onclick=hideBuildPanel;$('#buildSearch').oninput=e=>{buildSearch=e.target.value;const pos=e.target.selectionStart;rBuild();const s=$('#buildSearch');s.focus();s.setSelectionRange(pos,pos)};p.querySelectorAll('[data-bk]').forEach(b=>b.onclick=()=>{bk=b.dataset.bk;bc=0;rBuild()});p.querySelectorAll('[data-bc]').forEach(b=>b.onclick=()=>{bc=+b.dataset.bc;rBuild()});
  p.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{setTool({k:bk,i:+b.dataset.i});rBuild()})}
 function rBag(){const items=Object.keys(S.inv).filter(k=>S.inv[k]>0).map(k=>({d:ELS[+k.slice(1)],n:S.inv[k]})).filter(x=>x.d);
  $('#pBag').innerHTML=`<h3>🎒 حقيبتي <small>${items.reduce((a,b)=>a+b.n,0)} قطعة</small></h3><small>اجمع الهدايا 🎁 المنتشرة في العالم للحصول على عناصر جديدة، وشاركها مع أصدقائك.</small><div class="grid">${items.map(x=>`<button class="it" data-i="${x.d.i}">${itemThumb(x.d)}<span class="item-name">${esc(x.d.n)}</span><small>× ${x.n}</small></button>`).join('')||'<p>حقيبتك فارغة!</p>'}</div>`;
@@ -207,12 +209,29 @@ function rNear(){const L=nearList();$('#pNear').innerHTML=`<h3>👫 اللاعب
 function giftModal(id){const o=others[id];if(!o)return;const items=Object.keys(S.inv).filter(k=>S.inv[k]>0&&ELS[+k.slice(1)]);
  modal(`<h2>🎁 أرسل هدية إلى ${esc(o.name)}</h2>${items.length?`<select id="gi">${items.map(k=>`<option value="${k}">${ELS[+k.slice(1)].n} (× ${S.inv[k]})</option>`).join('')}</select><input id="gn" type="number" min="1" value="1"><div class="err" id="ge"></div><div class="row"><button class="b1" id="gs">إرسال</button><button id="gx">إلغاء</button></div>`:'<p>حقيبتك فارغة — اجمع الهدايا أولًا.</p>'}`);
  const x=$('#gx');if(x)x.onclick=closeModal;const s=$('#gs');if(s)s.onclick=async()=>{const k=$('#gi').value,n=Math.floor(+$('#gn').value);if(!(n>=1&&n<=S.inv[k]))return $('#ge').textContent='الكمية غير صحيحة';try{await NET.api('gift',{to:id,item:k,n});S.inv[k]-=n;dirty();closeModal();toast('🎁 أُرسلت الهدية!');refreshPanels()}catch(e){$('#ge').textContent=e.message}}}
+let remoteWorldSignatures=new Map();
+function syncWorlds(worlds){
+ const list=Array.isArray(worlds)?worlds:[];
+ const live=new Set(list.map(w=>String(w.id)));
+ for(const [id] of remoteWorldSignatures){if(!live.has(id)){placed.filter(p=>p.remoteOwner===id).slice().forEach(removeObj);remoteWorldSignatures.delete(id)}}
+ for(const w of list){
+  const id=String(w.id||'');if(!id)continue;
+  const items=Array.isArray(w.placed)?w.placed.slice(0,1000):[],signature=JSON.stringify(items);
+  if(remoteWorldSignatures.get(id)===signature)continue;
+  placed.filter(p=>p.remoteOwner===id).slice().forEach(removeObj);
+  for(const a of items){if(!Array.isArray(a)||!DEFS[a[0]]||!DEFS[a[0]][a[1]]||!Number.isFinite(Number(a[2]))||!Number.isFinite(Number(a[3])))continue;
+   const po=placeObj({k:a[0],i:a[1],x:Number(a[2]),z:Number(a[3]),ry:Number(a[4])||0,e:Number(a[5])||0},id);
+   if(a[6])po.beh={t:a[6],p:Number(a[7])||4};
+  }
+  remoteWorldSignatures.set(id,signature);
+ }
+}
 let tickBusy=false;
-async function tick(){if(NET.guest||tickBusy)return;tickBusy=true;try{const r=await NET.api('tick',{x:pl.x,z:pl.z,ry:pl.ry,sh:SH?1:0,since});since=Math.max(since,r.last||0);syncPlayers(SH?r.pl:[]);
+async function tick(){if(NET.guest||tickBusy)return;tickBusy=true;try{const r=await NET.api('tick',{x:pl.x,z:pl.z,ry:pl.ry,sh:SH?1:0,since});since=Math.max(since,r.last||0);syncPlayers(SH?r.pl:[]);syncWorlds(SH?(r.worlds||[]):[]);
  r.ms.forEach(addMsg);r.inbox.forEach(g=>{S.inv[g.item]=(S.inv[g.item]||0)+g.n;toast('🎁 '+g.from+' أهداك '+g.n+'× '+(ELS[+g.item.slice(1)]||{n:'عنصر'}).n);dirty()});if(r.inbox.length)refreshPanels();
  $('#onl').textContent='👤 '+(SH?r.pl.length+1:1)+' متصل';if(openP==='Near')rNear()}catch(e){}finally{tickBusy=false}}
 // ---------- الحفظ والدخول ----------
-function serialize(){S.placed=placed.map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]);S.pos=[pl.x,pl.z];S.prog=prog}
+function serialize(){S.placed=placed.filter(p=>!p.remoteOwner).map(p=>[p.k,p.i,p.x,p.z,+(p.ry||0).toFixed(3),p.e||0,p.beh?p.beh.t:0,p.beh?p.beh.p:0]);S.pos=[pl.x,pl.z];S.prog=prog}
 async function saveNow(){if(!started||!isDirty||saving)return;saving=true;serialize();const version=saveVersion,save={xp:S.xp,inv:{...S.inv},placed:S.placed.map(a=>a.slice()),custom:S.custom.map(a=>({...a})),found:{...S.found},pos:S.pos.slice(),hue:S.hue,avatar:{...(S.avatar||{})},prog:prog.map(a=>({...a}))};
  try{if(NET.guest)localStorage.setItem('bw_guest',JSON.stringify(save));else await NET.api('save',{save});if(saveVersion===version)isDirty=false}catch(e){isDirty=true}finally{saving=false}}
 function startGame(save,name,hue){if(started)return;started=true;S={...S,...(save||{})};S.hue=hue||S.hue;S.avatar={skin:0xffd2ad,hair:0x49334a,outfit:0x3da5ff,trim:0x2674b4,pants:0x34364b,shoes:0x34364b,scarf:0xffca58,hat:'none',hatColor:0x3da5ff,...(S.avatar||{})};if(!save||!Object.keys(S.inv||{}).length){S.inv=S.inv||{};[1,7,16,20,30,44,58,70].forEach(i=>{if(ELS[i])S.inv['e'+i]=3})}
@@ -231,7 +250,8 @@ $('#bSound').onclick=toggleSound;$('#bMusic').onclick=toggleMusic;updateMusicBut
 $('#bSound').textContent=soundOn?'🔊 الصوت':'🔇 الصوت';
 document.querySelectorAll('#dock [data-p]').forEach(b=>b.onclick=()=>togglePanel(b.dataset.p));
 $('#bMove').onclick=()=>{setTool('move');toast('⌨️ انقر على عنصر لتحديده ثم استخدم الأسهم للتحريك')};
-$('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH)syncPlayers([]);toast(SH?'العالم المشترك: سترى اللاعبين الآخرين':'عالمك الخاص: تتجول وحدك')};
+$('#bShare').onclick=()=>{SH=!SH;$('#bShare').textContent=SH?'🌍 مشترك':'🏡 خاص';if(!SH){syncPlayers([]);syncWorlds([])}tick();toast(SH?'العالم المشترك: سترى اللاعبين وعناصر البناء التي حفظوها':'عالمك الخاص: تتجول وحدك')};
+$('#quickBuild').onclick=()=>{PN.forEach(p=>$('#p'+p).classList.remove('on'));openP='Build';$('#pBuild').classList.add('on');renderPanel('Build');updateQuickBuild()};
 $('#bShare').textContent='🏡 خاص';
 let nightMode=false;$('#bTime').onclick=()=>{nightMode=!nightMode;setWorldTime(nightMode);$('#bTime').textContent=nightMode?'☀️ نهار':'🌙 ليل';if(musicOn&&musicMaster){musicMaster.gain.setTargetAtTime(musicVolume,soundCtx.currentTime,.8);playMusicPhrase()}toast(nightMode?'🌙 تم تفعيل أجواء الليل':'☀️ عادت أجواء النهار')};
  $('#bHelp').onclick=()=>{modal('<h2>❔ دليل التحكم في BlockWorld</h2><p><b>الحركة:</b> WASD أو الأسهم، والمسافة للقفز. حرّك الكاميرا بسحب الشاشة، وقرّب أو أبعد بعجلة الفأرة.</p><p><b>البناء:</b> افتح 🔨 بناء واختر عنصرًا، ثم انقر على العالم لوضعه. وجّه المؤشر إلى عنصر موجود للبناء فوقه أو بجانبه. اضغط R لتدوير معاينة البناء، واستخدم ⬆ و⬇ لضبط ارتفاعه.</p><p><b>تعديل عنصر موجود:</b> اختر ⌨️ تحريك ثم انقر العنصر. الأسهم أو WASD لتحريكه، Shift لحركة أكبر، Q/E للتدوير، PageUp/PageDown للارتفاع، Delete للحذف، وCtrl+D للنسخ.</p><p><b>برمجة عنصر:</b> اضغط 🧩 برمجة ثم انقر عنصرًا، أو استخدم لوحة البرمجة لبناء تسلسل أوامر وتشغيله.</p><p><b>الحفظ والحسابات:</b> يُحفظ التقدم تلقائيًا كل عدة ثوانٍ. حفظ الحسابات عبر الإنترنت يتطلب إعداد قاعدة البيانات DATABASE_URL في الاستضافة؛ اللعب كضيف يحفظ على هذا المتصفح فقط.</p><div class="row"><button class="b1" id="bHelpClose">فهمت</button></div>');$('#bHelpClose').onclick=closeModal};
