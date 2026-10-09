@@ -27,14 +27,14 @@ http.createServer(async(q,r)=>{
   if(ep==='/api/me')return send(r,200,{name:U[k].name,hue:U[k].hue,save:U[k].save});
   if(ep==='/api/save'){if(!validSave(b.save))return send(r,400,{e:'بيانات الحفظ غير صالحة أو تتجاوز الحدود الآمنة؛ لم يتم تغيير عالمك.'});U[k].save=b.save;persist();return send(r,200,{ok:1})}
   if(ep==='/api/tick'){const t=Date.now();on[k]={x:+b.x||0,z:+b.z||0,ry:+b.ry||0,sh:b.sh?1:0,t,name:U[k].name,hue:U[k].hue};
-   const validSharedPlaced=!!on[k].sh&&Array.isArray(b.placed)&&b.placed.length<=1000&&b.placed.every(a=>Array.isArray(a)&&a.length>=4&&a.length<=8&&['e','p'].includes(a[0])&&Number.isInteger(a[1])&&a[1]>=0&&a[1]<200&&Number.isFinite(Number(a[2]))&&Number.isFinite(Number(a[3]))&&Math.abs(Number(a[2]))<500&&Math.abs(Number(a[3]))<500&&(a[4]===undefined||Number.isFinite(Number(a[4])))&&(a[5]===undefined||(Number.isFinite(Number(a[5]))&&Number(a[5])>=0&&Number(a[5])<=10))&&(a[6]===undefined||a[6]===0||['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6])));
-   if(validSharedPlaced){U[k].save={...(U[k].save||{}),placed:b.placed};persist()}
+   const validSharedPlaced=!!on[k].sh&&Array.isArray(b.worldPlaced)&&b.worldPlaced.length<=1000&&b.worldPlaced.every(a=>Array.isArray(a)&&a.length>=4&&a.length<=8&&['e','p'].includes(a[0])&&Number.isInteger(a[1])&&a[1]>=0&&a[1]<200&&Number.isFinite(Number(a[2]))&&Number.isFinite(Number(a[3]))&&Math.abs(Number(a[2]))<500&&Math.abs(Number(a[3]))<500&&(a[4]===undefined||Number.isFinite(Number(a[4])))&&(a[5]===undefined||(Number.isFinite(Number(a[5]))&&Number(a[5])>=0&&Number(a[5])<=10))&&(a[6]===undefined||a[6]===0||['spin','swing','bounce','sway','pulse','slide','color'].includes(a[6])));
+   if(validSharedPlaced){U.__sharedWorld=b.worldPlaced;persist()}
    const active=Object.entries(on).filter(([o,v])=>o!==k&&t-v.t<6000&&v.sh&&on[k].sh);
    const pl=active.map(([o,v])=>({id:o,name:v.name,x:v.x,z:v.z,ry:v.ry,hue:v.hue}));
-   const worlds=active.filter(([o])=>Array.isArray(U[o]&&U[o].save&&U[o].save.placed)).slice(0,12).map(([o])=>({id:o,placed:U[o].save.placed.slice(0,1000)}));
+   const worlds=[];const sharedWorld=Array.isArray(U.__sharedWorld)?U.__sharedWorld.slice(0,1000):[];
    const ms=chat.filter(m=>m.id>(+b.since||0)&&(m.to?(m.to===k||m.fk===k):on[k].sh&&Math.hypot(m.x-on[k].x,m.z-on[k].z)<45)).map(m=>({id:m.id,from:m.from,priv:!!m.to,text:m.text}));
    const inbox=U[k].inbox||[];if(inbox.length){U[k].inbox=[];persist()}
-   return send(r,200,{pl,worlds,ms,inbox,last:cid})}
+   return send(r,200,{pl,worlds,sharedWorld,ms,inbox,last:cid})}
   if(ep==='/api/chat'){const targetToken=String(b.to||''),text=String(b.text||'').trim().slice(0,120);if(!text)return send(r,400,{e:'رسالة فارغة'});if(targetToken&&(!tok[targetToken]||tok[targetToken]===k||!U[tok[targetToken]]))return send(r,400,{e:'المستلم غير صالح'});
    chat.push({id:++cid,from:U[k].name,fk:k,to:targetToken||null,text,x:on[k]?on[k].x:0,z:on[k]?on[k].z:0});if(chat.length>300)chat.shift();return send(r,200,{ok:1})}
   if(ep==='/api/gift'){const targetToken=String(b.to||''),to=tok[targetToken],n=Math.floor(+b.n),item=String(b.item||'');
