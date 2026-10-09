@@ -1,0 +1,1 @@
+const NET={token:null,guest:true,async api(p,b){const r=await fetch('/api/'+p,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(NET.token||'')},body:JSON.stringify(b||{})});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.e||'حدث خطأ');return j}};

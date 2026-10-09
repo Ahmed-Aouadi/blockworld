@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>بلوك وورلد — BlockWorld</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="cv"></canvas>
+<section id="auth">
+  <div class="box">
+    <div class="logo">🧱 <span>بلوك</span><b>وورلد</b></div>
+    <p>ابنِ بيتك، استكشف العالم، وبرمج شخصيتك مع أصدقائك!</p>
+    <input id="un" placeholder="اسم اللاعب" maxlength="16" autocomplete="username">
+    <input id="pw" type="password" placeholder="كلمة المرور" autocomplete="current-password">
+    <div class="err" id="aerr"></div>
+    <div class="row"><button class="b1" id="bLogin">دخول</button><button class="b2" id="bReg">حساب جديد</button></div>
+    <button class="b3" id="bGuest">🎮 العب كضيف (بدون لاعبين آخرين)</button>
+  </div>
+</section>
+<div id="hud" hidden>
+  <header>
+    <div class="logo sm">🧱 <span>بلوك</span><b>وورلد</b></div>
+    <div class="chip">⭐ مستوى <b id="lv">1</b><i class="bar"><u id="xb"></u></i></div>
+    <div class="chip" id="zn">🏡 ساحة البداية</div>
+    <div class="chip" id="onl">👤</div>
+    <div class="sp"></div>
+    <button class="chip" id="bShare">🌍 مشترك</button>
+  </header>
+  <div id="toast"></div>
+  <nav id="dock">
+    <button data-p="Build" class="c1"><i>🔨</i>بناء</button>
+    <button data-p="Code" class="c2"><i>🧩</i>برمجة</button>
+    <button data-p="Bag" class="c3"><i>🎒</i>حقيبتي</button>
+    <button data-p="Chat" class="c4"><i>💬</i>دردشة</button>
+    <button data-p="Near" class="c5"><i>👫</i>القريبون</button>
+  </nav>
+  <div id="dpad"><button data-k="up">▲</button><button data-k="left">◀</button><button data-k="down">▼</button><button data-k="right">▶</button></div>
+  <button id="jump">⤴</button>
+  <div id="bt"><button id="tDel">🗑</button><button id="tSel">👆</button><button id="tRot">⟳</button><button id="tUp">⬆</button><button id="tDn">⬇</button><button id="tOff">✋</button></div>
+  <aside class="panel" id="pBuild"></aside>
+  <aside class="panel" id="pCode"></aside>
+  <aside class="panel" id="pBag"></aside>
+  <aside class="panel" id="pChat"></aside>
+  <aside class="panel" id="pNear"></aside>
+  <aside class="panel small" id="pScript"></aside>
+  <div id="modal"><div class="box" id="mb"></div></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/net.js"></script>
+<script src="js/world.js"></script>
+<script src="js/code.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
