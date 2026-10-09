@@ -161,3 +161,19 @@ test('remote player motion is frame-rate independent and animates walking', () =
   assert.match(world, /o\.phase\+=dt\*Math\.min\(14,7\+speed\*1\.4\)/);
   assert.match(world, /u\.armL\.rotation\.x=gait\*\.62/);
 });
+
+
+test('shared world persistence is separate from personal saves and survives disconnects', () => {
+  const client = read('public/js/main.js');
+  const local = read('server.js');
+  const api = read('api/[...path].js');
+  assert.match(client, /privatePlacedCache=placed\.filter/);
+  assert.match(client, /placed:\(SH&&privatePlacedCache\?privatePlacedCache:S\.placed\)/);
+  assert.match(client, /payload\.worldPlaced=localPlaced/);
+  assert.match(client, /Array\.isArray\(r\.sharedWorld\)/);
+  assert.match(local, /U\.__sharedWorld=b\.worldPlaced/);
+  assert.match(local, /sharedWorld,ms,inbox,last:cid/);
+  assert.match(api, /CREATE TABLE IF NOT EXISTS bw_shared_world/);
+  assert.match(api, /UPDATE bw_shared_world SET placed=/);
+  assert.match(api, /sharedWorld, ms:/);
+});
