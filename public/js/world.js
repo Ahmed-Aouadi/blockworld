@@ -1,4 +1,6 @@
 // العالم ثلاثي الأبعاد: تضاريس ملونة، مناطق، لاعب، بناء، سلوكيات العناصر، لاعبون آخرون
+let worldNight=false,worldSun=null,worldHemi=null;
+function setWorldTime(night){worldNight=!!night;if(typeof scene==='undefined'||!scene)return;const sky=worldNight?0x172443:0xa7c5d5;scene.background.setHex(sky);if(scene.fog)scene.fog.color.setHex(sky);if(worldSun)worldSun.intensity=worldNight?.16:.48;if(worldHemi)worldHemi.intensity=worldNight?.28:.58;document.documentElement.dataset.worldTime=worldNight?'night':'day'}
 const T=THREE,HALF=240;
 const hs=(x,z)=>{let h=Math.imul(x|0,374761393)+Math.imul(z|0,668265263)|0;h=Math.imul(h^(h>>>13),1274126177);return((h^(h>>>16))>>>0)/4294967295};
 const sm=t=>t*t*(3-2*t),vn=(x,z)=>{const i=Math.floor(x),j=Math.floor(z),fx=sm(x-i),fz=sm(z-j),a=hs(i,j),b=hs(i+1,j),c=hs(i,j+1),d=hs(i+1,j+1);return a+(b-a)*fx+(c-a)*fz+(a-b-c+d)*fx*fz};
@@ -40,7 +42,7 @@ function pick(e){const r=R.domElement.getBoundingClientRect();rc.setFromCamera(n
 function initWorld(){
  const cv=document.getElementById('cv');R=new T.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio||1,2));R.outputEncoding=T.sRGBEncoding;
  scene=new T.Scene();scene.background=new T.Color(0xa7c5d5);scene.fog=new T.Fog(0xa7c5d5,260,820);cam=new T.PerspectiveCamera(55,1,.1,1400);
- scene.add(new T.HemisphereLight(0xffffff,0x71947d,.58));const sun=new T.DirectionalLight(0xfff3d0,.48);sun.position.set(40,70,25);scene.add(sun);
+ worldHemi=new T.HemisphereLight(0xffffff,0x71947d,.58);scene.add(worldHemi);worldSun=new T.DirectionalLight(0xfff3d0,.48);worldSun.position.set(40,70,25);scene.add(worldSun);
  const geo=new T.PlaneGeometry(HALF*2,HALF*2,240,240);geo.rotateX(-Math.PI/2);const pos=geo.attributes.position,col=[];
  for(let i=0;i<pos.count;i++){const x=pos.getX(i),z=pos.getZ(i),h=H(x,z);pos.setY(i,h);col.push(...tcol(x,z,h))}geo.setAttribute('color',new T.Float32BufferAttribute(col,3));geo.computeVertexNormals();
  terrain=new T.Mesh(geo,new T.MeshStandardMaterial({vertexColors:true,roughness:.95}));scene.add(terrain);
